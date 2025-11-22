@@ -1,13 +1,21 @@
 # 编辑器配置指南
 
-当您点击 React DevTools 中的元素时，如果出现以下错误：
+## 概述
+
+React DevTools 支持在 Vite 和 Webpack 项目中自动打开编辑器并定位到源代码。当您点击 React DevTools 中的元素时，如果出现以下错误：
 
 ```
 Could not open App.tsx in the editor.
 The editor process exited with an error: spawn cursor ENOENT ('cursor' command does not exist in 'PATH').
 ```
 
-这表明系统找不到编辑器的命令行工具。按照以下步骤解决：
+或在浏览器控制台看到：
+
+```
+GET http://localhost:3004/__open-in-editor?file=... 404 (Not Found)
+```
+
+这表明需要进行编辑器配置。按照以下步骤解决：
 
 ## 方案一：安装 Cursor 命令行工具
 
@@ -85,10 +93,33 @@ code --version
 which webstorm
 ```
 
+## 支持情况
+
+### ✅ Vite 项目
+
+完全支持，自动集成。使用 Vite 内置的 `/__open-in-editor` 功能。
+
+### ✅ Webpack 项目
+
+已支持！React DevTools 会自动注册 `/__open-in-editor` 中间件。
+
+**注意**: Webpack 支持依赖 `launch-editor` 包，已作为项目依赖自动安装。
+
 ## 测试功能
+
+### Vite 项目测试
 
 1. 启动 dev 服务器：`pnpm dev` (在 packages/playground/react 目录)
 2. 打开浏览器访问 `http://localhost:5173`
+3. 按 `Alt/Option + Shift + R` 打开 React DevTools overlay
+4. 点击 inspector 图标（眼睛图标）
+5. 点击页面上的任意元素
+6. 编辑器应该自动打开，并定位到对应的源代码位置
+
+### Webpack 项目测试
+
+1. 启动 dev 服务器：`pnpm dev` (在 packages/playground/react-webpack 目录)
+2. 打开浏览器访问 `http://localhost:3004`
 3. 按 `Alt/Option + Shift + R` 打开 React DevTools overlay
 4. 点击 inspector 图标（眼睛图标）
 5. 点击页面上的任意元素

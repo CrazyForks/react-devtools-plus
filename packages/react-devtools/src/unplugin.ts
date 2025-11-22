@@ -653,6 +653,42 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           const devtoolsPath = `${base}__react_devtools__`
 
           console.log('[React DevTools] Setting up devServer middleware at:', devtoolsPath, 'serving from:', servePath)
+
+          // Add open-in-editor middleware
+          // Use dynamic import to avoid bundling issues
+          import('launch-editor').then((module: any) => {
+            const launchEditor = module.default || module
+
+            // Create simple middleware
+            server.app?.use('/__open-in-editor', (req: any, res: any) => {
+              const file = req.query.file as string
+              if (!file) {
+                res.status(400).send('Missing file parameter')
+                return
+              }
+
+              console.log('[React DevTools] Opening in editor:', file)
+
+              // launch-editor expects format: /path/to/file.js:line:column
+              launchEditor(file, (fileName: string, errorMsg: string) => {
+                if (errorMsg) {
+                  console.error('[React DevTools] Failed to open editor:', errorMsg)
+                  res.status(500).send(`Failed to open editor: ${errorMsg}`)
+                }
+                else {
+                  console.log('[React DevTools] Successfully opened:', fileName)
+                  res.status(200).send('OK')
+                }
+              })
+            })
+
+            console.log('[React DevTools] Open-in-editor middleware registered at /__open-in-editor')
+          }).catch((err: Error) => {
+            console.warn('[React DevTools] Failed to load launch-editor:', err.message)
+            console.warn('[React DevTools] Open-in-editor feature will not be available')
+          })
+
+          // Add DevTools client serving
           server.app?.use(devtoolsPath, serveClient(servePath))
 
           return middlewares

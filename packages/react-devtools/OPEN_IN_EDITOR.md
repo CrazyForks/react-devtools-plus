@@ -113,7 +113,9 @@ However, for most use cases, setting the `EDITOR` environment variable is suffic
 ## Supported Environments
 
 - ✅ **Vite**: Full support with automatic source injection and open-in-editor
-- ✅ **Webpack**: Source injection supported, open-in-editor requires additional setup
+- ✅ **Webpack**: Full support! Source injection and open-in-editor are both supported
+
+The Webpack implementation uses the `launch-editor` package to provide the same open-in-editor functionality as Vite. The middleware is automatically registered when using `webpack-dev-server`.
 
 ## Technical Details
 
