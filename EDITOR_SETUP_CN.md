@@ -105,6 +105,46 @@ which webstorm
 
 **注意**: Webpack 支持依赖 `launch-editor` 包，已作为项目依赖自动安装。
 
+## 配置选项
+
+### 控制源码注入
+
+您可以通过 `injectSource` 选项控制是否将源码位置注入到 HTML 属性中：
+
+```typescript
+// vite.config.ts 或 webpack.config.js
+import ReactDevTools from 'react-devtools'
+
+export default defineConfig({
+  plugins: [
+    ReactDevTools({
+      // 禁用 HTML 属性注入（仅使用 Fiber._debugSource）
+      injectSource: false
+    })
+  ]
+})
+```
+
+**默认行为**：
+
+- ✅ 开发模式下启用源码注入
+- ❌ 生产构建时自动禁用
+- 可通过 `injectSource` 选项显式控制
+
+### 备用打开方案
+
+如果服务器端点 `/__open-in-editor` 失败，插件会自动尝试使用 URL Protocol 作为备用方案：
+
+- **主要方案**: `/__open-in-editor` 端点（推荐，需要编辑器 CLI）
+- **备用方案**: `vscode://file/...` URL Protocol（无需 CLI）
+
+配置备用编辑器（在浏览器控制台执行）：
+
+```javascript
+localStorage.setItem('react_devtools_editor', 'cursor')
+// 支持: 'vscode', 'cursor', 'webstorm', 'sublime' 等
+```
+
 ## 测试功能
 
 ### Vite 项目测试

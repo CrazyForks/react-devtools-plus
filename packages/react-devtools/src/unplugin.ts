@@ -105,6 +105,22 @@ export interface ReactDevToolsPluginOptions {
    * ReactDevTools({ enabledEnvironments: false })
    */
   enabledEnvironments?: boolean | string[]
+  /**
+   * Enable source code location injection into HTML attributes.
+   * - When `true` (default in development), injects `data-source-path` attributes into JSX elements
+   * - When `false`, disables HTML attribute injection (falls back to Fiber._debugSource only)
+   * - Automatically disabled in production builds
+   *
+   * @default true in development, false in production
+   *
+   * @example
+   * // Disable source code injection
+   * ReactDevTools({ injectSource: false })
+   *
+   * // Enable source code injection (default)
+   * ReactDevTools({ injectSource: true })
+   */
+  injectSource?: boolean
 }
 
 function shouldEnableDevTools(
@@ -207,9 +223,24 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
   const reactDevtoolsPath = getPluginPath()
   const pluginOptions = options
   const enabledEnvironments = options?.enabledEnvironments
+  const injectSourceOption = options?.injectSource
   let viteConfig: ResolvedConfig | undefined
   let webpackMode: string = 'development'
   let isWebpackContext = false
+
+  // Helper function to determine if source injection should be enabled
+  function shouldInjectSource(mode: string, command: 'build' | 'serve'): boolean {
+    // If explicitly set, respect the user's choice
+    if (injectSourceOption !== undefined) {
+      return injectSourceOption
+    }
+
+    // Default: inject in development, not in production
+    const nodeEnv = process.env.NODE_ENV || mode
+    const isProduction = nodeEnv === 'production' || (command === 'build' && mode === 'production')
+
+    return !isProduction
+  }
 
   // Filter function to exclude HTML files and other non-JS files
   const shouldProcessFile = (id: string): boolean => {
@@ -303,9 +334,14 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
     }
   }
 
-  function transformSourceCode(code: string, id: string) {
+  function transformSourceCode(code: string, id: string, enableInjection: boolean) {
     // Only process JSX/TSX files
     if (!id.match(/\.[jt]sx$/)) {
+      return null
+    }
+
+    // Skip transformation if injection is disabled
+    if (!enableInjection) {
       return null
     }
 
@@ -465,8 +501,18 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
 
         const filename = id.split('?', 2)[0]
 
+        if (!viteConfig) {
+          return null
+        }
+
+        // Check if source injection should be enabled
+        const enableInjection = shouldInjectSource(
+          viteConfig.mode || 'development',
+          viteConfig.command,
+        )
+
         // First, try to inject source location information
-        const sourceTransformResult = transformSourceCode(code, filename)
+        const sourceTransformResult = transformSourceCode(code, filename, enableInjection)
         let transformedCode = sourceTransformResult?.code || code
         const transformedMap = sourceTransformResult?.map || null
 
@@ -778,8 +824,14 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
     transform(code, id) {
       const filename = id.split('?', 2)[0]
 
+      // Check if source injection should be enabled for Webpack
+      const enableInjection = shouldInjectSource(
+        webpackMode,
+        webpackMode === 'production' ? 'build' : 'serve',
+      )
+
       // Transform JSX/TSX files to inject source location
-      return transformSourceCode(code, filename)
+      return transformSourceCode(code, filename, enableInjection)
     },
   }
 }

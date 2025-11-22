@@ -194,9 +194,35 @@ The `data-source-path` attribute approach has several advantages:
 3. **Simplicity**: Easy to inspect and debug using browser DevTools
 4. **Performance**: Minimal runtime overhead
 
-## Disabling Source Injection
+## Configuration Options
 
-If you don't want the `data-source-path` attributes in your production builds, configure the plugin to only enable in development:
+### Disabling Source Injection
+
+You can control source code location injection using the `injectSource` option:
+
+```typescript
+// vite.config.ts or webpack.config.js
+import ReactDevTools from 'react-devtools'
+
+export default defineConfig({
+  plugins: [
+    ReactDevTools({
+      // Disable HTML attribute injection (uses only Fiber._debugSource)
+      injectSource: false
+    })
+  ]
+})
+```
+
+**Default behavior:**
+
+- ✅ Enabled in development mode (`serve`)
+- ❌ Disabled in production builds (`build` with `production` mode)
+- Can be explicitly controlled with the `injectSource` option
+
+### Environment Control
+
+Control when DevTools is enabled:
 
 ```typescript
 // vite.config.ts
@@ -206,7 +232,9 @@ export default defineConfig({
   plugins: [
     ReactDevTools({
       // Only enable in development
-      enabledEnvironments: ['development']
+      enabledEnvironments: ['development'],
+      // Optionally disable source injection
+      injectSource: false
     })
   ]
 })
@@ -228,10 +256,24 @@ This error means the editor command is not installed or not in your system's PAT
 ### Editor doesn't open
 
 1. Check that the `EDITOR` environment variable is set correctly
-2. Verify that Vite's dev server is running
+2. Verify that the dev server is running
 3. Check the browser console for any errors related to `/__open-in-editor`
 4. Check the terminal output for editor-related errors
 5. Test if the editor command works manually: `cursor path/to/file.tsx:10:5`
+
+**Fallback mechanism:**
+
+The plugin automatically falls back to URL protocol if the server endpoint fails:
+
+- Primary: `/__open-in-editor` endpoint (recommended)
+- Fallback: `vscode://file/...` URL protocol
+
+To configure the fallback editor, set it in localStorage:
+
+```javascript
+localStorage.setItem('react_devtools_editor', 'cursor')
+// or 'vscode', 'webstorm', 'sublime', etc.
+```
 
 ### Source locations are incorrect
 
