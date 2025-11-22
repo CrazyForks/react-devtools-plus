@@ -1,0 +1,96 @@
+{
+  "name": "react-devtools-monorepo",
+  "type": "module",
+  "version": "7.3.2",
+  "private": true,
+  "packageManager": "pnpm@10.18.3",
+  "description": "DevTools for React.js",
+  "author": "wzc520pyfm",
+  "license": "MIT",
+  "homepage": "https://github.com/vuejs/devtools#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vuejs/devtools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vuejs/devtools/issues"
+  },
+  "keywords": [
+    "vue-devtools",
+    "dx"
+  ],
+  "engines": {
+    "node": ">=18.19.0"
+  },
+  "scripts": {
+    "lint": "NODE_OPTIONS=--import=tsx eslint --config=eslint.config.ts .",
+    "lint:fix": "pnpm lint --fix",
+    "prepublishOnly": "npm run build",
+    "release": "bumpp && nr build && pnpm -r publish --access public",
+    "release:beta": "bumpp && nr build && pnpm -r publish --access public --tag beta",
+    "prepare": "simple-git-hooks"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^5.4.1",
+    "@antfu/ni": "^25.0.0",
+    "@arethetypeswrong/cli": "^0.18.2",
+    "@clack/prompts": "^0.11.0",
+    "@types/chrome": "^0.1.24",
+    "@types/degit": "^2.8.6",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^24.7.2",
+    "@typescript-eslint/parser": "^8.46.1",
+    "@typescript-eslint/utils": "^8.46.1",
+    "@unocss/eslint-plugin": "^66.5.4",
+    "@vue/devtools-core": "workspace:^",
+    "@vue/devtools-kit": "workspace:^",
+    "@vue/test-utils": "^2.4.6",
+    "archiver": "^7.0.1",
+    "bumpp": "^10.3.1",
+    "cross-env": "^10.1.0",
+    "degit": "^2.8.4",
+    "eslint": "^9.37.0",
+    "eslint-plugin-format": "^1.0.2",
+    "eslint-vitest-rule-tester": "^2.2.2",
+    "fast-glob": "^3.3.3",
+    "fs-extra": "^11.3.2",
+    "jsdom": "^26.1.0",
+    "lint-staged": "^16.2.4",
+    "npm-run-all2": "^8.0.4",
+    "picocolors": "^1.1.1",
+    "pnpm": "^10.18.3",
+    "progress": "^2.0.3",
+    "publint": "^0.3.14",
+    "readdir-glob": "^2.0.1",
+    "regex-extra": "^0.2.2",
+    "semver": "^7.7.3",
+    "simple-git-hooks": "^2.13.1",
+    "taze": "^19.7.0",
+    "tsdown": "^0.15.7",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.6",
+    "turbo": "^2.5.8",
+    "typescript": "^5.9.3",
+    "unbuild": "3.6.1",
+    "unocss": "^66.5.4",
+    "vite": "^7.1.10",
+    "vitest": "^3.2.4",
+    "vue": "^3.5.22"
+  },
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "core-js"
+    ],
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild",
+      "vue-demi"
+    ]
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged"
+  },
+  "lint-staged": {
+    "*": "pnpm lint:fix"
+  }
+}

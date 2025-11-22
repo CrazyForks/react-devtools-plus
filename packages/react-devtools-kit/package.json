@@ -1,0 +1,42 @@
+{
+  "name": "@vue/devtools-react-kit",
+  "type": "module",
+  "version": "0.0.1",
+  "author": "webfansplz",
+  "license": "MIT",
+  "repository": {
+    "directory": "packages/react-devtools-kit",
+    "type": "git",
+    "url": "git+https://github.com/vuejs/devtools.git"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "files": [
+    "**.d.ts",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown --clean",
+    "prepare:type": "tsdown --dts-only",
+    "stub": "tsdown --watch --onSuccess 'tsdown --dts-only'"
+  },
+  "dependencies": {
+    "@vue/devtools-shared": "workspace:^",
+    "birpc": "^2.6.1",
+    "hookable": "^5.5.3",
+    "mitt": "catalog:",
+    "perfect-debounce": "catalog:",
+    "superjson": "^2.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "^5.5.0"
+  }
+}

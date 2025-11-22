@@ -1,0 +1,183 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  background: radial-gradient(circle at top, #121929, #0a0d14 65%);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 36px;
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.hero p {
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 620px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 24px 68px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card h2 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+
+.card h2 span {
+  font-size: 14px;
+  color: #6cf8a9;
+  background: rgba(108, 248, 169, 0.12);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.progress {
+  width: 100%;
+  height: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.progress__bar {
+  height: 100%;
+  background: linear-gradient(120deg, #6cf8a9, #63e4ff);
+  border-radius: inherit;
+  transition: width 0.2s ease;
+}
+
+.todos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.todo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.todo:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.todo label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  cursor: pointer;
+}
+
+.todo input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: transparent;
+}
+
+.todo span {
+  font-size: 15px;
+}
+
+.todo small {
+  opacity: 0.7;
+}
+
+.todo--done span {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card ul li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.links a {
+  color: #63e4ff;
+  text-decoration: none;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .hero h1 {
+    font-size: 28px;
+  }
+}
+

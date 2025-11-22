@@ -1,0 +1,37 @@
+{
+  "name": "@vue/devtools-react-client",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "author": "webfansplz",
+  "license": "MIT",
+  "exports": {
+    "./*": "./dist/*"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=v14.21.3"
+  },
+  "scripts": {
+    "build": "vite build",
+    "stub": "vite build --watch"
+  },
+  "dependencies": {
+    "@vue/devtools-react-kit": "workspace:^",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router-dom": "^6.26.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@unocss/reset": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "typescript": "catalog:",
+    "unocss": "catalog:",
+    "vite": "catalog:"
+  }
+}

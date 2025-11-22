@@ -1,0 +1,190 @@
+/* Highlight box - must be below devtools panel (z-index: 2147483645) */
+#react-devtools-highlight {
+  position: fixed;
+  border: 2px solid rgba(108, 248, 169, 0.9);
+  background: rgba(108, 248, 169, 0.12);
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 2147483644;
+  transition:
+    left 0.12s ease,
+    top 0.12s ease,
+    width 0.12s ease,
+    height 0.12s ease,
+    opacity 0.1s ease;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  display: none;
+  will-change: left, top, width, height, opacity;
+}
+
+/* Anchor container */
+.react-devtools-anchor {
+  position: fixed;
+  z-index: 2147483645;
+  transform-origin: center center;
+  /* transform is handled by React inline styles */
+  pointer-events: none;
+}
+
+/* Floating button group */
+.react-devtools-button-group {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 36px;
+  border-radius: 18px; /* Pill shape */
+  background-color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+  user-select: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  opacity: 0.9;
+  padding: 0 4px;
+}
+
+/* Individual button */
+.react-devtools-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.react-devtools-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.react-devtools-divider {
+  width: 1px;
+  height: 16px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 0 4px;
+}
+
+/* Light mode support if needed later, for now stick to dark theme to match code */
+@media (prefers-color-scheme: light) {
+  .react-devtools-button-group {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  .react-devtools-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  .react-devtools-divider {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+.react-devtools-button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.react-devtools-button-icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* Active state */
+.react-devtools-button--active {
+  opacity: 1;
+  box-shadow: 0 0 15px rgba(97, 218, 251, 0.5); /* React Blue Glow */
+}
+
+/* Hidden state */
+.react-devtools-button--hidden {
+  opacity: 0.8;
+  box-shadow: none;
+  transform-origin: center center;
+  transition:
+    transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.react-devtools-button--hidden:hover {
+  opacity: 1;
+}
+
+/* Glowing effect container */
+.react-devtools-anchor::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 160px;
+  height: 160px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  z-index: -1;
+  border-radius: 9999px;
+  background-image: linear-gradient(45deg, #61dafb, #282c34, #61dafb);
+  filter: blur(60px);
+}
+
+/* Show glow on hover/active */
+.react-devtools-anchor:hover::before,
+.react-devtools-button--active + .react-devtools-anchor::before {
+  opacity: 0.4;
+}
+
+/* Iframe container */
+.react-devtools-iframe-container {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: min(80vw, 1000px);
+  height: min(60vh, 800px);
+  pointer-events: auto;
+  transform: translate(-50%, calc(-100% - 20px)); /* Adjusted spacing */
+  visibility: inherit;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Bottom position overrides */
+.react-devtools-anchor[data-position="bottom"] .react-devtools-iframe-container {
+  transform: translate(-50%, calc(-100% - 20px));
+}
+
+.react-devtools-anchor[data-position="top"] .react-devtools-iframe-container {
+  transform: translate(-50%, calc(0% + 50px));
+}
+
+.react-devtools-anchor[data-position="left"] .react-devtools-iframe-container {
+  transform: translate(calc(0% + 50px), -50%);
+}
+
+.react-devtools-anchor[data-position="right"] .react-devtools-iframe-container {
+  transform: translate(calc(-100% - 20px), -50%);
+}
+
+@media (min-width: 1400px) {
+  .react-devtools-iframe-container {
+    width: min(80vw, 1200px);
+  }
+}
+
+.react-devtools-iframe {
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(125, 125, 125, 0.2);
+  border-radius: 12px;
+  background: #1e1e1e; /* Dark mode bg */
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
