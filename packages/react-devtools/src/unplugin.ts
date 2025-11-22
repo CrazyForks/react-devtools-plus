@@ -121,6 +121,22 @@ export interface ReactDevToolsPluginOptions {
    * ReactDevTools({ injectSource: true })
    */
   injectSource?: boolean
+  /**
+   * Configure the path format for source code location injection.
+   * - 'absolute': Use absolute file paths (e.g., /Users/.../project/src/App.tsx)
+   * - 'relative': Use relative paths including project folder name (e.g., project/src/App.tsx)
+   * - Only applies when `injectSource` is enabled
+   *
+   * @default 'absolute'
+   *
+   * @example
+   * // Use absolute paths (default)
+   * ReactDevTools({ sourcePathMode: 'absolute' })
+   *
+   * // Use relative paths (shorter, better for monorepos)
+   * ReactDevTools({ sourcePathMode: 'relative' })
+   */
+  sourcePathMode?: 'absolute' | 'relative'
 }
 
 function shouldEnableDevTools(
@@ -224,8 +240,10 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
   const pluginOptions = options
   const enabledEnvironments = options?.enabledEnvironments
   const injectSourceOption = options?.injectSource
+  const sourcePathMode = options?.sourcePathMode || 'absolute'
   let viteConfig: ResolvedConfig | undefined
   let webpackMode: string = 'development'
+  let webpackContext: string = process.cwd()
   let isWebpackContext = false
 
   // Helper function to determine if source injection should be enabled
@@ -306,13 +324,13 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
   }
 
   // Babel plugin factory for injecting source attributes
-  function createSourceAttributePlugin() {
+  function createSourceAttributePlugin(projectRoot: string, pathMode: 'absolute' | 'relative') {
     return function sourceAttributePlugin() {
       return {
         name: 'source-attribute',
         visitor: {
-          JSXOpeningElement(path: NodePath<JSXOpeningElement>) {
-            const loc = path.node.loc
+          JSXOpeningElement(nodePath: NodePath<JSXOpeningElement>) {
+            const loc = nodePath.node.loc
             if (!loc)
               return
 
@@ -321,11 +339,24 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
             if (!filename)
               return
 
+            let finalPath = filename
+
+            if (pathMode === 'relative' && path.isAbsolute(filename) && projectRoot) {
+              // Relative mode: path from parent directory (includes project folder name)
+              // Example: /Users/.../react-devtools/packages/playground/react/src/App.tsx
+              //       -> react/src/App.tsx
+              const parentDir = path.dirname(projectRoot)
+              finalPath = path.relative(parentDir, filename)
+              // Ensure forward slashes for consistency across platforms
+              finalPath = finalPath.split(path.sep).join('/')
+            }
+            // else: absolute mode - use the original absolute path
+
             // Add data-source-path attribute to JSX elements
-            path.node.attributes.push(
+            nodePath.node.attributes.push(
               types.jsxAttribute(
                 types.jsxIdentifier('data-source-path'),
-                types.stringLiteral(`${filename}:${loc.start.line}:${loc.start.column}`),
+                types.stringLiteral(`${finalPath}:${loc.start.line}:${loc.start.column}`),
               ),
             )
           },
@@ -334,7 +365,13 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
     }
   }
 
-  function transformSourceCode(code: string, id: string, enableInjection: boolean) {
+  function transformSourceCode(
+    code: string,
+    id: string,
+    enableInjection: boolean,
+    projectRoot: string,
+    pathMode: 'absolute' | 'relative',
+  ) {
     // Only process JSX/TSX files
     if (!id.match(/\.[jt]sx$/)) {
       return null
@@ -353,7 +390,7 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           '@babel/preset-typescript',
         ],
         plugins: [
-          createSourceAttributePlugin(),
+          createSourceAttributePlugin(projectRoot, pathMode),
         ],
         ast: true,
         sourceMaps: true,
@@ -458,6 +495,46 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
         const servePath = getClientPath(reactDevtoolsPath)
         setupServerMiddleware(server.middlewares, base, servePath)
         wrapPrintUrls(server)
+
+        // Add custom open-in-editor middleware to handle both absolute and relative paths
+        server.middlewares.use((req, res, next) => {
+          if (req.url?.startsWith('/__open-in-editor')) {
+            const url = new URL(req.url, 'http://localhost')
+            const file = url.searchParams.get('file')
+
+            if (!file) {
+              res.statusCode = 400
+              res.end('Missing file parameter')
+              return
+            }
+
+            const [filePath, ...rest] = file.split(':')
+            let absolutePath = filePath
+
+            // Only need to convert if using relative mode and path is not already absolute
+            if (sourcePathMode === 'relative' && !path.isAbsolute(filePath)) {
+              const projectRoot = viteConfig?.root || process.cwd()
+
+              // Strip the first path segment (project folder name) if present
+              // Example: react/src/App.tsx -> src/App.tsx
+              const segments = filePath.split('/')
+              const pathFromRoot = segments.length > 1 ? segments.slice(1).join('/') : filePath
+
+              absolutePath = path.resolve(projectRoot, pathFromRoot)
+            }
+            // In absolute mode, path is already absolute from injection
+
+            const absoluteFile = [absolutePath, ...rest].join(':')
+
+            // Forward to Vite's built-in handler with absolute path
+            const newUrl = `/__open-in-editor?file=${encodeURIComponent(absoluteFile)}`
+            req.url = newUrl
+            next()
+          }
+          else {
+            next()
+          }
+        })
       },
       configurePreviewServer(server: PreviewServer) {
         const base = server.config.base || '/'
@@ -512,7 +589,8 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
         )
 
         // First, try to inject source location information
-        const sourceTransformResult = transformSourceCode(code, filename, enableInjection)
+        const projectRoot = viteConfig.root || process.cwd()
+        const sourceTransformResult = transformSourceCode(code, filename, enableInjection, projectRoot, sourcePathMode)
         let transformedCode = sourceTransformResult?.code || code
         const transformedMap = sourceTransformResult?.map || null
 
@@ -605,6 +683,7 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
       isWebpackContext = true
       const mode = compiler.options.mode || 'development'
       webpackMode = mode
+      webpackContext = compiler.context || process.cwd()
 
       const isEnabled = shouldEnableDevTools(
         enabledEnvironments,
@@ -713,16 +792,30 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
                 return
               }
 
-              console.log('[React DevTools] Opening in editor:', file)
+              let absoluteFile = file
+              const [filePath, ...rest] = file.split(':')
+
+              // Only need to convert if using relative mode and path is not already absolute
+              if (sourcePathMode === 'relative' && filePath && !path.isAbsolute(filePath)) {
+                const projectRoot = compiler.context || process.cwd()
+
+                // Strip the first path segment (project folder name) if present
+                // Example: react/src/App.tsx -> src/App.tsx
+                const segments = filePath.split('/')
+                const pathFromRoot = segments.length > 1 ? segments.slice(1).join('/') : filePath
+
+                const absolutePath = path.resolve(projectRoot, pathFromRoot)
+                absoluteFile = [absolutePath, ...rest].join(':')
+              }
+              // In absolute mode, path is already absolute from injection
 
               // launch-editor expects format: /path/to/file.js:line:column
-              launchEditor(file, (fileName: string, errorMsg: string) => {
+              launchEditor(absoluteFile, (fileName: string, errorMsg: string) => {
                 if (errorMsg) {
                   console.error('[React DevTools] Failed to open editor:', errorMsg)
                   res.status(500).send(`Failed to open editor: ${errorMsg}`)
                 }
                 else {
-                  console.log('[React DevTools] Successfully opened:', fileName)
                   res.status(200).send('OK')
                 }
               })
@@ -831,7 +924,7 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
       )
 
       // Transform JSX/TSX files to inject source location
-      return transformSourceCode(code, filename, enableInjection)
+      return transformSourceCode(code, filename, enableInjection, webpackContext, sourcePathMode)
     },
   }
 }

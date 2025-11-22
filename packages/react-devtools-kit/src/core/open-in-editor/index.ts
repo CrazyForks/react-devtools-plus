@@ -15,7 +15,6 @@ function tryOpenWithProtocol(fileName: string, line: number, column: number): bo
     link.click()
     link.remove()
 
-    console.log('[React DevTools] Fallback: Opening with URL protocol:', editor)
     return true
   }
   catch (e) {

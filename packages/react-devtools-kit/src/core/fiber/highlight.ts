@@ -174,11 +174,23 @@ function updateHighlightElement(rect: DOMRect, name: string, source?: SourceInfo
   if (source) {
     const sourceFileEl = document.getElementById(SOURCE_FILE_ELEMENT_ID)
     if (sourceFileEl) {
-      // Format: src/components/WelcomeItem.vue:6:5
-      // Clean up filename to be relative if possible (simple heuristic)
-      const cleanFileName = source.fileName.split('/src/').length > 1
-        ? `src/${source.fileName.split('/src/')[1]}`
-        : source.fileName.split('/').pop() || source.fileName
+      // Format from HTML injection: react/src/App.tsx (includes project folder name)
+      // We want to display: src/App.tsx (relative to project root)
+      let cleanFileName = source.fileName
+
+      // If path contains a project folder + src/*, extract from src onwards
+      // Example: react/src/App.tsx -> src/App.tsx
+      const segments = cleanFileName.split('/')
+      const srcIndex = segments.findIndex(seg => seg === 'src')
+      if (srcIndex > 0) {
+        // Found src/, and there's at least one segment before it (project folder name)
+        cleanFileName = segments.slice(srcIndex).join('/')
+      }
+      else if (segments.length > 1 && !cleanFileName.startsWith('/')) {
+        // No src/ folder, but has multiple segments and not an absolute path
+        // Assume first segment is project folder name, strip it
+        cleanFileName = segments.slice(1).join('/')
+      }
 
       sourceFileEl.textContent = `${cleanFileName}:${source.lineNumber}:${source.columnNumber}`
     }

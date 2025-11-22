@@ -165,7 +165,6 @@ function handleClick(e: MouseEvent) {
 
     if (source) {
       const { fileName, lineNumber, columnNumber } = source
-      // console.log('[React DevTools] Opening in editor:', fileName, lineNumber, columnNumber)
       emitOpenInEditor(fileName, lineNumber, columnNumber)
       toggleInspector(false)
       hideHighlight()
@@ -175,13 +174,9 @@ function handleClick(e: MouseEvent) {
       const sourceFiber = findSourceFiber(fiber)
       if (sourceFiber && sourceFiber._debugSource) {
         const { fileName, lineNumber, columnNumber } = sourceFiber._debugSource
-        // console.log('[React DevTools] Opening in editor (fallback):', fileName, lineNumber, columnNumber, 'from fiber:', sourceFiber)
         emitOpenInEditor(fileName, lineNumber, columnNumber)
         toggleInspector(false)
         hideHighlight()
-      }
-      else {
-        // console.warn('[React DevTools] No source location found for element or fiber')
       }
     }
   }
