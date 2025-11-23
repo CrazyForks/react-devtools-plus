@@ -3,6 +3,8 @@
  * 插件配置类型定义
  */
 
+import type { ReactDevtoolsScanOptions } from '@react-devtools/scan'
+
 /**
  * Source path mode for code location injection
  * 源码路径模式
@@ -14,6 +16,18 @@ export type SourcePathMode = 'absolute' | 'relative'
  * 环境配置
  */
 export type EnabledEnvironments = boolean | string[]
+
+/**
+ * React Scan configuration
+ * React Scan 配置
+ */
+export interface ScanConfig extends ReactDevtoolsScanOptions {
+  /**
+   * Enable React Scan integration
+   * @default false
+   */
+  enabled?: boolean
+}
 
 /**
  * Plugin options interface
@@ -80,6 +94,24 @@ export interface ReactDevToolsPluginOptions {
    * ReactDevTools({ sourcePathMode: 'relative' })
    */
   sourcePathMode?: SourcePathMode
+
+  /**
+   * React Scan integration configuration
+   *
+   * @example
+   * // Enable React Scan with default settings
+   * ReactDevTools({ scan: { enabled: true } })
+   *
+   * // Enable with custom configuration
+   * ReactDevTools({
+   *   scan: {
+   *     enabled: true,
+   *     showToolbar: true,
+   *     animationSpeed: 'fast',
+   *   }
+   * })
+   */
+  scan?: ScanConfig | boolean
 }
 
 /**
@@ -95,6 +127,7 @@ export interface ResolvedPluginConfig {
   mode: string
   command: 'build' | 'serve'
   isEnabled: boolean
+  scan?: ScanConfig
 }
 
 /**

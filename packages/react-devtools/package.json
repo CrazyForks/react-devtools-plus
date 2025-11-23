@@ -41,6 +41,7 @@
     "@babel/preset-react": "^7.26.3",
     "@babel/preset-typescript": "^7.26.4",
     "@babel/types": "^7.26.0",
+    "@react-devtools/scan": "workspace:*",
     "kolorist": "^1.8.0",
     "launch-editor": "^2.9.1",
     "sirv": "^2.0.4",

@@ -5,6 +5,8 @@
 
 import type { Compiler } from 'webpack'
 import type { ResolvedPluginConfig, SourcePathMode } from '../config/types'
+import fs from 'node:fs'
+import path from 'node:path'
 import { createOpenInEditorMiddleware, serveClient } from '../middleware'
 import { createSourceAttributePlugin } from '../utils/babel-transform'
 
@@ -125,6 +127,94 @@ export function injectOverlayToEntry(
         }
 
         importFiles.push(overlayPath)
+
+        newEntries[mainKey] = {
+          ...descriptor,
+          import: importFiles,
+        }
+      }
+      return newEntries
+    }
+
+    return entries
+  }
+}
+
+/**
+ * Inject React Scan to Webpack entry
+ * 注入 React Scan 到 Webpack 入口
+ */
+export function injectReactScanToEntry(
+  compiler: Compiler,
+  scanInitCode: string,
+  projectRoot: string,
+) {
+  // Create a cache directory for React Scan initialization
+  const cacheDir = path.join(projectRoot, 'node_modules', '.cache', 'react-devtools')
+  if (!fs.existsSync(cacheDir)) {
+    fs.mkdirSync(cacheDir, { recursive: true })
+  }
+
+  const scanInitPath = path.join(cacheDir, `scan-init-${Date.now()}.js`)
+
+  fs.writeFileSync(scanInitPath, scanInitCode, 'utf-8')
+
+  // Store the path for cleanup later
+  if (!compiler.__reactDevToolsScanFile) {
+    compiler.__reactDevToolsScanFile = scanInitPath
+  }
+
+  const originalEntry = compiler.options.entry
+
+  compiler.options.entry = async () => {
+    const entries = typeof originalEntry === 'function'
+      ? await originalEntry()
+      : originalEntry
+
+    // Handle string entry
+    if (typeof entries === 'string') {
+      return {
+        main: {
+          import: [scanInitPath, entries],
+        },
+      }
+    }
+
+    // Handle array entry
+    if (Array.isArray(entries)) {
+      return {
+        main: {
+          import: [scanInitPath, ...entries],
+        },
+      }
+    }
+
+    // Handle object entry
+    if (typeof entries === 'object' && entries !== null) {
+      const newEntries = { ...entries } as any
+      const keys = Object.keys(newEntries)
+      const mainKey = keys.find(k => k === 'main' || k === 'app' || k === 'index') || keys[0]
+
+      if (mainKey) {
+        const currentEntry = newEntries[mainKey]
+        let importFiles: string[] = []
+        let descriptor: any = {}
+
+        if (typeof currentEntry === 'string') {
+          importFiles = [currentEntry]
+        }
+        else if (Array.isArray(currentEntry)) {
+          importFiles = [...currentEntry]
+        }
+        else if (typeof currentEntry === 'object' && currentEntry.import) {
+          importFiles = Array.isArray(currentEntry.import)
+            ? [...currentEntry.import]
+            : [currentEntry.import]
+          descriptor = currentEntry
+        }
+
+        // Prepend React Scan init file
+        importFiles.unshift(scanInitPath)
 
         newEntries[mainKey] = {
           ...descriptor,

@@ -6,6 +6,9 @@ import App from './App'
 import '@react-devtools/ui/style.css'
 import './style.css'
 
+// Note: React Scan is now auto-injected via vite.config.ts
+// 注意：React Scan 现在通过 vite.config.ts 自动注入
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ThemeProvider config={{ primaryColor: 'react', mode: 'auto' }}>

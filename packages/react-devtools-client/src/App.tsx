@@ -4,12 +4,25 @@ import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import ReactLogo from '~/components/assets/ReactLogo'
 import { ComponentsPage } from './pages/ComponentsPage'
 import { OverviewPage } from './pages/OverviewPage'
+import { ScanPage } from './pages/ScanPage'
 
 function ComponentsIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <rect width="7" height="7" x="14" y="3" rx="1" />
       <path d="M10 21V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H3" />
+    </svg>
+  )
+}
+
+function ScanIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+      <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+      <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+      <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+      <path d="M8 12h8" />
     </svg>
   )
 }
@@ -82,6 +95,7 @@ export function App() {
       <div className="z-50 w-12 flex flex-col items-center gap-2 border-r border-base bg-base py-4">
         <NavItem to="/overview" icon={ReactLogo} label="Overview" />
         <NavItem to="/components" icon={ComponentsIcon} label="Components" />
+        <NavItem to="/scan" icon={ScanIcon} label="React Scan" />
       </div>
 
       {/* Main Content */}
@@ -98,6 +112,7 @@ export function App() {
               />
             )}
           />
+          <Route path="/scan" element={<ScanPage />} />
         </Routes>
       </div>
     </div>

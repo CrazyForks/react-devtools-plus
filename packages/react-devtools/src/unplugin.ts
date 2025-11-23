@@ -34,6 +34,7 @@ import {
   getWebpackModeAndCommand,
   injectBabelPlugin,
   injectOverlayToEntry,
+  injectReactScanToEntry,
   setupWebpackDevServerMiddlewares,
 } from './integrations/webpack.js'
 import { shouldProcessFile, transformSourceCode } from './utils/babel-transform.js'
@@ -236,6 +237,11 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           return fs.existsSync(overlayMainPath) ? overlayMainPath : null
         }
 
+        // Resolve React Scan virtual module
+        if (id === '__react-devtools-scan__') {
+          return '\0__react-devtools-scan__'
+        }
+
         const normalizedId = id.startsWith('@id/') ? id.replace('@id/', '') : id
         return resolveOverlayPath(normalizedId, DIR_OVERLAY, reactDevtoolsPath)
       },
@@ -250,6 +256,27 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
             enabled: pluginConfig.isEnabled,
           })}`
         }
+
+        // Load React Scan virtual module
+        if (id === '\0__react-devtools-scan__') {
+          if (!pluginConfig?.scan) {
+            return 'export const initScan = () => {};'
+          }
+
+          const scanOptions = {
+            enabled: true,
+            showToolbar: pluginConfig.scan.showToolbar ?? true,
+            animationSpeed: pluginConfig.scan.animationSpeed || 'fast',
+            ...pluginConfig.scan,
+          }
+
+          return `
+            import { initScan as _initScan } from '@react-devtools/scan';
+            export const initScan = () => _initScan(${JSON.stringify(scanOptions)});
+            initScan();
+          `
+        }
+
         return null
       },
 
@@ -297,18 +324,46 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           return html
         }
 
+        const tags: Array<{
+          tag: string
+          attrs?: Record<string, string | boolean>
+          children?: string
+          injectTo?: 'body' | 'head' | 'head-prepend' | 'body-prepend'
+        }> = [
+          {
+            tag: 'script',
+            attrs: {
+              type: 'module',
+              src: scriptSrc,
+            },
+            injectTo: 'body',
+          },
+        ]
+
+        // Inject React Scan if enabled
+        if (pluginConfig.scan && pluginConfig.scan.enabled) {
+          const scanOptions = {
+            enabled: true,
+            showToolbar: pluginConfig.scan.showToolbar ?? true,
+            ...pluginConfig.scan,
+          }
+
+          tags.push({
+            tag: 'script',
+            attrs: {
+              type: 'module',
+            },
+            children: `
+              import { initScan } from '${base}@id/__react-devtools-scan__';
+              initScan(${JSON.stringify(scanOptions)});
+            `,
+            injectTo: 'body',
+          })
+        }
+
         return {
           html,
-          tags: [
-            {
-              tag: 'script',
-              attrs: {
-                type: 'module',
-                src: scriptSrc,
-              },
-              injectTo: 'body',
-            },
-          ],
+          tags,
         }
       },
 
@@ -363,6 +418,23 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
       if (command === 'serve' && pluginConfig) {
         const servePath = getClientPath(reactDevtoolsPath)
         setupWebpackDevServerMiddlewares(compiler, pluginConfig, servePath)
+
+        // Inject React Scan (before overlay, so it initializes first)
+        if (pluginConfig.scan) {
+          const scanOptions = {
+            enabled: true,
+            showToolbar: pluginConfig.scan.showToolbar ?? true,
+            animationSpeed: pluginConfig.scan.animationSpeed || 'fast',
+            ...pluginConfig.scan,
+          }
+
+          const scanInitCode = `
+            import { initScan } from '@react-devtools/scan';
+            initScan(${JSON.stringify(scanOptions)});
+          `
+
+          injectReactScanToEntry(compiler, scanInitCode, projectRoot)
+        }
 
         // Inject overlay
         const overlayPath = path.join(DIR_OVERLAY, 'main.tsx')

@@ -19,7 +19,9 @@
     "stub": "vite build --watch"
   },
   "dependencies": {
+    "@react-devtools/core": "workspace:^",
     "@react-devtools/kit": "workspace:^",
+    "@react-devtools/scan": "workspace:^",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

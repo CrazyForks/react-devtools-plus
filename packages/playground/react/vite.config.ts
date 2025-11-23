@@ -6,6 +6,12 @@ export default defineConfig({
   plugins: [
     ReactDevTools.vite({
       enabledEnvironments: ['development', 'test'],
+      // Enable React Scan auto-injection
+      scan: {
+        enabled: true,
+        showToolbar: true,
+        animationSpeed: 'fast',
+      },
     }),
     react(),
   ],

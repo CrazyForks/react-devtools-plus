@@ -1,3 +1,4 @@
+import { globalPluginManager } from '@react-devtools/core'
 import { createRpcServer, getFiberById, getRpcServer, hideHighlight, highlightNode, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
 import { useEffect, useRef } from 'react'
 
@@ -136,6 +137,16 @@ export function useIframe(
         },
         openInEditor(options: { fileName: string, line: number, column: number }) {
           openInEditor(options.fileName, options.line, options.column)
+        },
+        async callPluginRPC(pluginId: string, rpcName: string, ...args: any[]) {
+          try {
+            const fullRpcName = `${pluginId}.${rpcName}`
+            return await globalPluginManager.callRPC(fullRpcName, ...args)
+          }
+          catch (error) {
+            console.error(`[React DevTools] Failed to call plugin RPC ${pluginId}.${rpcName}:`, error)
+            throw error
+          }
         },
       }, {
         preset: 'iframe',

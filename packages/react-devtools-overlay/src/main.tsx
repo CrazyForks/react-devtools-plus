@@ -1,5 +1,7 @@
 import type { Root } from 'react-dom/client'
+import { globalPluginManager } from '@react-devtools/core'
 import { installReactHook } from '@react-devtools/kit'
+import { createScanPlugin } from '@react-devtools/scan'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'
@@ -7,7 +9,7 @@ import { getShowHostComponents } from './composables/useOverlay'
 
 let root: Root | null = null
 
-function init() {
+async function init() {
   // Prevent duplicate initialization
   if (document.getElementById('react-devtools-overlay')) {
     console.warn('[React DevTools] Overlay already exists, skipping initialization')
@@ -15,6 +17,17 @@ function init() {
   }
 
   installReactHook(getShowHostComponents)
+
+  // Register React Scan plugin
+  try {
+    await globalPluginManager.register(createScanPlugin({
+      autoStart: false, // Don't auto-start, let user control it
+    }))
+    console.log('[React DevTools] Scan plugin registered')
+  }
+  catch (error) {
+    console.warn('[React DevTools] Failed to register Scan plugin:', error)
+  }
 
   const container = document.createElement('div')
   container.id = 'react-devtools-overlay'

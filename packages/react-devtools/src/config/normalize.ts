@@ -3,7 +3,7 @@
  * 配置规范化和验证
  */
 
-import type { ReactDevToolsPluginOptions, ResolvedPluginConfig } from './types'
+import type { ReactDevToolsPluginOptions, ResolvedPluginConfig, ScanConfig } from './types'
 
 /**
  * Normalize base path
@@ -79,6 +79,35 @@ export function shouldInjectSource(
 }
 
 /**
+ * Normalize scan configuration
+ * 规范化 Scan 配置
+ */
+export function normalizeScanConfig(
+  scan: ReactDevToolsPluginOptions['scan'],
+  command: 'build' | 'serve',
+): ScanConfig | undefined {
+  // If scan is false or undefined, return undefined
+  if (!scan) {
+    return undefined
+  }
+
+  // If scan is true, use default configuration
+  if (scan === true) {
+    return {
+      enabled: command === 'serve', // Only enable in dev mode by default
+      showToolbar: true,
+    }
+  }
+
+  // If scan is an object, merge with defaults
+  return {
+    enabled: scan.enabled ?? (command === 'serve'),
+    showToolbar: scan.showToolbar ?? true,
+    ...scan,
+  }
+}
+
+/**
  * Resolve and normalize plugin configuration
  * 解析和规范化插件配置
  */
@@ -94,6 +123,7 @@ export function resolvePluginConfig(
 
   const isEnabled = shouldEnableDevTools(enabledEnvironments, mode, command)
   const injectSource = shouldInjectSource(injectSourceOption, mode, command)
+  const scan = normalizeScanConfig(options.scan, command)
 
   return {
     appendTo: options.appendTo,
@@ -104,6 +134,7 @@ export function resolvePluginConfig(
     mode,
     command,
     isEnabled,
+    scan,
   }
 }
 
@@ -133,5 +164,10 @@ export function validatePluginOptions(options: ReactDevToolsPluginOptions): void
     if (typeof options.appendTo !== 'string' && !(options.appendTo instanceof RegExp)) {
       throw new TypeError('[React DevTools] appendTo must be a string or RegExp.')
     }
+  }
+
+  // Validate scan configuration
+  if (options.scan !== undefined && typeof options.scan !== 'boolean' && typeof options.scan !== 'object') {
+    throw new TypeError('[React DevTools] scan must be a boolean or an object.')
   }
 }

@@ -52,9 +52,16 @@ module.exports = {
     }),
     ReactDevToolsPlugin({
       enabledEnvironments: ['development', 'test'],
+      // Enable React Scan auto-injection
+      scan: {
+        enabled: true,
+        showToolbar: true,
+        animationSpeed: 'fast',
+      },
     }),
   ],
   devServer: {
+    host: 'localhost',
     port: 3004,
     hot: true,
     open: false,
