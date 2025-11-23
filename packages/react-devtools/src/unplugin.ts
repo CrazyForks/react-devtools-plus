@@ -32,6 +32,7 @@ import {
 import {
   getWebpackContext,
   getWebpackModeAndCommand,
+  injectOverlayToEntry,
   setupWebpackDevServerMiddlewares,
 } from './integrations/webpack.js'
 import { shouldProcessFile, transformSourceCode } from './utils/babel-transform.js'
@@ -353,7 +354,12 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
 
       // Setup dev server middlewares
       if (command === 'serve' && pluginConfig) {
-        setupWebpackDevServerMiddlewares(compiler, pluginConfig)
+        const servePath = getClientPath(reactDevtoolsPath)
+        setupWebpackDevServerMiddlewares(compiler, pluginConfig, servePath)
+
+        // Inject overlay
+        const overlayPath = path.join(DIR_OVERLAY, 'main.tsx')
+        injectOverlayToEntry(compiler, overlayPath)
       }
 
       // Transform loader

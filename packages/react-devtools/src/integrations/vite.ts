@@ -7,8 +7,7 @@ import type { PreviewServer, ResolvedConfig, ViteDevServer } from 'vite'
 import type { ResolvedPluginConfig } from '../config/types'
 import fs from 'node:fs'
 import path from 'node:path'
-import sirv from 'sirv'
-import { createOpenInEditorMiddleware } from '../middleware'
+import { createOpenInEditorMiddleware, serveClient } from '../middleware'
 import { OVERLAY_CHUNK_NAME } from '../utils/paths'
 
 /**
@@ -95,17 +94,6 @@ export function updateHtmlWithOverlayPath(
   htmlContent = htmlContent.replace(new RegExp(escapeRegex(virtualPath), 'g'), actualPath)
 
   fs.writeFileSync(htmlPath, htmlContent, 'utf-8')
-}
-
-/**
- * Create client serving middleware
- * 创建客户端服务中间件
- */
-export function serveClient(servePath: string) {
-  return sirv(servePath, {
-    single: true,
-    dev: true,
-  })
 }
 
 /**

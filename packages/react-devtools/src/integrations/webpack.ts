@@ -5,7 +5,7 @@
 
 import type { Compiler } from 'webpack'
 import type { ResolvedPluginConfig } from '../config/types'
-import { createOpenInEditorMiddleware } from '../middleware'
+import { createOpenInEditorMiddleware, serveClient } from '../middleware'
 
 /**
  * Setup Webpack dev server middlewares
@@ -14,6 +14,7 @@ import { createOpenInEditorMiddleware } from '../middleware'
 export function setupWebpackDevServerMiddlewares(
   compiler: Compiler,
   config: ResolvedPluginConfig,
+  clientPath: string,
 ) {
   if (!compiler.options.devServer) {
     compiler.options.devServer = {}
@@ -33,6 +34,9 @@ export function setupWebpackDevServerMiddlewares(
       config.sourcePathMode,
     ))
 
+    // Add client serving middleware
+    devServer.app?.use('/__react_devtools__', serveClient(clientPath))
+
     return middlewares
   }
 }
@@ -51,6 +55,77 @@ export function getWebpackModeAndCommand(compiler: Compiler): {
   const command = compiler.options.devServer ? 'serve' : 'build'
 
   return { mode, command }
+}
+
+/**
+ * Inject overlay to Webpack entry
+ * 注入 Overlay 到 Webpack 入口
+ */
+export function injectOverlayToEntry(
+  compiler: Compiler,
+  overlayPath: string,
+) {
+  const originalEntry = compiler.options.entry
+
+  compiler.options.entry = async () => {
+    const entries = typeof originalEntry === 'function'
+      ? await originalEntry()
+      : originalEntry
+
+    // Handle string entry
+    if (typeof entries === 'string') {
+      return {
+        main: {
+          import: [entries, overlayPath],
+        },
+      }
+    }
+
+    // Handle array entry
+    if (Array.isArray(entries)) {
+      return {
+        main: {
+          import: [...entries, overlayPath],
+        },
+      }
+    }
+
+    // Handle object entry
+    if (typeof entries === 'object' && entries !== null) {
+      const newEntries = { ...entries } as any
+      const keys = Object.keys(newEntries)
+      const mainKey = keys.find(k => k === 'main' || k === 'app' || k === 'index') || keys[0]
+
+      if (mainKey) {
+        const currentEntry = newEntries[mainKey]
+        let importFiles: string[] = []
+        let descriptor: any = {}
+
+        if (typeof currentEntry === 'string') {
+          importFiles = [currentEntry]
+        }
+        else if (Array.isArray(currentEntry)) {
+          importFiles = [...currentEntry]
+        }
+        else if (typeof currentEntry === 'object' && currentEntry.import) {
+          importFiles = Array.isArray(currentEntry.import)
+            ? [...currentEntry.import]
+            : [currentEntry.import]
+          descriptor = currentEntry
+        }
+
+        importFiles.push(overlayPath)
+
+        newEntries[mainKey] = {
+          ...descriptor,
+          import: importFiles,
+        }
+      }
+      return newEntries
+    }
+
+    return entries
+  }
 }
 
 /**
