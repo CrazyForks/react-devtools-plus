@@ -57,7 +57,17 @@ export function App() {
       preset: 'iframe',
     })
 
+    // Send ready message when loaded
     window.parent.postMessage('__REACT_DEVTOOLS_CLIENT_READY__', '*')
+
+    // Also listen for create client message from parent (handshake)
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data === '__REACT_DEVTOOLS_CREATE_CLIENT__') {
+        window.parent.postMessage('__REACT_DEVTOOLS_CLIENT_READY__', '*')
+      }
+    }
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
   }, [])
 
   useEffect(() => {

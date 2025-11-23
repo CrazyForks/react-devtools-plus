@@ -43,6 +43,7 @@ import {
   OVERLAY_ENTRY_ID,
   RESOLVED_OPTIONS_ID,
   resolveOverlayPath,
+  VIRTUAL_PATH_PREFIX,
 } from './utils/paths.js'
 
 /**
@@ -277,12 +278,12 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           ? ((): string | null => {
               const overlayBundleName = findOverlayBundle(ctx.bundle!)
               if (!overlayBundleName) {
-                return `${base}@id/${OVERLAY_ENTRY_ID}`
+                return `${base}@id/${VIRTUAL_PATH_PREFIX}main.tsx`
               }
               const assetPath = `${base}${overlayBundleName}`
               return assetPath
             })()
-          : `${base}@id/${OVERLAY_ENTRY_ID}`
+          : `${base}@id/${VIRTUAL_PATH_PREFIX}main.tsx`
 
         if (!scriptSrc) {
           return html

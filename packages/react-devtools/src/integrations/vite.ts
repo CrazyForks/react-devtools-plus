@@ -124,7 +124,8 @@ export function setupDevServerMiddlewares(
   ))
 
   // Client serving middleware
-  server.middlewares.use(serveClient(clientPath))
+  const base = server.config.base || '/'
+  server.middlewares.use(`${base}__react_devtools__`, serveClient(clientPath))
 }
 
 /**
@@ -143,7 +144,8 @@ export function setupPreviewServerMiddlewares(
   ))
 
   // Client serving middleware
-  server.middlewares.use(serveClient(clientPath))
+  const base = server.config.base || '/'
+  server.middlewares.use(`${base}__react_devtools__`, serveClient(clientPath))
 }
 
 /**

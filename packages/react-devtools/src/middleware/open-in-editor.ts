@@ -62,17 +62,20 @@ export function createOpenInEditorMiddleware(
     const file = url.searchParams.get('file')
 
     if (!file) {
-      res.status(400).send('Missing file parameter')
+      res.statusCode = 400
+      res.end('Missing file parameter')
       return
     }
 
     try {
       await openFileInEditor(file, projectRoot, sourcePathMode)
-      res.status(200).send('OK')
+      res.statusCode = 200
+      res.end('OK')
     }
     catch (error: any) {
       console.error('[React DevTools] Failed to execute editor command:', error.message)
-      res.status(500).send('Failed to open editor')
+      res.statusCode = 500
+      res.end('Failed to open editor')
     }
   }
 }
