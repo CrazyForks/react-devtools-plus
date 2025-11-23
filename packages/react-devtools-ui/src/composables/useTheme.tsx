@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from 'react'
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { Theme, ThemeConfig, ThemeMode } from '../theme/types'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { applyTheme, createTheme, resolveThemeMode, watchSystemDarkMode } from '../theme'
 
 /**
@@ -29,19 +29,21 @@ export interface ThemeProviderProps {
   storageKey?: string
 }
 
+const DEFAULT_CONFIG: ThemeConfig = {}
+
 /**
  * Theme Provider Component
  */
 export const ThemeProvider: FC<ThemeProviderProps> = ({
   children,
-  config: initialConfig = {},
+  config: initialConfig = DEFAULT_CONFIG,
   storageKey = 'react-devtools-theme',
 }) => {
   // Load persisted config from localStorage
   const [config, setConfig] = useState<ThemeConfig>(() => {
     if (typeof window === 'undefined')
       return initialConfig
-    
+
     try {
       const stored = localStorage.getItem(storageKey)
       if (stored) {
@@ -51,18 +53,18 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
     catch (err) {
       console.warn('[Theme] Failed to load persisted config:', err)
     }
-    
+
     return initialConfig
   })
-  
+
   // Create theme from config
   const theme = useMemo(() => createTheme(config), [config])
-  
+
   // Persist config changes
   useEffect(() => {
     if (typeof window === 'undefined')
       return
-    
+
     try {
       localStorage.setItem(storageKey, JSON.stringify(config))
     }
@@ -70,45 +72,45 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
       console.warn('[Theme] Failed to persist config:', err)
     }
   }, [config, storageKey])
-  
+
   // Apply theme to DOM
   useEffect(() => {
     applyTheme(theme)
   }, [theme])
-  
+
   // Watch system dark mode changes (only when mode is 'auto')
   useEffect(() => {
     if (config.mode !== 'auto')
       return
-    
+
     const unwatch = watchSystemDarkMode(() => {
       // Force re-render by updating config
       setConfig(prev => ({ ...prev, mode: 'auto' }))
     })
-    
+
     return unwatch
   }, [config.mode])
-  
+
   // Context value
   const value = useMemo<ThemeContextValue>(() => ({
     theme,
     config,
-    
+
     setMode: (mode: ThemeMode) => {
       setConfig(prev => ({ ...prev, mode }))
     },
-    
+
     setPrimaryColor: (primaryColor: string) => {
       setConfig(prev => ({ ...prev, primaryColor }))
     },
-    
+
     toggleMode: () => {
       const currentMode = resolveThemeMode(config.mode || 'auto')
       const nextMode = currentMode === 'light' ? 'dark' : 'light'
       setConfig(prev => ({ ...prev, mode: nextMode }))
     },
   }), [theme, config])
-  
+
   return (
     <ThemeContext.Provider value={value}>
       {children}
@@ -119,22 +121,24 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
 /**
  * Use theme hook
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTheme(): ThemeContextValue {
   const context = useContext(ThemeContext)
-  
+
   if (!context) {
     throw new Error('useTheme must be used within ThemeProvider')
   }
-  
+
   return context
 }
 
 /**
  * Use theme mode hook
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useThemeMode() {
   const { theme, setMode, toggleMode } = useTheme()
-  
+
   return {
     mode: theme.mode,
     setMode,
@@ -145,8 +149,8 @@ export function useThemeMode() {
 /**
  * Use theme colors hook
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useThemeColors() {
   const { theme } = useTheme()
   return theme.colors
 }
-

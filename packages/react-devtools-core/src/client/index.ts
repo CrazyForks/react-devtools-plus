@@ -147,7 +147,7 @@ export class ClientConnectionManager {
       return
     }
 
-    const delay = this.reconnectDelay * Math.pow(2, attempts) // Exponential backoff
+    const delay = this.reconnectDelay * 2 ** attempts // Exponential backoff
 
     const timer = setTimeout(async () => {
       try {
@@ -189,4 +189,3 @@ export class ClientConnectionManager {
  * 全局客户端连接管理器实例
  */
 export const globalConnectionManager = new ClientConnectionManager()
-

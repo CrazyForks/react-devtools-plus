@@ -25,15 +25,15 @@ export const spacing = {
  * 圆角设计令牌
  */
 export const borderRadius = {
-  none: '0px',
-  sm: '2px',
-  base: '4px',
-  md: '6px',
-  lg: '8px',
-  xl: '12px',
+  'none': '0px',
+  'sm': '2px',
+  'base': '4px',
+  'md': '6px',
+  'lg': '8px',
+  'xl': '12px',
   '2xl': '16px',
   '3xl': '24px',
-  full: '9999px',
+  'full': '9999px',
 }
 
 /**
@@ -41,14 +41,14 @@ export const borderRadius = {
  * 阴影设计令牌
  */
 export const shadows = {
-  none: 'none',
-  sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-  base: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-  md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-  lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-  xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+  'none': 'none',
+  'sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+  'base': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+  'md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+  'lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+  'xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
   '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
-  inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
+  'inner': 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
 }
 
 /**
@@ -61,11 +61,11 @@ export const typography = {
     mono: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
   },
   fontSize: {
-    xs: '12px',
-    sm: '14px',
-    base: '16px',
-    lg: '18px',
-    xl: '20px',
+    'xs': '12px',
+    'sm': '14px',
+    'base': '16px',
+    'lg': '18px',
+    'xl': '20px',
     '2xl': '24px',
     '3xl': '30px',
     '4xl': '36px',
@@ -133,31 +133,31 @@ export function generateCSSVariables(
   mode: 'light' | 'dark',
 ) {
   const vars: Record<string, string> = {}
-  
+
   // Color palettes
   Object.entries(colors).forEach(([name, palette]) => {
     Object.entries(palette).forEach(([shade, value]) => {
       vars[`--color-${name}-${shade}`] = value
     })
   })
-  
+
   // Neutral colors
   Object.entries(neutral).forEach(([shade, value]) => {
     vars[`--color-neutral-${shade}`] = value
   })
-  
+
   // Semantic colors (based on mode)
   if (mode === 'light') {
     vars['--color-bg-base'] = neutral[50]
     vars['--color-bg-elevated'] = neutral[100]
     vars['--color-bg-hover'] = neutral[200]
     vars['--color-bg-active'] = neutral[300]
-    
+
     vars['--color-text-primary'] = neutral[900]
     vars['--color-text-secondary'] = neutral[700]
     vars['--color-text-tertiary'] = neutral[500]
     vars['--color-text-disabled'] = neutral[400]
-    
+
     vars['--color-border-base'] = neutral[300]
     vars['--color-border-hover'] = neutral[400]
     vars['--color-border-focus'] = colors.primary[500]
@@ -167,32 +167,31 @@ export function generateCSSVariables(
     vars['--color-bg-elevated'] = neutral[900]
     vars['--color-bg-hover'] = neutral[800]
     vars['--color-bg-active'] = neutral[700]
-    
+
     vars['--color-text-primary'] = neutral[50]
     vars['--color-text-secondary'] = neutral[300]
     vars['--color-text-tertiary'] = neutral[500]
     vars['--color-text-disabled'] = neutral[600]
-    
+
     vars['--color-border-base'] = neutral[700]
     vars['--color-border-hover'] = neutral[600]
     vars['--color-border-focus'] = colors.primary[500]
   }
-  
+
   // Spacing
   Object.entries(spacing).forEach(([key, value]) => {
     vars[`--spacing-${key}`] = value
   })
-  
+
   // Border radius
   Object.entries(borderRadius).forEach(([key, value]) => {
     vars[`--radius-${key}`] = value
   })
-  
+
   // Shadows
   Object.entries(shadows).forEach(([key, value]) => {
     vars[`--shadow-${key}`] = value
   })
-  
+
   return vars
 }
-

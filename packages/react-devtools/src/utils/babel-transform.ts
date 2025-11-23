@@ -5,9 +5,9 @@
 
 import type { NodePath } from '@babel/core'
 import type { JSXOpeningElement } from '@babel/types'
+import type { SourcePathMode } from '../config/types'
 import path from 'node:path'
 import { transformSync, types } from '@babel/core'
-import type { SourcePathMode } from '../config/types'
 
 /**
  * Create Babel plugin for injecting source attributes
@@ -22,7 +22,7 @@ export function createSourceAttributePlugin(projectRoot: string, pathMode: Sourc
           const loc = nodePath.node.loc
           if (!loc)
             return
-          
+
           const filename = (this as any).file?.opts?.filename || ''
           if (!filename)
             return
@@ -60,7 +60,7 @@ export function transformSourceCode(
   // Only process JSX/TSX files
   if (!id.match(/\.[jt]sx$/))
     return null
-  
+
   // Skip if injection is disabled
   if (!enableInjection)
     return null
@@ -96,12 +96,11 @@ export function shouldProcessFile(id: string): boolean {
   if (id.endsWith('.html') || id.endsWith('.htm')) {
     return false
   }
-  
+
   // Exclude asset files
   if (/\.(?:css|scss|sass|less|styl|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/i.test(id)) {
     return false
   }
-  
+
   return true
 }
-

@@ -7,7 +7,15 @@
     "@react-devtools/kit#stub": {
       "cache": false,
       "dependsOn": [
-        "@react-devtools/shared#stub"
+        "@react-devtools/shared#stub",
+        "@react-devtools/shared#prepare:type"
+      ]
+    },
+    "@react-devtools/core#stub": {
+      "cache": false,
+      "dependsOn": [
+        "@react-devtools/shared#stub",
+        "@react-devtools/shared#prepare:type"
       ]
     },
     "@react-devtools/client#build": {
@@ -70,7 +78,10 @@
       ]
     },
     "stub": {
-      "cache": false
+      "cache": false,
+      "dependsOn": [
+        "^prepare:type"
+      ]
     }
   },
   "ui": "stream"

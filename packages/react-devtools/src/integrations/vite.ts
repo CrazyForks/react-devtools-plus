@@ -3,11 +3,11 @@
  * Vite 特定的集成逻辑
  */
 
+import type { PreviewServer, ResolvedConfig, ViteDevServer } from 'vite'
+import type { ResolvedPluginConfig } from '../config/types'
 import fs from 'node:fs'
 import path from 'node:path'
-import type { PreviewServer, ResolvedConfig, ViteDevServer } from 'vite'
 import sirv from 'sirv'
-import type { ResolvedPluginConfig } from '../config/types'
 import { createOpenInEditorMiddleware } from '../middleware'
 import { OVERLAY_CHUNK_NAME } from '../utils/paths'
 
@@ -159,4 +159,3 @@ export function getViteModeAndCommand(viteConfig: ResolvedConfig): {
     command: viteConfig.command,
   }
 }
-

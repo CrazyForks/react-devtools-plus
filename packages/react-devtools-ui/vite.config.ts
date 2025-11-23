@@ -1,9 +1,17 @@
 import { resolve } from 'node:path'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import dts from 'vite-plugin-dts'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    dts({
+      insertTypesEntry: true,
+      rollupTypes: true,
+      tsconfigPath: './tsconfig.json',
+    }),
+  ],
   build: {
     lib: {
       entry: {
@@ -45,4 +53,3 @@ export default defineConfig({
     },
   },
 })
-

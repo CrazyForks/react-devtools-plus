@@ -1,9 +1,9 @@
 {
   "name": "@react-devtools/core",
-  "version": "0.0.1",
   "type": "module",
+  "version": "0.0.1",
   "description": "Core functionality for React DevTools including RPC, client management, and plugin system",
-  "author": "React DevTools Contributors",
+  "author": "wzc520pyfm",
   "license": "MIT",
   "exports": {
     ".": {
@@ -34,8 +34,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/index.ts src/rpc/index.ts src/client/index.ts src/plugin/index.ts --dts --format esm,cjs --out-dir dist --shims",
-    "dev": "tsup src/index.ts src/rpc/index.ts src/client/index.ts src/plugin/index.ts --dts --format esm,cjs --out-dir dist --shims --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepare:type": "tsup --dts-only",
+    "stub": "tsup --watch --dts-only",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
@@ -57,4 +59,3 @@
     "vite": "catalog:"
   }
 }
-

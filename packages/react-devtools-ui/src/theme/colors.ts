@@ -6,7 +6,7 @@ import { colord } from 'colord'
  */
 export function generateColorPalette(baseColor: string) {
   const color = colord(baseColor)
-  
+
   return {
     50: color.lighten(0.4).saturate(0.1).toHex(),
     100: color.lighten(0.35).saturate(0.08).toHex(),
@@ -28,22 +28,22 @@ export function generateColorPalette(baseColor: string) {
  */
 export function generateSemanticColors(primaryColor: string) {
   const primary = colord(primaryColor)
-  
+
   // 从主题色推导其他语义色
   // Success: 偏向绿色
   const success = primary.hue() > 90 && primary.hue() < 150
     ? primaryColor
     : colord({ h: 120, s: primary.toHsl().s, l: primary.toHsl().l }).toHex()
-  
+
   // Warning: 偏向黄色
   const warning = colord({ h: 45, s: 90, l: 55 }).toHex()
-  
+
   // Error: 偏向红色
   const error = colord({ h: 0, s: 80, l: 55 }).toHex()
-  
+
   // Info: 偏向蓝色
   const info = colord({ h: 210, s: 80, l: 55 }).toHex()
-  
+
   return {
     primary: generateColorPalette(primaryColor),
     success: generateColorPalette(success),
@@ -60,7 +60,7 @@ export function generateSemanticColors(primaryColor: string) {
 export function generateNeutralColors(isDark: boolean = false) {
   const baseGray = isDark ? '#1a1a1a' : '#f5f5f5'
   const gray = colord(baseGray)
-  
+
   if (isDark) {
     return {
       50: gray.lighten(0.35).toHex(),
@@ -76,7 +76,7 @@ export function generateNeutralColors(isDark: boolean = false) {
       950: gray.darken(0.2).toHex(),
     }
   }
-  
+
   return {
     50: '#ffffff',
     100: '#fafafa',
@@ -97,16 +97,16 @@ export function generateNeutralColors(isDark: boolean = false) {
  * 预设的主题色
  */
 export const PRESET_COLORS = {
-  react: '#61dafb',    // React 蓝色
-  blue: '#3b82f6',     // 蓝色
-  green: '#10b981',    // 绿色
-  purple: '#8b5cf6',   // 紫色
-  pink: '#ec4899',     // 粉色
-  orange: '#f97316',   // 橙色
-  red: '#ef4444',      // 红色
-  yellow: '#f59e0b',   // 黄色
-  teal: '#14b8a6',     // 青色
-  indigo: '#6366f1',   // 靛青色
+  react: '#61dafb', // React 蓝色
+  blue: '#3b82f6', // 蓝色
+  green: '#10b981', // 绿色
+  purple: '#8b5cf6', // 紫色
+  pink: '#ec4899', // 粉色
+  orange: '#f97316', // 橙色
+  red: '#ef4444', // 红色
+  yellow: '#f59e0b', // 黄色
+  teal: '#14b8a6', // 青色
+  indigo: '#6366f1', // 靛青色
 }
 
 /**
@@ -116,4 +116,3 @@ export const PRESET_COLORS = {
 export function resolveThemeColor(color: string): string {
   return PRESET_COLORS[color as keyof typeof PRESET_COLORS] || color
 }
-

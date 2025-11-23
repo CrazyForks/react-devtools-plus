@@ -1,9 +1,9 @@
-import '@react-devtools/ui/style.css'
 import { ThemeProvider } from '@react-devtools/ui'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import { ThemeDemo } from './ThemeDemo.tsx'
+import App from './App'
+import { ThemeDemo } from './ThemeDemo'
+import '@react-devtools/ui/style.css'
 import './style.css'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(

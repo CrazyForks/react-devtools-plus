@@ -23,8 +23,10 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsup src/index.ts --dts --format esm,cjs --out-dir dist --shims",
-    "dev": "tsup src/index.ts --dts --format esm,cjs --watch --shims"
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepare:type": "tsup --dts-only",
+    "stub": "tsup --watch --dts-only"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

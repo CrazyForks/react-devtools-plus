@@ -3,12 +3,12 @@
  * 示例：使用 React DevTools Core 和插件
  */
 
+import type { ClientFunctions } from '../src/types'
 import {
   createBroadcastChannel,
   createClientRPC,
   globalPluginManager,
 } from '../src'
-import type { ClientFunctions } from '../src/types'
 import { loggerPlugin } from './logger-plugin'
 import { performancePlugin } from './performance-plugin'
 
@@ -177,4 +177,3 @@ if (require.main === module) {
 }
 
 export { clientRPC, globalPluginManager }
-

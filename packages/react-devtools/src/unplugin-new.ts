@@ -9,17 +9,17 @@
 import type { UnpluginFactory } from 'unplugin'
 import type { PreviewServer, ResolvedConfig, ViteDevServer } from 'vite'
 import type { Compiler } from 'webpack'
+import type { ReactDevToolsPluginOptions, ResolvedPluginConfig } from './config/types'
 import fs from 'node:fs'
 import path from 'node:path'
 import { bold, cyan, green } from 'kolorist'
 import { createUnplugin } from 'unplugin'
-import { normalizePath } from 'vite'
-import type { ReactDevToolsPluginOptions, ResolvedPluginConfig } from './config/types'
 import {
   normalizeBasePath,
   resolvePluginConfig,
   validatePluginOptions,
 } from './config'
+import { DIR_OVERLAY } from './dir.js'
 import {
   createOutputConfig,
   createRollupInput,
@@ -39,14 +39,11 @@ import {
   DEVTOOLS_OPTIONS_ID,
   getClientPath,
   getPluginPath,
-  isOverlayPath,
   OVERLAY_CHUNK_NAME,
   OVERLAY_ENTRY_ID,
-  resolveOverlayPath,
   RESOLVED_OPTIONS_ID,
-  STANDALONE_FLAG,
+  resolveOverlayPath,
 } from './utils/paths'
-import { DIR_OVERLAY } from './dir.js'
 
 /**
  * Print DevTools URLs to console
@@ -394,4 +391,3 @@ export default unplugin
 
 // Export types
 export type { ReactDevToolsPluginOptions }
-

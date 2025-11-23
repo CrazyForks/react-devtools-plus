@@ -3,8 +3,8 @@
  * 在编辑器中打开的中间件
  */
 
-import { exec } from 'node:child_process'
 import type { SourcePathMode } from '../config/types'
+import { exec } from 'node:child_process'
 import { convertToEditorPath, parseEditorPath, resolveRelativeToAbsolute } from '../utils/paths'
 
 /**
@@ -19,17 +19,17 @@ export async function openFileInEditor(
   return new Promise((resolve, reject) => {
     // Parse file:line:column
     const { filePath: file, line, column } = parseEditorPath(filePath)
-    
+
     // Resolve to absolute path if needed
     const absolutePath = resolveRelativeToAbsolute(file, projectRoot, sourcePathMode)
-    
+
     // Build editor path
     const editorPath = convertToEditorPath(absolutePath, line, column)
-    
+
     // Get editor command from environment
     const editorCmd = process.env.EDITOR || 'cursor'
     const cmd = `${editorCmd} -g "${editorPath}"`
-    
+
     exec(cmd, (error) => {
       if (error) {
         console.error('[React DevTools] Failed to open editor:', error)
@@ -76,4 +76,3 @@ export function createOpenInEditorMiddleware(
     }
   }
 }
-

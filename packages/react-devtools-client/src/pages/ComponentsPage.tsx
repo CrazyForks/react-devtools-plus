@@ -51,6 +51,7 @@ function TreeNode({ node, showHostComponents, selectedNodeId, onSelectNode, forc
 
   useEffect(() => {
     if (forceExpand) {
+      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
       setExpanded(true)
     }
   }, [forceExpand])
@@ -176,6 +177,7 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
   // When selection changes (e.g. from inspector), turn off inspector
   useEffect(() => {
     if (selectedNodeId) {
+      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
       setInspectorMode(null)
     }
   }, [selectedNodeId])
@@ -232,6 +234,7 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
           />
         </div>
         <button
+          type="button"
           onClick={() => toggleInspector('select-component')}
           title="Select component in the page"
           className={`mr-1 rounded p-1.5 transition-colors ${inspectorMode === 'select-component' ? 'bg-primary-500 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}

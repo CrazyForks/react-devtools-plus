@@ -51,12 +51,14 @@ export class EventBus {
     type: T,
     handler: EventHandler<Extract<DevToolsEvent, { type: T }>>,
   ): Unsubscribe {
+    let unsubscribe: Unsubscribe
+
     const wrappedHandler = (event: DevToolsEvent) => {
       handler(event as Extract<DevToolsEvent, { type: T }>)
       unsubscribe()
     }
 
-    const unsubscribe = this.on(type, wrappedHandler as any)
+    unsubscribe = this.on(type, wrappedHandler as any)
     return unsubscribe
   }
 
@@ -117,4 +119,3 @@ export class EventBus {
  * 全局事件总线实例
  */
 export const globalEventBus = new EventBus()
-

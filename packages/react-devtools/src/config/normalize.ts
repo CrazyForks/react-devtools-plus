@@ -124,15 +124,14 @@ export function validatePluginOptions(options: ReactDevToolsPluginOptions): void
       typeof enabledEnvironments !== 'boolean'
       && !Array.isArray(enabledEnvironments)
     ) {
-      throw new Error('[React DevTools] enabledEnvironments must be a boolean or an array of strings.')
+      throw new TypeError('[React DevTools] enabledEnvironments must be a boolean or an array of strings.')
     }
   }
 
   // Validate appendTo
   if (options.appendTo !== undefined) {
     if (typeof options.appendTo !== 'string' && !(options.appendTo instanceof RegExp)) {
-      throw new Error('[React DevTools] appendTo must be a string or RegExp.')
+      throw new TypeError('[React DevTools] appendTo must be a string or RegExp.')
     }
   }
 }
-

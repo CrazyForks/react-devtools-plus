@@ -1,0 +1,33 @@
+{
+  "name": "@react-devtools/ui-story",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Storybook for React DevTools UI components",
+  "scripts": {
+    "dev": "storybook dev -p 6006",
+    "build": "storybook build",
+    "preview": "http-server storybook-static -p 6006",
+    "prepare:type": "echo 'Skipping type generation for ui-story'"
+  },
+  "dependencies": {
+    "@react-devtools/ui": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^8.5.3",
+    "@storybook/addon-interactions": "^8.5.3",
+    "@storybook/addon-links": "^8.5.3",
+    "@storybook/blocks": "^8.5.3",
+    "@storybook/react": "^8.5.3",
+    "@storybook/react-vite": "^8.5.3",
+    "@storybook/test": "^8.5.3",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "http-server": "^14.1.1",
+    "storybook": "^8.5.3",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  }
+}

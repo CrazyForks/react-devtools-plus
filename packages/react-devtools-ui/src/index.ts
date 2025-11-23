@@ -1,12 +1,11 @@
-// Export theme
-export * from './theme'
+// Export components
+// Import base styles
+import './styles/base.css'
+
+export * from './components'
 
 // Export composables
 export * from './composables/useTheme'
 
-// Export components
-export * from './components'
-
-// Import base styles
-import './styles/base.css'
-
+// Export theme
+export * from './theme'

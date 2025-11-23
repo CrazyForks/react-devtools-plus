@@ -10,7 +10,7 @@ export default antfu({
   formatters: {
     css: true,
     html: true,
-    markdown: true,
+    markdown: 'prettier', // 使用 prettier 格式化，但不检查代码块中的代码
   },
 
   // override default rules
@@ -42,5 +42,7 @@ export default antfu({
     'packages/react-devtools-client/dist/*',
     'packages/playground/**/dist/*',
     'eslint.config.js',
+    // 忽略文档文件中的代码块 lint
+    '**/*.md/**',
   ],
 })
