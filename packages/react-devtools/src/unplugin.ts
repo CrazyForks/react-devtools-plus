@@ -265,15 +265,32 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
 
           const scanOptions = {
             enabled: true,
-            showToolbar: pluginConfig.scan.showToolbar ?? true,
+            showToolbar: pluginConfig.scan.showToolbar ?? false,
+            log: pluginConfig.scan.log ?? true,
             animationSpeed: pluginConfig.scan.animationSpeed || 'fast',
             ...pluginConfig.scan,
           }
 
           return `
-            import { initScan as _initScan } from '@react-devtools/scan';
-            export const initScan = () => _initScan(${JSON.stringify(scanOptions)});
-            initScan();
+            import { initScan, ReactScanInternals, setOptions, getOptions, scan } from 'react-devtools/scan';
+
+            console.log('[React Scan Integration] Host script running...');
+
+            if (typeof window !== 'undefined') {
+              window.__REACT_SCAN_INTERNALS__ = ReactScanInternals;
+              window.__REACT_SCAN_SET_OPTIONS__ = setOptions;
+              window.__REACT_SCAN_GET_OPTIONS__ = getOptions;
+              window.__REACT_SCAN_SCAN__ = scan;
+              console.log('[React Scan Integration] Host Globals exposed');
+            }
+
+            // Ensure we run in all environments
+            if (ReactScanInternals) {
+              ReactScanInternals.runInAllEnvironments = true;
+            }
+
+            // Call scan() directly to ensure it starts
+            scan(${JSON.stringify(scanOptions)});
           `
         }
 
@@ -329,24 +346,52 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           attrs?: Record<string, string | boolean>
           children?: string
           injectTo?: 'body' | 'head' | 'head-prepend' | 'body-prepend'
-        }> = [
-          {
-            tag: 'script',
-            attrs: {
-              type: 'module',
-              src: scriptSrc,
-            },
-            injectTo: 'body',
-          },
-        ]
+        }> = []
 
-        // Inject React Scan if enabled
-        if (pluginConfig.scan && pluginConfig.scan.enabled) {
+        // Inject React DevTools Hook FIRST (before anything else)
+        // We MUST inject this manually to ensure it exists before React loads.
+        // Using an IIFE with closure to prevent context loss issues.
+        tags.push({
+          tag: 'script',
+          attrs: {},
+          children: `
+            if (typeof window !== 'undefined' && !window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+              (function() {
+                var renderers = new Map();
+                window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
+                  __IS_OUR_MOCK__: true,
+                  checkDCE: function() {},
+                  supportsFiber: true,
+                  renderers: renderers,
+                  onScheduleFiberRoot: function() {},
+                  onCommitFiberRoot: function(rendererID, root, priorityLevel) {
+                    // This might be overwritten by bippy
+                  },
+                  onCommitFiberUnmount: function() {},
+                  inject: function(renderer) {
+                    var id = Math.random().toString(36).slice(2);
+                    renderers.set(id, renderer);
+                    if (typeof console !== 'undefined') {
+                      console.log('[Mock Hook] inject called via closure', id);
+                    }
+                    return id;
+                  }
+                };
+              })();
+            }
+          `,
+          injectTo: 'head-prepend',
+        })
+
+        // Inject React Scan if configured (enable by default and auto-start)
+        if (pluginConfig.scan) {
           const scanOptions = {
             enabled: true,
-            showToolbar: pluginConfig.scan.showToolbar ?? true,
+            showToolbar: pluginConfig.scan.showToolbar ?? false,
             ...pluginConfig.scan,
           }
+
+          console.log('[React DevTools] Injecting React Scan with options:', scanOptions)
 
           tags.push({
             tag: 'script',
@@ -354,12 +399,21 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
               type: 'module',
             },
             children: `
-              import { initScan } from '${base}@id/__react-devtools-scan__';
-              initScan(${JSON.stringify(scanOptions)});
+              import '${base}@id/__react-devtools-scan__';
             `,
-            injectTo: 'body',
+            injectTo: 'head-prepend',
           })
         }
+
+        // Inject Overlay
+        tags.push({
+          tag: 'script',
+          attrs: {
+            type: 'module',
+            src: scriptSrc,
+          },
+          injectTo: 'body',
+        })
 
         return {
           html,
@@ -423,13 +477,28 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
         if (pluginConfig.scan) {
           const scanOptions = {
             enabled: true,
-            showToolbar: pluginConfig.scan.showToolbar ?? true,
+            showToolbar: pluginConfig.scan.showToolbar ?? false,
+            log: pluginConfig.scan.log ?? true,
             animationSpeed: pluginConfig.scan.animationSpeed || 'fast',
+            showOutlines: true, // Force show outlines
             ...pluginConfig.scan,
           }
 
           const scanInitCode = `
-            import { initScan } from '@react-devtools/scan';
+            import { initScan, ReactScanInternals, setOptions, getOptions, scan } from 'react-devtools/scan';
+
+            if (typeof window !== 'undefined') {
+              window.__REACT_SCAN_INTERNALS__ = ReactScanInternals;
+              window.__REACT_SCAN_SET_OPTIONS__ = setOptions;
+              window.__REACT_SCAN_GET_OPTIONS__ = getOptions;
+              window.__REACT_SCAN_SCAN__ = scan;
+            }
+
+            // Ensure we run in all environments
+            if (ReactScanInternals) {
+              ReactScanInternals.runInAllEnvironments = true;
+            }
+
             initScan(${JSON.stringify(scanOptions)});
           `
 

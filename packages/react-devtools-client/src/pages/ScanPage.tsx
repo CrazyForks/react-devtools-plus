@@ -1,44 +1,142 @@
 import { getRpcClient } from '@react-devtools/kit'
 import { useEffect, useState } from 'react'
+import { pluginEvents } from '../events'
 
 interface ScanConfig {
   enabled?: boolean
   showToolbar?: boolean
-  showOutlines?: boolean
   animationSpeed?: 'slow' | 'fast' | 'off'
   log?: boolean
   clearLog?: boolean
+}
+
+interface ComponentPerformanceData {
+  componentName: string
+  renderCount: number
+  totalTime: number
+  averageTime: number
+  unnecessaryRenders: number
+  lastRenderTime: number | null
+}
+
+interface PerformanceSummary {
+  totalRenders: number
+  totalComponents: number
+  unnecessaryRenders: number
+  averageRenderTime: number
+  slowestComponents: ComponentPerformanceData[]
+}
+
+interface ComponentInfo {
+  componentName: string
+  fiber: any
+  domElement: Element | null
+}
+
+// Define server-side RPC functions that the client can call
+interface ServerRpcFunctions {
+  callPluginRPC: (pluginId: string, rpcName: string, ...args: any[]) => Promise<any>
+  subscribeToPluginEvent: (pluginId: string, eventName: string) => () => void
 }
 
 export function ScanPage() {
   const [isRunning, setIsRunning] = useState(false)
   const [config, setConfig] = useState<ScanConfig>({
     enabled: true,
-    showToolbar: true,
-    showOutlines: true,
+    showToolbar: false,
     animationSpeed: 'fast',
     log: false,
     clearLog: false,
   })
+  const [performanceSummary, setPerformanceSummary] = useState<PerformanceSummary | null>(null)
+  const [performanceData, setPerformanceData] = useState<ComponentPerformanceData[]>([])
+  const [autoRefresh, setAutoRefresh] = useState(true)
+  const [isInspecting, setIsInspecting] = useState(false)
+  const [focusedComponent, setFocusedComponent] = useState<ComponentInfo | null>(null)
+
+  const fetchPerformanceData = async () => {
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (!rpc?.callPluginRPC)
+      return
+
+    try {
+      const [summary, data] = await Promise.all([
+        rpc.callPluginRPC('react-scan', 'getPerformanceSummary'),
+        rpc.callPluginRPC('react-scan', 'getPerformanceData'),
+      ])
+
+      setPerformanceSummary(summary as PerformanceSummary)
+      setPerformanceData(data as ComponentPerformanceData[])
+    }
+    catch (error) {
+      console.debug('[Scan Page] Failed to fetch performance data:', error)
+    }
+  }
 
   useEffect(() => {
     // Get initial config from the scan plugin
-    const rpc = getRpcClient() as any
+    const rpc = getRpcClient<ServerRpcFunctions>()
     if (rpc?.callPluginRPC) {
       rpc.callPluginRPC('react-scan', 'getOptions')
         .then((initialConfig: ScanConfig) => {
           if (initialConfig) {
             setConfig(prev => ({ ...prev, ...initialConfig }))
+            setIsRunning(initialConfig.enabled ?? false)
           }
         })
-        .catch(() => {
-          // Scan plugin might not be available
+        .catch((err: Error) => {
+          console.debug('[Scan Page] Failed to get initial config:', err)
         })
+
+      // Subscribe to events via RPC
+      const unsubConfig = rpc.subscribeToPluginEvent('react-scan', 'config-changed')
+      const unsubInspect = rpc.subscribeToPluginEvent('react-scan', 'inspect-state-changed')
+      const unsubFocus = rpc.subscribeToPluginEvent('react-scan', 'component-focused')
+
+      // Listen to local events emitted by RPC handler
+      const handleConfigChange = (newConfig: ScanConfig) => {
+        setConfig(prev => ({ ...prev, ...newConfig }))
+        setIsRunning(newConfig.enabled ?? false)
+      }
+
+      const handleInspectChange = (state: any) => {
+        setIsInspecting(state.kind === 'inspecting')
+      }
+
+      const handleFocusChange = (component: ComponentInfo) => {
+        setFocusedComponent(component)
+      }
+
+      pluginEvents.on('react-scan:config-changed', handleConfigChange)
+      pluginEvents.on('react-scan:inspect-state-changed', handleInspectChange)
+      pluginEvents.on('react-scan:component-focused', handleFocusChange)
+
+      return () => {
+        if (unsubConfig)
+          unsubConfig()
+        if (unsubInspect)
+          unsubInspect()
+        if (unsubFocus)
+          unsubFocus()
+
+        pluginEvents.off('react-scan:config-changed', handleConfigChange)
+        pluginEvents.off('react-scan:inspect-state-changed', handleInspectChange)
+        pluginEvents.off('react-scan:component-focused', handleFocusChange)
+      }
     }
   }, [])
 
+  // Auto-refresh performance data when scanning is running
+  useEffect(() => {
+    if (isRunning && autoRefresh) {
+      fetchPerformanceData()
+      const interval = setInterval(fetchPerformanceData, 1000) // Refresh every second
+      return () => clearInterval(interval)
+    }
+  }, [isRunning, autoRefresh])
+
   const handleToggleScan = async () => {
-    const rpc = getRpcClient() as any
+    const rpc = getRpcClient<ServerRpcFunctions>()
     if (!rpc?.callPluginRPC)
       return
 
@@ -61,7 +159,7 @@ export function ScanPage() {
   }
 
   const handleStartScan = async () => {
-    const rpc = getRpcClient() as any
+    const rpc = getRpcClient<ServerRpcFunctions>()
     if (!rpc?.callPluginRPC)
       return
 
@@ -77,7 +175,7 @@ export function ScanPage() {
   }
 
   const handleStopScan = async () => {
-    const rpc = getRpcClient() as any
+    const rpc = getRpcClient<ServerRpcFunctions>()
     if (!rpc?.callPluginRPC)
       return
 
@@ -96,7 +194,7 @@ export function ScanPage() {
     const newConfig = { ...config, [key]: value }
     setConfig(newConfig)
 
-    const rpc = getRpcClient() as any
+    const rpc = getRpcClient<ServerRpcFunctions>()
     if (!rpc?.callPluginRPC)
       return
 
@@ -105,6 +203,62 @@ export function ScanPage() {
     }
     catch (error) {
       console.error('[Scan Page] Failed to update config:', error)
+    }
+  }
+
+  const handleReset = async () => {
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (!rpc?.callPluginRPC)
+      return
+
+    try {
+      const result = await rpc.callPluginRPC('react-scan', 'reset')
+      if (result) {
+        // Reset config to initial state or fetch again
+        const initialConfig = await rpc.callPluginRPC('react-scan', 'getOptions')
+        if (initialConfig) {
+          setConfig(prev => ({ ...prev, ...initialConfig }))
+          setIsRunning(initialConfig.enabled ?? false)
+        }
+      }
+    }
+    catch (error) {
+      console.error('[Scan Page] Failed to reset scan:', error)
+    }
+  }
+
+  const handleClearPerformanceData = async () => {
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (!rpc?.callPluginRPC)
+      return
+
+    try {
+      await rpc.callPluginRPC('react-scan', 'clearPerformanceData')
+      setPerformanceSummary(null)
+      setPerformanceData([])
+    }
+    catch (error) {
+      console.error('[Scan Page] Failed to clear performance data:', error)
+    }
+  }
+
+  const handleToggleInspect = async () => {
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (!rpc?.callPluginRPC)
+      return
+
+    try {
+      if (isInspecting) {
+        await rpc.callPluginRPC('react-scan', 'stopInspecting')
+        setIsInspecting(false)
+      }
+      else {
+        await rpc.callPluginRPC('react-scan', 'startInspecting')
+        setIsInspecting(true)
+      }
+    }
+    catch (error) {
+      console.error('[Scan Page] Failed to toggle inspect mode:', error)
     }
   }
 
@@ -141,7 +295,7 @@ export function ScanPage() {
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={handleStartScan}
@@ -165,6 +319,70 @@ export function ScanPage() {
               >
                 Toggle
               </button>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="border border-gray-300 rounded-lg bg-white px-4 py-2 text-sm text-gray-700 font-medium transition-colors dark:border-gray-600 dark:bg-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-600"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+
+          {/* Component Inspector Card */}
+          <div className="border border-gray-200 rounded-lg bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div className="mb-4">
+              <h2 className="text-lg text-gray-900 font-medium dark:text-gray-100">
+                Component Inspector
+              </h2>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Click elements in the host application to inspect them
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <button
+                type="button"
+                onClick={handleToggleInspect}
+                className={`w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
+                  isInspecting
+                    ? 'bg-orange-500 text-white hover:bg-orange-600'
+                    : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                }`}
+              >
+                {isInspecting
+                  ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="h-5 w-5 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Inspecting... (Click element in app)
+                      </span>
+                    )
+                  : 'Start Inspecting'}
+              </button>
+
+              {focusedComponent && (
+                <div className="border-t border-gray-200 pt-4 dark:border-gray-700">
+                  <h3 className="mb-2 text-sm text-gray-700 font-medium dark:text-gray-300">
+                    Focused Component
+                  </h3>
+                  <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+                    <div className="text-sm">
+                      <div className="text-gray-600 font-mono dark:text-gray-400">
+                        {focusedComponent.componentName}
+                      </div>
+                      <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        Click to inspect this component in the host app
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -175,6 +393,24 @@ export function ScanPage() {
             </h2>
 
             <div className="space-y-4">
+              {/* Show Outlines */}
+              <label className="flex cursor-pointer items-center justify-between">
+                <div>
+                  <div className="text-sm text-gray-900 font-medium dark:text-gray-100">
+                    Show Outlines
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Display visual outlines on component updates
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={true} // Always true for now
+                  readOnly
+                  className="h-4 w-4 cursor-not-allowed border-gray-300 rounded text-primary-600 opacity-50 focus:ring-primary-500"
+                />
+              </label>
+
               {/* Show Toolbar */}
               <label className="flex cursor-pointer items-center justify-between">
                 <div>
@@ -189,24 +425,6 @@ export function ScanPage() {
                   type="checkbox"
                   checked={config.showToolbar ?? true}
                   onChange={e => handleConfigChange('showToolbar', e.target.checked)}
-                  className="h-4 w-4 border-gray-300 rounded text-primary-600 focus:ring-primary-500"
-                />
-              </label>
-
-              {/* Show Outlines */}
-              <label className="flex cursor-pointer items-center justify-between">
-                <div>
-                  <div className="text-sm text-gray-900 font-medium dark:text-gray-100">
-                    Show Outlines
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Show visual outlines around re-rendering components
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={config.showOutlines ?? true}
-                  onChange={e => handleConfigChange('showOutlines', e.target.checked)}
                   className="h-4 w-4 border-gray-300 rounded text-primary-600 focus:ring-primary-500"
                 />
               </label>
@@ -246,6 +464,129 @@ export function ScanPage() {
               </label>
             </div>
           </div>
+
+          {/* Performance Summary Card */}
+          {isRunning && performanceSummary && (
+            <div className="border border-gray-200 rounded-lg bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg text-gray-900 font-medium dark:text-gray-100">
+                  Performance Summary
+                </h2>
+                <div className="flex gap-2">
+                  <label className="flex items-center text-sm">
+                    <input
+                      type="checkbox"
+                      checked={autoRefresh}
+                      onChange={e => setAutoRefresh(e.target.checked)}
+                      className="mr-1 h-4 w-4 border-gray-300 rounded text-primary-600 focus:ring-primary-500"
+                    />
+                    Auto Refresh
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleClearPerformanceData}
+                    className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700"
+                  >
+                    Clear Data
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+                  <div className="text-2xl text-blue-600 font-bold dark:text-blue-400">
+                    {performanceSummary.totalRenders}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Renders</div>
+                </div>
+
+                <div className="rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
+                  <div className="text-2xl text-green-600 font-bold dark:text-green-400">
+                    {performanceSummary.totalComponents}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Components</div>
+                </div>
+
+                <div className="rounded-lg bg-orange-50 p-4 dark:bg-orange-900/20">
+                  <div className="text-2xl text-orange-600 font-bold dark:text-orange-400">
+                    {performanceSummary.unnecessaryRenders}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Unnecessary</div>
+                </div>
+
+                <div className="rounded-lg bg-purple-50 p-4 dark:bg-purple-900/20">
+                  <div className="text-2xl text-purple-600 font-bold dark:text-purple-400">
+                    {performanceSummary.averageRenderTime.toFixed(2)}
+                    ms
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Avg Time</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Component Performance Details */}
+          {isRunning && performanceData.length > 0 && (
+            <div className="border border-gray-200 rounded-lg bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              <h2 className="mb-4 text-lg text-gray-900 font-medium dark:text-gray-100">
+                Component Performance
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="border-b border-gray-200 text-gray-700 dark:border-gray-700 dark:text-gray-300">
+                    <tr>
+                      <th className="pb-3 font-medium">Component</th>
+                      <th className="pb-3 text-right font-medium">Renders</th>
+                      <th className="pb-3 text-right font-medium">Total Time</th>
+                      <th className="pb-3 text-right font-medium">Avg Time</th>
+                      <th className="pb-3 text-right font-medium">Unnecessary</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {performanceData.slice(0, 20).map((item, index) => (
+                      <tr
+                        key={index}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                      >
+                        <td className="py-3 text-xs font-mono">
+                          {item.componentName}
+                        </td>
+                        <td className="py-3 text-right">{item.renderCount}</td>
+                        <td className="py-3 text-right">
+                          {item.totalTime.toFixed(2)}
+                          ms
+                        </td>
+                        <td className="py-3 text-right">
+                          {item.averageTime.toFixed(2)}
+                          ms
+                        </td>
+                        <td className="py-3 text-right">
+                          {item.unnecessaryRenders > 0
+                            ? (
+                                <span className="inline-flex items-center rounded-full bg-orange-100 px-2 py-1 text-xs text-orange-800 font-medium dark:bg-orange-900/20 dark:text-orange-400">
+                                  {item.unnecessaryRenders}
+                                </span>
+                              )
+                            : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {performanceData.length > 20 && (
+                <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                  Showing top 20 of
+                  {' '}
+                  {performanceData.length}
+                  {' '}
+                  components
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Info Card */}
           <div className="border border-blue-200 rounded-lg bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">

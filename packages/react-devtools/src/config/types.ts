@@ -27,6 +27,24 @@ export interface ScanConfig extends ReactDevtoolsScanOptions {
    * @default false
    */
   enabled?: boolean
+
+  /**
+   * Show the scan toolbar
+   * @default false
+   */
+  showToolbar?: boolean
+
+  /**
+   * Show render outlines
+   * @default true
+   */
+  showOutlines?: boolean
+
+  /**
+   * Enable logging
+   * @default false
+   */
+  log?: boolean
 }
 
 /**

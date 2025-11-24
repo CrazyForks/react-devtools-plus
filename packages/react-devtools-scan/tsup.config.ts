@@ -13,6 +13,7 @@ export default defineConfig({
   shims: true,
   splitting: false,
   sourcemap: true,
-  external: ['react', 'react-dom', 'react-scan'],
-  skipNodeModulesBundle: true,
+  external: ['react', 'react-dom'],
+  noExternal: ['react-scan'],
+  skipNodeModulesBundle: false,
 })

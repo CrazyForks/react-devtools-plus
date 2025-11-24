@@ -2,6 +2,7 @@ import { createRpcClient, openInEditor } from '@react-devtools/kit'
 import { useEffect, useState } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import ReactLogo from '~/components/assets/ReactLogo'
+import { pluginEvents } from './events'
 import { ComponentsPage } from './pages/ComponentsPage'
 import { OverviewPage } from './pages/OverviewPage'
 import { ScanPage } from './pages/ScanPage'
@@ -52,7 +53,27 @@ export function App() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
 
   useEffect(() => {
-    createRpcClient({
+    // Define server-side RPC functions that the client can call
+    interface ServerRpcFunctions {
+      inspectNode: (fiberId: string) => void
+      hideHighlight: () => void
+      rebuildTree: (showHostComponents: boolean) => void
+      toggleInspector: (enabled: boolean) => void
+      toggleInspectorMode: (mode: 'select-component' | 'open-in-editor') => void
+      openInEditor: (options: { fileName: string, line: number, column: number }) => void
+      callPluginRPC: (pluginId: string, rpcName: string, ...args: any[]) => Promise<any>
+      subscribeToPluginEvent: (pluginId: string, eventName: string) => () => void
+    }
+
+    // Define client-side RPC functions that the server can call
+    interface ClientRpcFunctions {
+      updateTree: (newTree: any) => void
+      selectNode: (fiberId: string) => void
+      openInEditor: (payload: { fileName: string, line: number, column: number }) => void
+      onPluginEvent: (pluginId: string, eventName: string, data: any) => void
+    }
+
+    createRpcClient<ServerRpcFunctions, ClientRpcFunctions>({
       updateTree(newTree: any) {
         setTree(newTree)
       },
@@ -65,6 +86,10 @@ export function App() {
       },
       openInEditor(payload: { fileName: string, line: number, column: number }) {
         openInEditor(payload.fileName, payload.line, payload.column)
+      },
+      onPluginEvent(pluginId: string, eventName: string, data: any) {
+        // Emit event to local listeners
+        pluginEvents.emit(`${pluginId}:${eventName}`, data)
       },
     }, {
       preset: 'iframe',

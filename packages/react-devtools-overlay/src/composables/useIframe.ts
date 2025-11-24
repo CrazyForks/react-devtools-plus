@@ -148,6 +148,34 @@ export function useIframe(
             throw error
           }
         },
+        subscribeToPluginEvent(pluginId: string, eventName: string) {
+          try {
+            const plugin = globalPluginManager.get(pluginId) as any
+            if (!plugin) {
+              console.error(`[React DevTools] Plugin "${pluginId}" not found`)
+              return () => {}
+            }
+            // Subscribe to plugin events using the plugin's subscribe method
+            if (typeof plugin.subscribe === 'function') {
+              // Forward the event to the client via broadcast
+              const dispose = plugin.subscribe(eventName, (data: any) => {
+                const rpcServer = getRpcServer()
+                if (rpcServer && (rpcServer as any).broadcast) {
+                  (rpcServer as any).broadcast.onPluginEvent(pluginId, eventName, data).catch(() => {})
+                }
+              })
+              return dispose
+            }
+            else {
+              console.error(`[React DevTools] Plugin "${pluginId}" does not support event subscriptions`)
+              return () => {}
+            }
+          }
+          catch (error) {
+            console.error(`[React DevTools] Failed to subscribe to plugin event ${pluginId}.${eventName}:`, error)
+            return () => {}
+          }
+        },
       }, {
         preset: 'iframe',
       })

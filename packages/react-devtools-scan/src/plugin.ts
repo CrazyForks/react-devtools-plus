@@ -6,7 +6,6 @@
  */
 
 import type { ReactDevtoolsScanOptions, ScanInstance } from './types'
-import { scan } from 'react-scan'
 import { getScanInstance, resetScanInstance } from './adapter'
 
 /**
@@ -46,11 +45,51 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
     ...scanOptions
   } = config
 
+  // Event emitter for plugin events
+  const eventHandlers: Map<string, Set<(data: any) => void>> = new Map()
+
+  const emit = (eventName: string, data: any) => {
+    const handlers = eventHandlers.get(eventName)
+    if (handlers) {
+      handlers.forEach((handler) => {
+        if (typeof handler === 'function') {
+          try {
+            handler(data)
+          }
+          catch (error) {
+            console.error(`[React Scan Plugin] Error in event handler for "${eventName}":`, error)
+          }
+        }
+        else {
+          console.warn(`[React Scan Plugin] Invalid event handler for "${eventName}":`, handler)
+        }
+      })
+    }
+  }
+
+  const subscribe = (eventName: string, handler: (data: any) => void) => {
+    if (!eventHandlers.has(eventName)) {
+      eventHandlers.set(eventName, new Set())
+    }
+    eventHandlers.get(eventName)!.add(handler)
+
+    // Return unsubscribe function
+    return () => {
+      const handlers = eventHandlers.get(eventName)
+      if (handlers) {
+        handlers.delete(handler)
+      }
+    }
+  }
+
   return {
     id: 'react-scan',
     name: 'React Scan',
     description: 'Performance monitoring and analysis for React applications',
     version: '1.0.0',
+
+    // Expose subscribe method for event subscriptions
+    subscribe,
 
     /**
      * Plugin setup
@@ -59,19 +98,56 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
       context = ctx
       console.log('[React Scan Plugin] Setting up...')
 
-      // Initialize scan if autoStart is enabled
+      // Always initialize the scan instance, and start by default
+      const initOptions = {
+        enabled: autoStart !== false,
+        showToolbar: false,
+        ...scanOptions,
+      }
+
+      // Always create the scan instance so RPC methods work
+      scanInstance = getScanInstance(initOptions)
+
+      // Always call scan() to start scanning by default (unless autoStart explicitly false)
+      if (autoStart !== false) {
+        console.log('[React Scan Plugin] Auto-starting scan with options:', initOptions)
+        // Use adapter's start which handles globals correctly
+        scanInstance.start()
+      }
+
       if (autoStart) {
-        scan({
-          enabled: true,
-          showToolbar: true,
-          ...scanOptions,
-        })
-        scanInstance = getScanInstance({
-          enabled: true,
-          showToolbar: true,
-          ...scanOptions,
-        })
         console.log('[React Scan Plugin] Scan instance initialized and started')
+      }
+      else {
+        console.log('[React Scan Plugin] Scan instance initialized (not started)')
+      }
+
+      // Set up inspect state change listener
+      try {
+        const scan = getScanInstance()
+        if (scan) {
+          scan.onInspectStateChange((state: any) => {
+            // Emit inspect state change event
+            // Sanitize state for RPC
+            const sanitizedState = {
+              kind: state.kind,
+            }
+            emit('inspect-state-changed', sanitizedState)
+
+            // If a component is focused, emit focused component info
+            if (state.kind === 'focused') {
+              const focusedComponent = scan.getFocusedComponent()
+              if (focusedComponent) {
+                // Sanitize for RPC - remove non-serializable fields
+                const { fiber, domElement, ...serializableComponent } = focusedComponent as any
+                emit('component-focused', serializableComponent)
+              }
+            }
+          })
+        }
+      }
+      catch (error) {
+        console.error('[React Scan Plugin] Failed to set up inspect state listener:', error)
       }
 
       // Listen for component tree changes if context supports it
@@ -211,13 +287,14 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           }
           // Auto-initialize if not started
           if (!scanInstance) {
-            scan(config)
             scanInstance = getScanInstance(config)
+            scanInstance.start()
             return true
           }
           return false
         }
-        catch {
+        catch (err) {
+          console.error('[React Scan Plugin] RPC start failed:', err)
           return false
         }
       },
@@ -249,6 +326,201 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
         }
         catch {
           return false
+        }
+      },
+
+      /**
+       * Hide the React Scan toolbar
+       */
+      hideToolbar: () => {
+        try {
+          const scan = getScanInstance()
+          if (scan) {
+            scan.hideToolbar()
+            return true
+          }
+          return false
+        }
+        catch {
+          return false
+        }
+      },
+
+      /**
+       * Show the React Scan toolbar
+       */
+      showToolbar: () => {
+        try {
+          const scan = getScanInstance()
+          if (scan) {
+            scan.showToolbar()
+            return true
+          }
+          return false
+        }
+        catch {
+          return false
+        }
+      },
+
+      /**
+       * Get toolbar visibility state
+       */
+      getToolbarVisibility: () => {
+        try {
+          const scan = getScanInstance()
+          return scan?.getToolbarVisibility() || false
+        }
+        catch {
+          return false
+        }
+      },
+
+      /**
+       * Get performance data for all components
+       */
+      getPerformanceData: () => {
+        try {
+          const scan = getScanInstance()
+          return scan?.getPerformanceData() || []
+        }
+        catch (error) {
+          console.error('[React Scan Plugin] Failed to get performance data:', error)
+          return []
+        }
+      },
+
+      /**
+       * Get aggregated performance summary
+       */
+      getPerformanceSummary: () => {
+        try {
+          const scan = getScanInstance()
+          if (!scan) {
+            return {
+              totalRenders: 0,
+              totalComponents: 0,
+              unnecessaryRenders: 0,
+              averageRenderTime: 0,
+              slowestComponents: [],
+            }
+          }
+          return scan.getPerformanceSummary()
+        }
+        catch (error) {
+          console.error('[React Scan Plugin] Failed to get performance summary:', error)
+          return {
+            totalRenders: 0,
+            totalComponents: 0,
+            unnecessaryRenders: 0,
+            averageRenderTime: 0,
+            slowestComponents: [],
+          }
+        }
+      },
+
+      /**
+       * Clear all performance data
+       */
+      clearPerformanceData: () => {
+        try {
+          const scan = getScanInstance()
+          if (scan) {
+            scan.clearPerformanceData()
+            return true
+          }
+          return false
+        }
+        catch (error) {
+          console.error('[React Scan Plugin] Failed to clear performance data:', error)
+          return false
+        }
+      },
+
+      /**
+       * Start component inspection mode
+       */
+      startInspecting: () => {
+        try {
+          const scan = getScanInstance()
+          if (scan) {
+            scan.startInspecting()
+            return true
+          }
+          return false
+        }
+        catch (error) {
+          console.error('[React Scan Plugin] Failed to start inspecting:', error)
+          return false
+        }
+      },
+
+      /**
+       * Stop component inspection mode
+       */
+      stopInspecting: () => {
+        try {
+          const scan = getScanInstance()
+          if (scan) {
+            scan.stopInspecting()
+            return true
+          }
+          return false
+        }
+        catch (error) {
+          console.error('[React Scan Plugin] Failed to stop inspecting:', error)
+          return false
+        }
+      },
+
+      /**
+       * Check if inspection mode is active
+       */
+      isInspecting: () => {
+        try {
+          const scan = getScanInstance()
+          return scan?.isInspecting() || false
+        }
+        catch {
+          return false
+        }
+      },
+
+      /**
+       * Focus on a specific component
+       */
+      focusComponent: (fiber: any) => {
+        try {
+          const scan = getScanInstance()
+          if (scan && fiber) {
+            scan.focusComponent(fiber)
+            return true
+          }
+          return false
+        }
+        catch (error) {
+          console.error('[React Scan Plugin] Failed to focus component:', error)
+          return false
+        }
+      },
+
+      /**
+       * Get currently focused component
+       */
+      getFocusedComponent: () => {
+        try {
+          const scan = getScanInstance()
+          const component = scan?.getFocusedComponent() || null
+          if (component) {
+            // Sanitize for RPC - remove non-serializable fields
+            const { fiber, domElement, ...serializableComponent } = component as any
+            return serializableComponent
+          }
+          return null
+        }
+        catch (error) {
+          console.error('[React Scan Plugin] Failed to get focused component:', error)
+          return null
         }
       },
     },

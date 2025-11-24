@@ -5,7 +5,7 @@
  */
 
 import type { IntegrationMode, ReactDevtoolsScanOptions, ScanInstance } from './types'
-import { scan } from 'react-scan'
+import { getOptions, ReactScanInternals, scan, setOptions } from 'react-scan'
 import { getScanInstance, resetScanInstance } from './adapter'
 
 /**
@@ -35,10 +35,41 @@ export function initScan(options: ReactDevtoolsScanOptions = {}): ScanInstance {
   // Set default options
   const defaultOptions: ReactDevtoolsScanOptions = {
     enabled: process.env.NODE_ENV === 'development',
-    showToolbar: true,
+    showToolbar: false,
     integrationMode: 'overlay',
     syncWithDevtools: true,
     ...options,
+  }
+
+  if (typeof window !== 'undefined') {
+    console.log(`[React Scan Integration] initScan called via ${window.parent !== window ? 'Iframe' : 'Host'}`)
+
+    // Check if already initialized (Singleton pattern)
+    if ((window as any).__REACT_SCAN_INTERNALS__) {
+      console.log('[React Scan Integration] Found existing React Scan instance. Reusing it.')
+      // Ensure runInAllEnvironments is true on existing instance
+      const existingInternals = (window as any).__REACT_SCAN_INTERNALS__
+      if (existingInternals) {
+        existingInternals.runInAllEnvironments = true
+      }
+
+      // Update options on existing instance
+      const setOpts = (window as any).__REACT_SCAN_SET_OPTIONS__
+      if (setOpts) {
+        setOpts(defaultOptions)
+      }
+
+      // Return adapter for existing instance
+      return getScanInstance(defaultOptions)
+    }
+
+    console.log('[React Scan Integration] No existing instance. Initializing new one.')
+    console.log('[React Scan Integration] Exposing internals to window')
+    // Manually expose internals to window for DevTools integration
+    ;(window as any).__REACT_SCAN_INTERNALS__ = ReactScanInternals
+    ;(window as any).__REACT_SCAN_SET_OPTIONS__ = setOptions
+    ;(window as any).__REACT_SCAN_GET_OPTIONS__ = getOptions
+    ;(window as any).__REACT_SCAN_SCAN__ = scan
   }
 
   // Initialize scan with the options
@@ -98,6 +129,7 @@ export type { ScanPluginConfig } from './plugin'
 export {
   getOptions,
   onRender,
+  ReactScanInternals, // Export Internals for advanced integration
   scan,
   setOptions,
   useScan,

@@ -54,8 +54,8 @@ module.exports = {
       enabledEnvironments: ['development', 'test'],
       // Enable React Scan auto-injection
       scan: {
-        enabled: true,
-        showToolbar: true,
+        enabled: true, // Enable injection, but controlled by showToolbar/DevTools
+        showToolbar: false,
         animationSpeed: 'fast',
       },
     }),

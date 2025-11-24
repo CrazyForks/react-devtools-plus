@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: ['src/index.ts', 'src/scan.ts'],
   format: ['esm', 'cjs'],
   dts: {
     resolve: true,
@@ -16,6 +16,9 @@ export default defineConfig({
     'webpack',
     'react',
     'react-dom',
+  ],
+  noExternal: [
+    '@react-devtools/scan',
   ],
   skipNodeModulesBundle: true,
 })

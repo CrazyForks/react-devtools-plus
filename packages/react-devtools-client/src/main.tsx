@@ -1,7 +1,7 @@
 import type { Root } from 'react-dom/client'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { MemoryRouter } from 'react-router-dom'
+import { HashRouter } from 'react-router-dom'
 import { App } from './App'
 import '@unocss/reset/tailwind.css'
 import 'virtual:uno.css'
@@ -16,9 +16,9 @@ function init() {
   root = createRoot(container)
   root.render(
     <StrictMode>
-      <MemoryRouter>
+      <HashRouter>
         <App />
-      </MemoryRouter>
+      </HashRouter>
     </StrictMode>,
   )
 }

@@ -200,9 +200,6 @@ importers:
 
   packages/playground/react:
     dependencies:
-      '@react-devtools/scan':
-        specifier: workspace:*
-        version: link:../../react-devtools-scan
       '@react-devtools/ui':
         specifier: workspace:*
         version: link:../../react-devtools-ui
@@ -440,9 +437,15 @@ importers:
 
   packages/react-devtools-overlay:
     dependencies:
+      '@react-devtools/core':
+        specifier: workspace:^
+        version: link:../react-devtools-core
       '@react-devtools/kit':
         specifier: workspace:^
         version: link:../react-devtools-kit
+      '@react-devtools/scan':
+        specifier: workspace:^
+        version: link:../react-devtools-scan
       react:
         specifier: 'catalog:'
         version: 18.3.1

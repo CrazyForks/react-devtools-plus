@@ -9,7 +9,6 @@
     "preview": "NODE_ENV=test vite preview --mode test"
   },
   "dependencies": {
-    "@react-devtools/scan": "workspace:*",
     "@react-devtools/ui": "workspace:*",
     "@types/react-router-dom": "^5.3.3",
     "react": "^18.3.1",
