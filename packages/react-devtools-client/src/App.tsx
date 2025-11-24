@@ -1,5 +1,5 @@
 import { createRpcClient, openInEditor } from '@react-devtools/kit'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import ReactLogo from '~/components/assets/ReactLogo'
 import { pluginEvents } from './events'
@@ -52,6 +52,18 @@ export function App() {
   const [tree, setTree] = useState<any>(null)
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
 
+  // Use refs to store the latest setter functions to avoid stale closures
+  const setTreeRef = useRef(setTree)
+  const setSelectedNodeIdRef = useRef(setSelectedNodeId)
+  const navigateRef = useRef(navigate)
+
+  // Update refs when functions change
+  useEffect(() => {
+    setTreeRef.current = setTree
+    setSelectedNodeIdRef.current = setSelectedNodeId
+    navigateRef.current = navigate
+  }, [setTree, setSelectedNodeId, navigate])
+
   useEffect(() => {
     // Define server-side RPC functions that the client can call
     interface ServerRpcFunctions {
@@ -75,13 +87,15 @@ export function App() {
 
     createRpcClient<ServerRpcFunctions, ClientRpcFunctions>({
       updateTree(newTree: any) {
-        setTree(newTree)
+        // Use ref to get the latest setter
+        setTreeRef.current(newTree)
       },
       selectNode(fiberId: string) {
-        setSelectedNodeId(fiberId)
+        // Use ref to get the latest setter
+        setSelectedNodeIdRef.current(fiberId)
         // Ensure we are on the components page
-        if (location.pathname !== '/components') {
-          navigate('/components')
+        if (window.location.hash.replace('#', '') !== '/components') {
+          navigateRef.current('/components')
         }
       },
       openInEditor(payload: { fileName: string, line: number, column: number }) {

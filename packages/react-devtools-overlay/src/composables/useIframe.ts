@@ -6,7 +6,9 @@ function getDevToolsClientUrl() {
   const origin = window.location.origin
   const base = window.location.pathname.split('/__react_devtools__')[0] || ''
   const path = `${base}/__react_devtools__/`.replace(/\/+/g, '/')
-  return `${origin}${path}`
+  // Add timestamp to bust cache in development
+  const timestamp = Date.now()
+  return `${origin}${path}?t=${timestamp}`
 }
 
 function waitForClientInjection(iframe: HTMLIFrameElement, timeout = 10000): Promise<void> {

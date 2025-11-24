@@ -112,11 +112,11 @@ export function ScanPage() {
       pluginEvents.on('react-scan:component-focused', handleFocusChange)
 
       return () => {
-        if (unsubConfig)
+        if (typeof unsubConfig === 'function')
           unsubConfig()
-        if (unsubInspect)
+        if (typeof unsubInspect === 'function')
           unsubInspect()
-        if (unsubFocus)
+        if (typeof unsubFocus === 'function')
           unsubFocus()
 
         pluginEvents.off('react-scan:config-changed', handleConfigChange)

@@ -1,11 +1,17 @@
 import type { Root } from 'react-dom/client'
 import { globalPluginManager } from '@react-devtools/core'
+import { installReactHook } from '@react-devtools/kit'
 import { createScanPlugin } from '@react-devtools/scan'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'
 
 let root: Root | null = null
+const showHostComponents = false
+
+function getShowHostComponents() {
+  return showHostComponents
+}
 
 async function init() {
   // Prevent duplicate initialization
@@ -13,8 +19,7 @@ async function init() {
     return
   }
 
-  // Register React Scan plugin
-  // Note: We don't call installReactHook here to avoid interfering with React Scan's hook
+  // Register React Scan plugin first
   try {
     await globalPluginManager.register(createScanPlugin({
       autoStart: true,
@@ -23,6 +28,12 @@ async function init() {
   catch (error) {
     console.error('[React DevTools] Failed to register Scan plugin:', error)
   }
+
+  // Install React DevTools hook for component tree
+  // This will patch the existing hook if React Scan already installed one
+  console.log('[React DevTools] Installing React hook for component tree')
+  installReactHook(getShowHostComponents)
+  console.log('[React DevTools] React hook installed successfully')
 
   const container = document.createElement('div')
   container.id = 'react-devtools-overlay'
