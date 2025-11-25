@@ -3,6 +3,7 @@ import { defineConfig } from 'tsup'
 export default defineConfig({
   entry: ['src/index.ts', 'src/scan.ts'],
   format: ['esm', 'cjs'],
+  target: 'node14',
   dts: {
     resolve: true,
   },

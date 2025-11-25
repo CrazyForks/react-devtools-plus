@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "composite": false,
-    "target": "ESNext",
+    "target": "ES2017",
     "rootDir": "src",
     "module": "ESNext",
     "moduleResolution": "bundler",

@@ -8,6 +8,7 @@ export default defineConfig({
     'plugin/index': 'src/plugin/index.ts',
   },
   format: ['esm', 'cjs'],
+  target: 'node14',
   dts: {
     resolve: true,
   },

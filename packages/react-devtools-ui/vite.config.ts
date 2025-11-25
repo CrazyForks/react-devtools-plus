@@ -13,6 +13,7 @@ export default defineConfig({
     }),
   ],
   build: {
+    target: 'es2017',
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),

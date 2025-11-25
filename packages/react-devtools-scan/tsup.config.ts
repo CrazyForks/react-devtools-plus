@@ -5,6 +5,7 @@ export default defineConfig({
     index: 'src/index.ts',
   },
   format: ['esm', 'cjs'],
+  target: 'node14',
   dts: {
     resolve: true,
   },
