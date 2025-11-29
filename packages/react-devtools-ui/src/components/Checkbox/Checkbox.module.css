@@ -36,10 +36,27 @@
   border-color: var(--color-primary-600);
 }
 
+.input:checked:disabled + .box {
+  background-color: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: white;
+}
+
 .input:disabled + .box {
   background-color: var(--color-neutral-200);
   border-color: var(--color-neutral-300);
   cursor: not-allowed;
+}
+
+[data-theme='dark'] .input:disabled + .box {
+  background-color: var(--color-neutral-800);
+  border-color: var(--color-neutral-700);
+}
+
+[data-theme='dark'] .input:checked:disabled + .box {
+  background-color: var(--color-primary-900);
+  border-color: var(--color-primary-800);
+  color: var(--color-neutral-400);
 }
 
 .checkIcon {
