@@ -1,0 +1,41 @@
+.wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.select {
+  appearance: none;
+  background-color: var(--color-bg-base); /* bg-gray-50 */
+  border: 1px solid var(--color-neutral-300); /* border-gray-300 */
+  border-radius: 8px; /* rounded-lg */
+  padding: 8px 32px 8px 12px; /* px-3 py-2, extra right padding for arrow */
+  font-size: var(--font-size-sm); /* text-sm */
+  color: var(--color-text-primary); /* text-gray-900 / dark:text-gray-300 */
+  width: 100%;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--timing-easeInOut);
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 1px var(--color-primary-500); /* ring-1 ring-primary-500 */
+}
+
+.select:disabled {
+  background-color: var(--color-neutral-100);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  color: var(--color-text-secondary);
+}

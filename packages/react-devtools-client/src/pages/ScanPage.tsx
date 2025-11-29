@@ -1,6 +1,6 @@
 import { getRpcClient } from '@react-devtools/kit'
+import { Checkbox, Select, Switch } from '@react-devtools/ui'
 import { useEffect, useState } from 'react'
-import { Switch } from '../components/Switch'
 import { pluginEvents } from '../events'
 
 interface ScanConfig {
@@ -385,15 +385,11 @@ export function ScanPage() {
                   Performance Summary
                 </h2>
                 <div className="flex gap-2">
-                  <label className="flex items-center text-sm dark:text-gray-300">
-                    <input
-                      type="checkbox"
-                      checked={autoRefresh}
-                      onChange={e => setAutoRefresh(e.target.checked)}
-                      className="mr-1 h-4 w-4 border-gray-300 rounded text-primary-600 focus:ring-primary-500"
-                    />
-                    Auto Refresh
-                  </label>
+                  <Checkbox
+                    checked={autoRefresh}
+                    onChange={setAutoRefresh}
+                    label="Auto Refresh"
+                  />
                   <button
                     type="button"
                     onClick={handleReset}
@@ -515,7 +511,7 @@ export function ScanPage() {
 
             <div className="space-y-4">
               {/* Show Outlines */}
-              <label className="flex cursor-pointer items-center justify-between">
+              <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm text-gray-900 font-medium dark:text-gray-100">
                     Show Outlines
@@ -524,16 +520,14 @@ export function ScanPage() {
                     Display visual outlines on component updates
                   </div>
                 </div>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={true} // Always true for now
-                  readOnly
-                  className="h-4 w-4 cursor-not-allowed border-gray-300 rounded text-primary-600 opacity-50 focus:ring-primary-500"
+                  disabled
                 />
-              </label>
+              </div>
 
               {/* Show Toolbar */}
-              <label className="flex cursor-pointer items-center justify-between">
+              <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm text-gray-900 font-medium dark:text-gray-100">
                     Show Toolbar
@@ -542,32 +536,30 @@ export function ScanPage() {
                     Display the React Scan toolbar on the page
                   </div>
                 </div>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={config.showToolbar ?? true}
-                  onChange={e => handleConfigChange('showToolbar', e.target.checked)}
-                  className="h-4 w-4 border-gray-300 rounded text-primary-600 focus:ring-primary-500"
+                  onChange={checked => handleConfigChange('showToolbar', checked)}
                 />
-              </label>
+              </div>
 
               {/* Animation Speed */}
               <div>
                 <label className="mb-2 block text-sm text-gray-900 font-medium dark:text-gray-100">
                   Animation Speed
                 </label>
-                <select
+                <Select
                   value={config.animationSpeed || 'fast'}
-                  onChange={e => handleConfigChange('animationSpeed', e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg bg-gray-50 px-3 py-2 text-sm dark:border-gray-600 focus:border-primary-500 dark:bg-neutral-800 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                >
-                  <option value="slow">Slow</option>
-                  <option value="fast">Fast</option>
-                  <option value="off">Off</option>
-                </select>
+                  onChange={value => handleConfigChange('animationSpeed', value)}
+                  options={[
+                    { label: 'Slow', value: 'slow' },
+                    { label: 'Fast', value: 'fast' },
+                    { label: 'Off', value: 'off' },
+                  ]}
+                />
               </div>
 
               {/* Log */}
-              <label className="flex cursor-pointer items-center justify-between">
+              <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm text-gray-900 font-medium dark:text-gray-100">
                     Console Logging
@@ -576,13 +568,11 @@ export function ScanPage() {
                     Log render information to the console
                   </div>
                 </div>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={config.log ?? false}
-                  onChange={e => handleConfigChange('log', e.target.checked)}
-                  className="h-4 w-4 border-gray-300 rounded text-primary-600 focus:ring-primary-500"
+                  onChange={checked => handleConfigChange('log', checked)}
                 />
-              </label>
+              </div>
             </div>
           </div>
 

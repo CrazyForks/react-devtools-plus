@@ -23,14 +23,17 @@
   width: 2.75rem;
   border-radius: 9999px;
   background-color: var(--color-neutral-200);
-  transition: background-color 0.2s ease-in-out;
+  border: 1px solid transparent; /* Add border for visibility in disabled state */
+  transition:
+    background-color 0.2s ease-in-out,
+    border-color 0.2s ease-in-out;
 }
 
 .track::after {
   content: '';
   position: absolute;
-  top: 2px;
-  left: 2px;
+  top: 1px; /* Adjusted for border */
+  left: 1px; /* Adjusted for border */
   height: 1.25rem;
   width: 1.25rem;
   border-radius: 9999px;
@@ -58,30 +61,49 @@
 /* Disabled state */
 .disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.6; /* Slightly less transparent to improve visibility */
+}
+
+/* Specific styles for disabled unchecked state to ensure visibility */
+.disabled .track {
+  background-color: var(--color-neutral-200);
+  border-color: var(--color-neutral-300); /* Add border color for better contrast */
+}
+
+.disabled .track::after {
+  border-color: var(--color-neutral-400); /* Darker border for knob */
+}
+
+/* Disabled checked state */
+.disabled .input:checked + .track {
+  background-color: var(--color-primary-400); /* Lighter primary */
+  border-color: var(--color-primary-400);
 }
 
 .label {
   margin-left: 0.75rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-neutral-900);
+  color: var(--color-text-primary); /* Use theme color */
 }
 
 .disabled .label {
-  color: var(--color-neutral-400);
+  color: var(--color-text-secondary); /* Use theme secondary color */
 }
 
-/* Dark mode overrides via CSS variables usually handle this, but just in case specific overrides needed */
+/* Dark mode overrides adapt via variables */
 [data-theme='dark'] .track {
   background-color: var(--color-neutral-700);
   border-color: var(--color-neutral-600);
 }
 
 [data-theme='dark'] .track::after {
-  background-color: white;
-  border-color: var(--color-neutral-600);
+  background-color: white; /* Keep knob white in dark mode for contrast? Or maybe neutral-200 */
+  border-color: var(--color-neutral-500);
 }
 
-/* Fix dark mode track color */
-/* Using variables from theme system is better if they adapt */
+/* Dark mode disabled overrides */
+[data-theme='dark'] .disabled .track {
+  background-color: var(--color-neutral-800);
+  border-color: var(--color-neutral-600);
+}

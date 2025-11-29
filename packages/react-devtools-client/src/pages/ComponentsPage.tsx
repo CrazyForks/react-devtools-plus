@@ -1,5 +1,6 @@
 import type { ComponentTreeNode } from '@react-devtools/kit'
 import { getRpcClient, REACT_TAGS } from '@react-devtools/kit'
+import { Checkbox } from '@react-devtools/ui'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useComponentTreeHook } from '~/composables/useComponentTreeHook'
 
@@ -249,15 +250,11 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
           </svg>
         </button>
         <div className="mx-1 h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
-        <label className="flex cursor-pointer select-none items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-          <input
-            type="checkbox"
-            checked={showHostComponents}
-            onChange={e => setShowHostComponents(e.target.checked)}
-            className="h-4 w-4 border-gray-300 rounded text-primary-600 focus:ring-primary-500"
-          />
-          <span>Host</span>
-        </label>
+        <Checkbox
+          label="Host"
+          checked={showHostComponents}
+          onChange={setShowHostComponents}
+        />
       </div>
 
       {/* Tree */}

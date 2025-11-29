@@ -1,10 +1,12 @@
-import { Badge, Button, Card, Input, PRESET_COLORS, Switch, useTheme } from '@react-devtools/ui'
+import { Badge, Button, Card, Checkbox, Input, PRESET_COLORS, Select, Switch, useTheme } from '@react-devtools/ui'
 import { useState } from 'react'
 
 export function ThemeDemo() {
   const { theme, toggleMode, setPrimaryColor } = useTheme()
   const [inputValue, setInputValue] = useState('')
   const [switchValue, setSwitchValue] = useState(false)
+  const [checkboxValue, setCheckboxValue] = useState(false)
+  const [selectValue, setSelectValue] = useState('option1')
 
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -91,13 +93,46 @@ export function ThemeDemo() {
         </div>
       </Card>
 
-      {/* Switch Component */}
-      <Card title="🔘 Switch 组件" style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+      {/* Checkbox & Switch Component */}
+      <Card title="☑️ Checkbox & Switch 组件" style={{ marginBottom: '24px' }}>
+        <h4 style={{ marginBottom: '12px' }}>Switch:</h4>
+        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', marginBottom: '24px' }}>
           <Switch checked={switchValue} onChange={setSwitchValue} label="Toggle me" />
           <Switch checked label="Checked by default" />
           <Switch disabled label="Disabled" />
           <Switch checked disabled label="Checked & Disabled" />
+        </div>
+
+        <h4 style={{ marginBottom: '12px' }}>Checkbox:</h4>
+        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+          <Checkbox checked={checkboxValue} onChange={setCheckboxValue} label="Check me" />
+          <Checkbox checked label="Checked by default" />
+          <Checkbox disabled label="Disabled" />
+          <Checkbox checked disabled label="Checked & Disabled" />
+        </div>
+      </Card>
+
+      {/* Select Component */}
+      <Card title="🔽 Select 组件" style={{ marginBottom: '24px' }}>
+        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ width: 200 }}>
+            <Select
+              value={selectValue}
+              onChange={setSelectValue}
+              options={[
+                { label: 'Option 1', value: 'option1' },
+                { label: 'Option 2', value: 'option2' },
+                { label: 'Option 3', value: 'option3' },
+              ]}
+            />
+          </div>
+          <div style={{ width: 200 }}>
+            <Select
+              disabled
+              value="option1"
+              options={[{ label: 'Disabled Select', value: 'option1' }]}
+            />
+          </div>
         </div>
       </Card>
 
