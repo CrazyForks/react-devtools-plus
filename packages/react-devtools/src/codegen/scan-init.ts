@@ -14,7 +14,7 @@ import path from 'node:path'
 const DEFAULT_SCAN_OPTIONS: Partial<ScanConfig> = {
   enabled: true,
   showToolbar: false,
-  log: true,
+  log: false,
   animationSpeed: 'fast',
   showOutlines: true,
 }
