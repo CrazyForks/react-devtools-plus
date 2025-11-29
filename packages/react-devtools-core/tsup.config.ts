@@ -8,7 +8,8 @@ export default defineConfig({
     'plugin/index': 'src/plugin/index.ts',
   },
   format: ['esm', 'cjs'],
-  target: 'node14',
+  // Use es2017 for maximum compatibility with Webpack 4
+  target: 'es2017',
   dts: {
     resolve: true,
   },
@@ -17,5 +18,7 @@ export default defineConfig({
   clean: true,
   splitting: false,
   sourcemap: true,
-  skipNodeModulesBundle: true,
+  // Bundle these dependencies to avoid pnpm resolution issues in Webpack 4
+  noExternal: ['superjson', 'birpc', 'copy-anything', 'is-what'],
+  skipNodeModulesBundle: false,
 })

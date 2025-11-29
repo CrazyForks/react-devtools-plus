@@ -130,6 +130,31 @@ export interface ReactDevToolsPluginOptions {
    * })
    */
   scan?: ScanConfig | boolean
+
+  /**
+   * Custom URL for the DevTools client panel.
+   * This is useful for micro-fronted scenarios (like singleSpa) where the
+   * DevTools server runs on a different port than the host application.
+   *
+   * @example
+   * // For singleSpa where child app runs on port 8080
+   * ReactDevTools({ clientUrl: 'http://localhost:8080/__react_devtools__/' })
+   */
+  clientUrl?: string
+
+  /**
+   * CSS selector for the root container of your React app.
+   * This is useful for micro-fronted scenarios (like singleSpa) where multiple
+   * React apps are running on the same page and you only want to inspect one.
+   *
+   * @example
+   * // Only inspect the React app mounted to #my-app-root
+   * ReactDevTools({ rootSelector: '#m-app-root' })
+   *
+   * // Or use a class selector
+   * ReactDevTools({ rootSelector: '.my-app-container' })
+   */
+  rootSelector?: string
 }
 
 /**
@@ -146,6 +171,8 @@ export interface ResolvedPluginConfig {
   command: 'build' | 'serve'
   isEnabled: boolean
   scan?: ScanConfig
+  clientUrl?: string
+  rootSelector?: string
 }
 
 /**

@@ -33,6 +33,16 @@ function getRoots(rendererID: number) {
   return fiberRoots.get(rendererID)!
 }
 
+/**
+ * Get root selector from runtime config
+ */
+function getRootSelector(): string | undefined {
+  if (typeof window !== 'undefined') {
+    return (window as any).__REACT_DEVTOOLS_CONFIG__?.rootSelector
+  }
+  return undefined
+}
+
 function isOverlayRoot(root: FiberRoot): boolean {
   const overlayContainer = document.getElementById('react-devtools-overlay')
   if (!overlayContainer)
@@ -41,33 +51,63 @@ function isOverlayRoot(root: FiberRoot): boolean {
   return containerInfo && containerInfo instanceof Node && overlayContainer.contains(containerInfo)
 }
 
+/**
+ * Check if a root belongs to the specified rootSelector container
+ */
+function isRootInSelector(root: FiberRoot, selector: string): boolean {
+  const containerInfo = (root as any).containerInfo
+  if (!containerInfo || !(containerInfo instanceof Node))
+    return false
+  const targetContainer = document.querySelector(selector)
+  if (!targetContainer)
+    return false
+
+  return containerInfo === targetContainer || targetContainer.contains(containerInfo)
+}
+
+/**
+ * Check if a root should be tracked based on rootSelector config
+ */
+function shouldTrackRoot(root: FiberRoot): boolean {
+  // Always skip overlay root
+  if (isOverlayRoot(root))
+    return false
+
+  const rootSelector = getRootSelector()
+  if (!rootSelector)
+    return true
+
+  // Only track roots inside the specified selector
+  return isRootInSelector(root, rootSelector)
+}
+
 function findAppRoot(): FiberRoot | null {
+  // First priority: find a root that matches rootSelector (if specified)
   for (const roots of fiberRoots.values()) {
     for (const root of roots) {
-      if (root && !isOverlayRoot(root))
+      if (root && shouldTrackRoot(root))
         return root
     }
   }
-  // Fallback to first root
-  for (const roots of fiberRoots.values()) {
-    if (roots.size > 0) {
-      const firstRoot = roots.values().next().value
-      if (firstRoot)
-        return firstRoot
+  // Fallback: if no matching root found and no rootSelector, return first non0overlay root
+  const rootSelector = getRootSelector()
+  if (!rootSelector) {
+    for (const roots of fiberRoots.values()) {
+      for (const root of roots) {
+        if (root && !isOverlayRoot(root))
+          return root
+      }
     }
   }
+
   return null
 }
 
 function handleTreeUpdate(root: FiberRoot, showHostComponents: () => boolean) {
+  // Check if this root should be tracked based on rootSelector config
   if (lastRootCurrent === root?.current)
     return
   lastRootCurrent = root?.current
-
-  // Always skip overlay root
-  if (isOverlayRoot(root)) {
-    return
-  }
 
   if (updateTimer)
     clearTimeout(updateTimer)
@@ -166,12 +206,13 @@ function patchHook(existingHook: ReactDevToolsHook, showHostComponents: () => bo
   }
 
   // Mark as patched
-  ;(existingHook as any).__REACT_DEVTOOLS_PATCHED__ = true
+  ; (existingHook as any).__REACT_DEVTOOLS_PATCHED__ = true
 
   return existingHook
 }
 
 function detectExistingRoots(rendererID: number) {
+  const rootSelector = getRootSelector()
   // React 18+ stores references on DOM elements with keys like:
   // - _reactContainer$<randomId> (React 18 createRoot)
   // - __reactFiber$<randomId> (React 18+ legacy mode or older)
@@ -240,117 +281,123 @@ function detectExistingRoots(rendererID: number) {
     return null
   }
 
+  /**
+   * Try to find React root from a single element
+   */
+  function findRootFromElement(element: Element | Document): FiberRoot | null {
+    // Use both Object.keys and Object.getOwnPropertyNames to catch all properties
+    const keys = [...Object.keys(element), ...Object.getOwnPropertyNames(element)]
+    const seenKeys = new Set<string>()
+
+    for (const key of keys) {
+      // Skip duplicates
+      if (seenKeys.has(key))
+        continue
+      seenKeys.add(key)
+
+      try {
+        const value = (element as any)[key]
+        if (!value || typeof value !== 'object')
+          continue
+
+        // React 18 createRoot uses __reactContainer$<randomId>
+        if (key.startsWith('__reactContainer')) {
+          if (value && (value.tag === 3 || value.tag === 24)) {
+            const fiberRoot = value.stateNode
+            if (fiberRoot) {
+              return fiberRoot
+            }
+          }
+          const root = findRootFromFiber(value)
+          if (root) {
+            return root
+          }
+        }
+        // React 18+ legacy or older uses __reactFiber$<randomId>
+        else if (key.startsWith('__reactFiber')) {
+          const root = findRootFromFiber(value)
+          if (root) {
+            return root
+          }
+        }
+        // React < 18 uses __reactInternalInstance$<randomId>
+        else if (key.startsWith('__reactInternalInstance')) {
+          const root = findRootFromFiber(value)
+          if (root) {
+            return root
+          }
+        }
+      }
+      catch (e) {
+        // Ignore errors when accessing properties
+        continue
+      }
+    }
+    return null
+  }
+
+  /**
+   * Check if a root's containerInfo is inside the target selector
+   */
+  function isRootContainerInSelector(root: FiberRoot, selector: string): boolean {
+    const containerInfo = (root as any).containerInfo
+    if (!containerInfo || !(containerInfo instanceof Element))
+      return false
+
+    const targetContainer = document.querySelector(selector)
+    if (!targetContainer)
+      return false
+
+    // containerInfo should be the target itself or inside it
+    return containerInfo === targetContainer || targetContainer.contains(containerInfo)
+  }
+
   function walkDOM(element: Element | Document): FiberRoot | null {
-    // Try common root containers first (#root, #app, etc.)
+    // If rootSelector is specified, only look in that specific element
+    if (rootSelector) {
+      const targetElement = document.querySelector(rootSelector)
+      if (targetElement) {
+        // First try the element itself - it should be a React mound point
+        const directRoot = findRootFromElement(targetElement)
+        if (directRoot && isRootContainerInSelector(directRoot, rootSelector)) {
+          return directRoot
+        }
+
+        // Then walk its children, but only accept roots whose containerInfo is inside selector
+        const walker = document.createTreeWalker(targetElement, NodeFilter.SHOW_ELEMENT)
+        let node: Element | null = walker.currentNode as Element
+        while (node) {
+          const root = findRootFromElement(node)
+          if (root) {
+            // Only accept if this root's containerInfo is inside our target selector
+            if (isRootContainerInSelector(root, rootSelector)) {
+              return root
+            }
+          }
+          node = walker.nextNode() as Element | null
+        }
+      }
+      return null
+    }
+
+    // Default behavior: try common root containers first (#root, #app, etc.)
     const commonRootIds = ['root', 'app', 'main', 'app-root']
     for (const id of commonRootIds) {
       const rootElement = document.getElementById(id)
       if (!rootElement)
         continue
-
-      // Use both Object.keys and Object.getOwnPropertyNames to catch all properties
-      // Some React properties might not be enumerable with Object.keys
-      const keys = [...Object.keys(rootElement), ...Object.getOwnPropertyNames(rootElement)]
-      const seenKeys = new Set<string>()
-
-      for (const key of keys) {
-        // Skip duplicates
-        if (seenKeys.has(key))
-          continue
-        seenKeys.add(key)
-
-        try {
-          const value = (rootElement as any)[key]
-          if (!value || typeof value !== 'object')
-            continue
-
-          // React 18 createRoot uses __reactContainer$<randomId> (double underscore)
-          // The value is directly a FiberNode (HostRoot with tag 3)
-          // The FiberNode's stateNode is the FiberRoot
-          if (key.startsWith('__reactContainer')) {
-            if (value && (value.tag === 3 || value.tag === 24)) {
-              const fiberRoot = value.stateNode
-              if (fiberRoot) {
-                return fiberRoot
-              }
-            }
-            const root = findRootFromFiber(value)
-            if (root) {
-              return root
-            }
-          }
-          // React 18+ legacy or older uses __reactFiber$<randomId>
-          else if (key.startsWith('__reactFiber')) {
-            const root = findRootFromFiber(value)
-            if (root) {
-              return root
-            }
-          }
-          // React < 18 uses __reactInternalInstance$<randomId>
-          else if (key.startsWith('__reactInternalInstance')) {
-            const root = findRootFromFiber(value)
-            if (root) {
-              return root
-            }
-          }
-        }
-        catch (e) {
-          // Ignore errors when accessing properties
-          continue
-        }
-      }
+      const root = findRootFromElement(rootElement)
+      if (root)
+        return root
     }
 
     // If not found on common root containers, walk the entire DOM tree
     const walker = document.createTreeWalker(element, NodeFilter.SHOW_ELEMENT)
     let node: Element | null = walker.currentNode as Element
-
     while (node) {
-      // Get all properties including non-enumerable ones
-      const keys = [...Object.keys(node), ...Object.getOwnPropertyNames(node)]
-      const seenKeys = new Set<string>()
-
-      for (const key of keys) {
-        if (seenKeys.has(key))
-          continue
-        seenKeys.add(key)
-
-        try {
-          const value = (node as any)[key]
-          if (!value || typeof value !== 'object')
-            continue
-
-          if (key.startsWith('__reactContainer')) {
-            if (value && (value.tag === 3 || value.tag === 24)) {
-              const fiberRoot = value.stateNode
-              if (fiberRoot) {
-                return fiberRoot
-              }
-            }
-            const root = findRootFromFiber(value)
-            if (root) {
-              return root
-            }
-          }
-          // React 18+ legacy or older uses __reactFiber
-          else if (key.startsWith('__reactFiber')) {
-            const root = findRootFromFiber(value)
-            if (root) {
-              return root
-            }
-          }
-          // React < 18 uses __reactInternalInstance
-          else if (key.startsWith('__reactInternalInstance')) {
-            const root = findRootFromFiber(value)
-            if (root) {
-              return root
-            }
-          }
-        }
-        catch (e) {
-          continue
-        }
-      }
+      const root = findRootFromElement(node)
+      if (root)
+        return root
       node = walker.nextNode() as Element | null
     }
     return null
@@ -374,7 +421,7 @@ export function installReactHook(showHostComponents: () => boolean) {
 
   if (globalObj.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
     const hook = patchHook(globalObj.__REACT_DEVTOOLS_GLOBAL_HOOK__, showHostComponents)
-    if (hook.renderers) {
+    if (hook.renderers && hook.renderers.size > 0) {
       for (const rendererID of hook.renderers.keys()) {
         detectExistingRoots(rendererID)
       }

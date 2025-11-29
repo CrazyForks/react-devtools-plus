@@ -1,18 +1,29 @@
 /**
  * Webpack-specific integration logic
- * Webpack 特定的集成逻辑
+ *
+ * This module handles Webpack 4/5 compatibility and webpack-dev-server 3/4+ compatibility.
+ * Uses the compat layer for version detection and the codegen module for code generate.
  */
 
-import type { Compiler } from 'webpack'
 import type { ResolvedPluginConfig, SourcePathMode } from '../config/types'
 import fs from 'node:fs'
 import path from 'node:path'
+import { generateConfigInjectionCode, generateGlobalsWithCSSCode } from '../codegen'
+import {
+  DevServerMiddlewareAdapter,
+  isDevServerV3,
+  isWebpack4,
+} from '../compat'
 import { createOpenInEditorMiddleware, serveClient } from '../middleware'
 import { createSourceAttributePlugin } from '../utils/babel-transform'
+
+type Compiler = any
 
 /**
  * Setup Webpack dev server middlewares
  * 设置 Webpack 开发服务器中间件
+ *
+ * Automatically detects webpack-dev-server version and applies middlewares accordingly.
  */
 export function setupWebpackDevServerMiddlewares(
   compiler: Compiler,
@@ -23,34 +34,26 @@ export function setupWebpackDevServerMiddlewares(
     compiler.options.devServer = {}
   }
 
-  const originalSetupMiddlewares = compiler.options.devServer.setupMiddlewares
+  const devServerOptions = compiler.options.devServer as any
 
-  compiler.options.devServer.setupMiddlewares = (middlewares, devServer) => {
-    // Call original setupMiddlewares if it exists
-    if (originalSetupMiddlewares) {
-      middlewares = originalSetupMiddlewares(middlewares, devServer)
-    }
-
-    // Add open-in-editor middleware
-    // Note: We don't specify 'path' here because createOpenInEditorMiddleware handles path checking internally.
-    // If we specify 'path', Express/Connect might strip the prefix from req.url, causing the internal check to fail.
-    middlewares.unshift({
+  // Define middlewares to be applied
+  const middlewares = [
+    {
       name: 'react-devtools-open-in-editor',
       middleware: createOpenInEditorMiddleware(
         config.projectRoot,
         config.sourcePathMode,
       ),
-    })
-
-    // Add client serving middleware
-    middlewares.unshift({
+    },
+    {
       name: 'react-devtools-client',
       path: '/__react_devtools__',
       middleware: serveClient(clientPath),
-    })
+    },
+  ]
 
-    return middlewares
-  }
+  // Apply middlewares using adapter
+  DevServerMiddlewareAdapter.apply(devServerOptions, compiler, middlewares)
 }
 
 /**
@@ -70,217 +73,256 @@ export function getWebpackModeAndCommand(compiler: Compiler): {
 }
 
 /**
- * Inject overlay to Webpack entry
- * 注入 Overlay 到 Webpack 入口
+ * Get Webpack project root (context)
  */
-export function injectOverlayToEntry(
-  compiler: Compiler,
-  overlayPath: string,
-) {
-  const originalEntry = compiler.options.entry
-
-  compiler.options.entry = async () => {
-    const entries = typeof originalEntry === 'function'
-      ? await originalEntry()
-      : originalEntry
-
-    // Handle string entry
-    if (typeof entries === 'string') {
-      return {
-        main: {
-          import: [entries, overlayPath],
-        },
-      }
-    }
-
-    // Handle array entry
-    if (Array.isArray(entries)) {
-      return {
-        main: {
-          import: [...entries, overlayPath],
-        },
-      }
-    }
-
-    // Handle object entry
-    if (typeof entries === 'object' && entries !== null) {
-      const newEntries = { ...entries } as any
-      const keys = Object.keys(newEntries)
-      const mainKey = keys.find(k => k === 'main' || k === 'app' || k === 'index') || keys[0]
-
-      if (mainKey) {
-        const currentEntry = newEntries[mainKey]
-        let importFiles: string[] = []
-        let descriptor: any = {}
-
-        if (typeof currentEntry === 'string') {
-          importFiles = [currentEntry]
-        }
-        else if (Array.isArray(currentEntry)) {
-          importFiles = [...currentEntry]
-        }
-        else if (typeof currentEntry === 'object' && currentEntry.import) {
-          importFiles = Array.isArray(currentEntry.import)
-            ? [...currentEntry.import]
-            : [currentEntry.import]
-          descriptor = currentEntry
-        }
-
-        importFiles.push(overlayPath)
-
-        newEntries[mainKey] = {
-          ...descriptor,
-          import: importFiles,
-        }
-      }
-      return newEntries
-    }
-
-    return entries
-  }
+export function getWebpackContext(compiler: Compiler): string {
+  return compiler.context || process.cwd()
 }
 
 /**
- * Inject React Scan to Webpack entry
- * 注入 React Scan 到 Webpack 入口
+ * Create cache directory for DevTools initialization files
  */
-export function injectReactScanToEntry(
-  compiler: Compiler,
-  scanInitCode: string,
-  projectRoot: string,
-) {
-  // Create a cache directory for React Scan initialization
+function ensureCacheDir(projectRoot: string): string {
   const cacheDir = path.join(projectRoot, 'node_modules', '.cache', 'react-devtools')
   if (!fs.existsSync(cacheDir)) {
     fs.mkdirSync(cacheDir, { recursive: true })
   }
+  return cacheDir
+}
 
-  const scanInitPath = path.join(cacheDir, `scan-init-${Date.now()}.js`)
+/**
+ * Write initialization file to cache directory
+ */
+function writeInitFile(cacheDir: string, filename: string, content: string): string {
+  const filePath = path.join(cacheDir, filename)
+  fs.writeFileSync(filePath, content, 'utf-8')
+  return filePath
+}
 
-  fs.writeFileSync(scanInitPath, scanInitCode, 'utf-8')
+/**
+ * Inject all DevTools entries to Webpack
+ *
+ * Injection order (critical for proper functioning):
+ * 1. React Scan init (must be before React runs)
+ * 2. React globals init (setup window.React/ReactDOM)
+ * 3. Overlay
+ * 4. User's app entry
+ */
+export function injectDevToolsEntries(
+  compiler: Compiler,
+  overlayPath: string,
+  projectRoot: string,
+  overlayDir: string,
+  scanInitCode?: string,
+  clientUrl?: string,
+  rootSelector?: string,
+) {
+  const cacheDir = ensureCacheDir(projectRoot)
+  const filesToInject: string[] = []
 
-  // Store the path for cleanup later
-  if (!compiler.__reactDevToolsScanFile) {
-    compiler.__reactDevToolsScanFile = scanInitPath
+  // 1. Config injection (for singleSpa/micro-frontend scenarios)
+  const configCode = generateConfigInjectionCode({ clientUrl, rootSelector })
+  if (configCode) {
+    const configPath = writeInitFile(cacheDir, 'devtools-config.js', configCode)
+    filesToInject.push(configPath)
   }
 
+  // 2. React Scan init (if enabled) - MUST be first, before React runs
+  if (scanInitCode) {
+    const scanInitPath = writeInitFile(cacheDir, 'scan-init.js', scanInitCode)
+    filesToInject.push(scanInitPath)
+  }
+
+  // 3. React globals initialization - setup window.React/ReactDOM and CSS
+  const globalsInitCode = generateGlobalsWithCSSCode(overlayDir)
+  const globalsInitPath = writeInitFile(cacheDir, 'react-globals-init.js', globalsInitCode)
+  filesToInject.push(globalsInitPath)
+
+  // 4. Overlay
+  filesToInject.push(overlayPath)
+
+  // Modify webpack entry
   const originalEntry = compiler.options.entry
+  const useWebpack4Format = isWebpack4(compiler)
 
   compiler.options.entry = async () => {
     const entries = typeof originalEntry === 'function'
       ? await originalEntry()
       : originalEntry
 
-    // Handle string entry
-    if (typeof entries === 'string') {
-      return {
-        main: {
-          import: [scanInitPath, entries],
-        },
-      }
+    return transformEntries(entries, filesToInject, useWebpack4Format)
+  }
+}
+
+/**
+ * Transform webpack entries to inject DevTools files
+ */
+function transformEntries(
+  entries: any,
+  filesToInject: string[],
+  useWebpack4Format: boolean,
+): any {
+  // Handle string entry
+  if (typeof entries === 'string') {
+    return {
+      main: useWebpack4Format
+        ? [...filesToInject, entries]
+        : { import: [...filesToInject, entries] },
     }
+  }
 
-    // Handle array entry
-    if (Array.isArray(entries)) {
-      return {
-        main: {
-          import: [scanInitPath, ...entries],
-        },
-      }
+  // Handle array entry
+  if (Array.isArray(entries)) {
+    return {
+      main: useWebpack4Format
+        ? [...filesToInject, ...entries]
+        : { import: [...filesToInject, ...entries] },
     }
+  }
 
-    // Handle object entry
-    if (typeof entries === 'object' && entries !== null) {
-      const newEntries = { ...entries } as any
-      const keys = Object.keys(newEntries)
-      const mainKey = keys.find(k => k === 'main' || k === 'app' || k === 'index') || keys[0]
+  // Handle object entry
+  if (typeof entries === 'object' && entries !== null) {
+    return transformObjectEntries(entries, filesToInject, useWebpack4Format)
+  }
 
-      if (mainKey) {
-        const currentEntry = newEntries[mainKey]
-        let importFiles: string[] = []
-        let descriptor: any = {}
+  return entries
+}
 
-        if (typeof currentEntry === 'string') {
-          importFiles = [currentEntry]
-        }
-        else if (Array.isArray(currentEntry)) {
-          importFiles = [...currentEntry]
-        }
-        else if (typeof currentEntry === 'object' && currentEntry.import) {
-          importFiles = Array.isArray(currentEntry.import)
-            ? [...currentEntry.import]
-            : [currentEntry.import]
-          descriptor = currentEntry
-        }
+/**
+ * Transform object-style webpack entries
+ */
+function transformObjectEntries(
+  entries: Record<string, any>,
+  filesToInject: string[],
+  useWebpack4Format: boolean,
+): Record<string, any> {
+  const newEntries = { ...entries }
+  const keys = Object.keys(newEntries)
+  const mainKey = keys.find(k => k === 'main' || k === 'app' || k === 'index') || keys[0]
 
-        // Prepend React Scan init file
-        importFiles.unshift(scanInitPath)
+  if (!mainKey) {
+    return newEntries
+  }
 
-        newEntries[mainKey] = {
-          ...descriptor,
-          import: importFiles,
-        }
-      }
-      return newEntries
-    }
+  const currentEntry = newEntries[mainKey]
 
-    return entries
+  if (useWebpack4Format) {
+    // Webpack 4: entries can be string or array
+    newEntries[mainKey] = transformWebpack4Entry(currentEntry, filesToInject)
+  }
+  else {
+    // Webpack 5: entries can be string or array, or descriptor object
+    newEntries[mainKey] = transformWebpack5Entry(currentEntry, filesToInject)
+  }
+
+  return newEntries
+}
+
+/**
+ * Transform entry for Webpack 4 format
+ */
+function transformWebpack4Entry(currentEntry: any, filesToInject: string[]): string[] {
+  if (typeof currentEntry === 'string') {
+    return [...filesToInject, currentEntry]
+  }
+  if (Array.isArray(currentEntry)) {
+    return [...filesToInject, ...currentEntry]
+  }
+  return filesToInject
+}
+
+/**
+ * Transform entry for Webpack 5 format
+ */
+function transformWebpack5Entry(
+  currentEntry: any,
+  filesToInject: string[],
+): { import: string[], [key: string]: any } {
+  let importFiles: string[] = []
+  let descriptor: Record<string, any> = {}
+
+  if (typeof currentEntry === 'string') {
+    importFiles = [currentEntry]
+  }
+  else if (Array.isArray(currentEntry)) {
+    importFiles = [...currentEntry]
+  }
+  else if (typeof currentEntry === 'object' && currentEntry?.import) {
+    importFiles = Array.isArray(currentEntry.import)
+      ? [...currentEntry.import]
+      : [currentEntry.import]
+    descriptor = currentEntry
+  }
+
+  // Prepend injected files
+  importFiles.unshift(...filesToInject)
+
+  return {
+    ...descriptor,
+    import: importFiles,
   }
 }
 
 /**
  * Inject Babel plugin to Webpack config
- * 注入 Babel 插件到 Webpack 配置
  */
 export function injectBabelPlugin(
   compiler: Compiler,
   projectRoot: string,
   sourcePathMode: SourcePathMode,
 ) {
-  const rules = compiler.options.module.rules as any[]
-
-  const visitRule = (rule: any) => {
-    if (rule.oneOf) {
-      rule.oneOf.forEach(visitRule)
-      return
-    }
-
-    // Handle rule.use (array or object)
-    if (rule.use) {
-      const uses = Array.isArray(rule.use) ? rule.use : [rule.use]
-      uses.forEach((use: any) => {
-        // Check if loader is babel-loader
-        const loaderName = typeof use === 'string' ? use : use.loader
-        if (loaderName && loaderName.includes('babel-loader')) {
-          if (typeof use !== 'string') {
-            if (!use.options)
-              use.options = {}
-            if (!use.options.plugins)
-              use.options.plugins = []
-
-            use.options.plugins.push(createSourceAttributePlugin(projectRoot, sourcePathMode))
-          }
-        }
-      })
-    }
-
-    // Handle rule.loader (shortcut)
-    if (rule.loader && rule.loader.includes('babel-loader')) {
-      if (!rule.options)
-        rule.options = {}
-      if (!rule.options.plugins)
-        rule.options.plugins = []
-      rule.options.plugins.push(createSourceAttributePlugin(projectRoot, sourcePathMode))
-    }
+  const rules = compiler.options.module?.rules
+  if (!rules) {
+    return
   }
 
-  rules.forEach(visitRule)
+  const plugin = createSourceAttributePlugin(projectRoot, sourcePathMode)
+  rules.forEach(rule => visitRuleAndInjectPlugin(rule, plugin))
 }
 
 /**
- * Get Webpack project root (context)
- * 获取 Webpack 项目根目录（context）
+ * Recursively visit webpack rules and inject Babel plugin
  */
-export function getWebpackContext(compiler: Compiler): string {
-  return compiler.context || process.cwd()
+function visitRuleAndInjectPlugin(rule: any, plugin: any) {
+  // Handle oneOf rules
+  if (rule.oneOf) {
+    rule.oneOf.forEach((r: any) => visitRuleAndInjectPlugin(r, plugin))
+    return
+  }
+
+  // Handle rule.use (array or object)
+  if (rule.use) {
+    const uses = Array.isArray(rule.use) ? rule.use : [rule.use]
+    uses.forEach((use: any) => injectPluginToLoader(use, plugin))
+  }
+
+  // Handle rule.loader (shortcut)
+  if (rule.loader && rule.loader.includes('babel-loader')) {
+    injectPluginToOptions(rule, plugin)
+  }
 }
+
+/**
+ * Inject plugin to a loader configuration
+ */
+function injectPluginToLoader(use: any, plugin: any) {
+  const loaderName = typeof use === 'string' ? use : use.loader
+  if (loaderName && loaderName.includes('babel-loader') && typeof use !== 'string') {
+    injectPluginToOptions(use, plugin)
+  }
+}
+
+/**
+ * Inject plugin to babel options
+ */
+function injectPluginToOptions(config: any, plugin: any) {
+  if (!config.options) {
+    config.options = {}
+  }
+  if (!config.options.plugins) {
+    config.options.plugins = []
+  }
+  config.options.plugins.push(plugin)
+}
+
+export { isDevServerV3, isWebpack4 }

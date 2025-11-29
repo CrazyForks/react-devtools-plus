@@ -1,5 +1,5 @@
 /**
- * Build tool integrations module exports
+ * Integration module exports
  * 构建工具集成模块导出
  */
 

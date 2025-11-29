@@ -2,7 +2,25 @@ import { globalPluginManager } from '@react-devtools/core'
 import { createRpcServer, getFiberById, getRpcServer, hideHighlight, highlightNode, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
 import { useEffect, useRef } from 'react'
 
+/**
+ * Get DevTools client URL
+ *
+ * For singleSpa/micro-frontend scenarios, the clientUrl can be configured
+ * via the plugin options. This allows the DevTools panel to load from
+ * a different server (e.g., the child app's webpack-dev-server).
+ */
 function getDevToolsClientUrl() {
+  // Check for custom clientUrl from plugin configuration
+  const config = (window as any).__REACT_DEVTOOLS_CONFIG__
+  if (config?.clientUrl) {
+    const timestamp = Date.now()
+    const url = config.clientUrl.endsWith('/')
+      ? config.clientUrl
+      : `${config.clientUrl}/`
+    return `${url}?t=${timestamp}`
+  }
+
+  // Default: use current origin
   const origin = window.location.origin
   const base = window.location.pathname.split('/__react_devtools__')[0] || ''
   const path = `${base}/__react_devtools__/`.replace(/\/+/g, '/')

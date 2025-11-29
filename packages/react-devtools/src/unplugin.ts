@@ -1,19 +1,29 @@
 /**
- * React DevTools Unplugin (Refactored)
- * React DevTools 通用插件（重构版）
+ * React DevTools Unplugin
  *
- * This is a modularized version with better separation of concerns
- * 这是一个模块化版本，更好地分离了关注点
+ * A modular implementation supporting both Vite and Webpack with:
+ * - Webpack 4/5 compatibility
+ * - webpack-dev-server 3/4+ compatibility
+ * - React 17/18+ compatibility
  */
 
 import type { UnpluginFactory } from 'unplugin'
 import type { PreviewServer, ResolvedConfig, ViteDevServer } from 'vite'
-import type { Compiler } from 'webpack'
 import type { ReactDevToolsPluginOptions, ResolvedPluginConfig } from './config/types.js'
 import fs from 'node:fs'
 import path from 'node:path'
 import { bold, cyan, green } from 'kolorist'
 import { createUnplugin } from 'unplugin'
+import {
+  generateConfigScriptTag,
+  generateCSSScriptTags,
+  generateDevToolsHookScriptTag,
+  generateOverlayLoaderCode,
+  generateReactGlobalsESMCode,
+  generateScanInitCJSCode,
+  generateScanInitESMCode,
+  generateScanScriptTag,
+} from './codegen'
 import {
   normalizeBasePath,
   resolvePluginConfig,
@@ -33,8 +43,7 @@ import {
   getWebpackContext,
   getWebpackModeAndCommand,
   injectBabelPlugin,
-  injectOverlayToEntry,
-  injectReactScanToEntry,
+  injectDevToolsEntries,
   setupWebpackDevServerMiddlewares,
 } from './integrations/webpack.js'
 import { shouldProcessFile, transformSourceCode } from './utils/babel-transform.js'
@@ -48,6 +57,9 @@ import {
   resolveOverlayPath,
   VIRTUAL_PATH_PREFIX,
 } from './utils/paths.js'
+
+// Use 'any' for Compiler to support both Webpack 4 and 5 types
+type Compiler = any
 
 /**
  * Print DevTools URLs to console
@@ -84,7 +96,7 @@ function wrapPrintUrls(server: ViteDevServer | PreviewServer) {
  * 从 Webpack unplugin 处理中排除 HTML 文件
  */
 function excludeHtmlFromUnplugin(compiler: Compiler) {
-  compiler.hooks.normalModuleFactory.tap('unplugin-react-devtools', (nmf) => {
+  compiler.hooks.normalModuleFactory.tap('unplugin-react-devtools', (nmf: any) => {
     nmf.hooks.afterResolve.tap('unplugin-react-devtools', (data: any) => {
       if (data.resource && (data.resource.endsWith('.html') || data.resource.endsWith('.htm'))) {
         if (data.loaders && Array.isArray(data.loaders)) {
@@ -177,7 +189,7 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           return {}
         }
 
-        const overlayMainPath = path.join(DIR_OVERLAY, 'main.tsx')
+        const overlayMainPath = path.join(DIR_OVERLAY, 'react-devtools-overlay.mjs')
         if (!fs.existsSync(overlayMainPath)) {
           return {}
         }
@@ -233,13 +245,18 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
         }
 
         if (id === OVERLAY_ENTRY_ID) {
-          const overlayMainPath = path.join(DIR_OVERLAY, 'main.tsx')
+          const overlayMainPath = path.join(DIR_OVERLAY, 'react-devtools-overlay.mjs')
           return fs.existsSync(overlayMainPath) ? overlayMainPath : null
         }
 
         // Resolve React Scan virtual module
         if (id === '__react-devtools-scan__') {
           return '\0__react-devtools-scan__'
+        }
+
+        // Resolve React globals virtual module
+        if (id === '__react-devtools-globals__') {
+          return '\0__react-devtools-globals__'
         }
 
         const normalizedId = id.startsWith('@id/') ? id.replace('@id/', '') : id
@@ -262,31 +279,15 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           if (!pluginConfig?.scan) {
             return 'export const initScan = () => {};'
           }
+          return generateScanInitESMCode(pluginConfig.scan)
+        }
 
-          const scanOptions = {
-            enabled: true,
-            showToolbar: pluginConfig.scan.showToolbar ?? false,
-            log: pluginConfig.scan.log ?? true,
-            animationSpeed: pluginConfig.scan.animationSpeed || 'fast',
-            ...pluginConfig.scan,
-          }
-
-          return `
-            import { initScan, ReactScanInternals, setOptions, getOptions, scan } from 'react-devtools/scan';
-
-            if (typeof window !== 'undefined') {
-              window.__REACT_SCAN_INTERNALS__ = ReactScanInternals;
-              window.__REACT_SCAN_SET_OPTIONS__ = setOptions;
-              window.__REACT_SCAN_GET_OPTIONS__ = getOptions;
-              window.__REACT_SCAN_SCAN__ = scan;
-            }
-
-            if (ReactScanInternals) {
-              ReactScanInternals.runInAllEnvironments = true;
-            }
-
-            scan(${JSON.stringify(scanOptions)});
-          `
+        // Load React globals virtual module
+        if (id === '\0__react-devtools-globals__') {
+          return generateReactGlobalsESMCode({
+            tryReactDOMClient: true,
+            dispatchReadyEvent: true,
+          })
         }
 
         return null
@@ -321,7 +322,8 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           return html
 
         const base = normalizeBasePath(viteConfig?.base)
-        const scriptSrc = ctx.bundle
+        const isProduction = !!ctx.bundle
+        const scriptSrc = isProduction
           ? ((): string | null => {
               const overlayBundleName = findOverlayBundle(ctx.bundle!)
               if (!overlayBundleName) {
@@ -343,65 +345,43 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           injectTo?: 'body' | 'head' | 'head-prepend' | 'body-prepend'
         }> = []
 
-        // Inject React DevTools Hook FIRST (before anything else)
-        // We MUST inject this manually to ensure it exists before React loads.
-        // Using an IIFE with closure to prevent context loss issues.
-        tags.push({
-          tag: 'script',
-          attrs: {},
-          children: `
-            if (typeof window !== 'undefined' && !window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
-              (function() {
-                var renderers = new Map();
-                window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
-                  __IS_OUR_MOCK__: true,
-                  checkDCE: function() {},
-                  supportsFiber: true,
-                  renderers: renderers,
-                  onScheduleFiberRoot: function() {},
-                  onCommitFiberRoot: function(rendererID, root, priorityLevel) {
-                    // This might be overwritten by bippy
-                  },
-                  onCommitFiberUnmount: function() {},
-                  inject: function(renderer) {
-                    var id = Math.random().toString(36).slice(2);
-                    renderers.set(id, renderer);
-                    return id;
-                  }
-                };
-              })();
-            }
-          `,
-          injectTo: 'head-prepend',
+        // 1. Config injection (for singleSpa/micro-frontend scenarios)
+        const configTag = generateConfigScriptTag({
+          clientUrl: pluginConfig.clientUrl,
+          rootSelector: pluginConfig.rootSelector,
         })
-
-        // Inject React Scan if configured (enable by default and auto-start)
-        if (pluginConfig.scan) {
-          const scanOptions = {
-            enabled: true,
-            showToolbar: pluginConfig.scan.showToolbar ?? false,
-            ...pluginConfig.scan,
-          }
-
-          tags.push({
-            tag: 'script',
-            attrs: {
-              type: 'module',
-            },
-            children: `
-              import '${base}@id/__react-devtools-scan__';
-            `,
-            injectTo: 'head-prepend',
-          })
+        if (configTag) {
+          tags.push(configTag)
         }
 
-        // Inject Overlay
+        // 2. CSS styles
+        tags.push(...generateCSSScriptTags(DIR_OVERLAY, base, isProduction))
+
+        // 3. DevTools Hook (must be first, before React loads)
+        tags.push(generateDevToolsHookScriptTag())
+
+        // 4. React Scan (if configured)
+        if (pluginConfig.scan) {
+          tags.push(generateScanScriptTag(base, pluginConfig.scan))
+        }
+
+        // 5. React globals setup
         tags.push({
           tag: 'script',
           attrs: {
             type: 'module',
-            src: scriptSrc,
+            src: `${base}@id/__react-devtools-globals__`,
           },
+          injectTo: 'head',
+        })
+
+        // 6. Overlay loader with globals ready check
+        tags.push({
+          tag: 'script',
+          attrs: {
+            type: 'module',
+          },
+          children: generateOverlayLoaderCode(base),
           injectTo: 'body',
         })
 
@@ -463,41 +443,15 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
         const servePath = getClientPath(reactDevtoolsPath)
         setupWebpackDevServerMiddlewares(compiler, pluginConfig, servePath)
 
-        // Inject React Scan (before overlay, so it initializes first)
+        // Build scan init code if scan is enabled
+        let scanInitCode: string | undefined
         if (pluginConfig.scan) {
-          const scanOptions = {
-            enabled: true,
-            showToolbar: pluginConfig.scan.showToolbar ?? false,
-            log: pluginConfig.scan.log ?? true,
-            animationSpeed: pluginConfig.scan.animationSpeed || 'fast',
-            showOutlines: true, // Force show outlines
-            ...pluginConfig.scan,
-          }
-
-          const scanInitCode = `
-            import { initScan, ReactScanInternals, setOptions, getOptions, scan } from 'react-devtools/scan';
-
-            if (typeof window !== 'undefined') {
-              window.__REACT_SCAN_INTERNALS__ = ReactScanInternals;
-              window.__REACT_SCAN_SET_OPTIONS__ = setOptions;
-              window.__REACT_SCAN_GET_OPTIONS__ = getOptions;
-              window.__REACT_SCAN_SCAN__ = scan;
-            }
-
-            // Ensure we run in all environments
-            if (ReactScanInternals) {
-              ReactScanInternals.runInAllEnvironments = true;
-            }
-
-            initScan(${JSON.stringify(scanOptions)});
-          `
-
-          injectReactScanToEntry(compiler, scanInitCode, projectRoot)
+          scanInitCode = generateScanInitCJSCode(pluginConfig.scan)
         }
 
-        // Inject overlay
-        const overlayPath = path.join(DIR_OVERLAY, 'main.tsx')
-        injectOverlayToEntry(compiler, overlayPath)
+        // Inject all DevTools entries
+        const overlayPath = path.join(DIR_OVERLAY, 'react-devtools-overlay.mjs')
+        injectDevToolsEntries(compiler, overlayPath, projectRoot, DIR_OVERLAY, scanInitCode, pluginConfig.clientUrl, pluginConfig.rootSelector)
 
         // Inject Babel plugin (for data-source-path)
         if (pluginConfig.injectSource) {

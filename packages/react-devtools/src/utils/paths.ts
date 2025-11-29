@@ -5,8 +5,15 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { normalizePath } from 'vite'
+import { DIR_DIST } from '../dir.js'
+
+/**
+ * Normalize path separators to forward slashes (like Vite's normalizePath)
+ * This is needed for cross-platform compatibility and to avoid Vite dependency in CJS
+ */
+export function normalizePath(id: string): string {
+  return id.replace(/\\/g, '/')
+}
 
 // Constants
 export const OVERLAY_ENTRY_ID = '\0react-devtools-overlay-entry'
@@ -18,11 +25,12 @@ export const STANDALONE_FLAG = '__REACT_DEVTOOLS_OVERLAY_STANDALONE__'
 
 /**
  * Get plugin installation path
- * 获取插件安装路径
+ *
+ * Use DIR_DIST from dir.ts which handles all environment fallbacks
  */
 export function getPluginPath(): string {
-  const currentPath = normalizePath(path.dirname(fileURLToPath(import.meta.url)))
-  return currentPath.replace(/\/dist$/, '/src')
+  // DIR_DIST points to dist/, replace with src/
+  return normalizePath(DIR_DIST.replace(/\/dist$/, '/src'))
 }
 
 /**
@@ -57,6 +65,14 @@ export function resolveOverlayPath(normalizedId: string, overlayDir: string, rea
   }
 
   const pathPart = normalizedId.replace(VIRTUAL_PATH_PREFIX, '')
+
+  // First, try the bundled overlay file (for published package)
+  const bundledOverlayPath = path.join(overlayDir, 'react-devtools-overlay.mjs')
+  if (fs.existsSync(bundledOverlayPath)) {
+    return normalizePath(bundledOverlayPath)
+  }
+
+  // Fallback try to resolve as source file (for development in monorepo)
   const basePath = pathPart.replace(/\.mjs$/, '')
   const hasExtension = /\.(?:tsx?|jsx?)$/.test(basePath)
 
@@ -72,7 +88,7 @@ export function resolveOverlayPath(normalizedId: string, overlayDir: string, rea
     }
   }
 
-  return normalizePath(path.join(reactDevtoolsPath, 'overlay', pathPart))
+  return normalizePath(bundledOverlayPath)
 }
 
 /**

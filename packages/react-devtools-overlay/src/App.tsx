@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react'
 import { toggleInspector } from '@react-devtools/kit'
 import { useRef } from 'react'
 import { FloatingButton } from './components/FloatingButton'
@@ -30,7 +31,7 @@ export function App() {
     }
   }
 
-  const handleInspectorClick = (e: React.MouseEvent) => {
+  const handleInspectorClick = (e: MouseEvent) => {
     toggleInspector(true, { mode: 'open-in-editor' })
     setPanelVisible(false)
   }

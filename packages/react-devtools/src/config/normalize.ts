@@ -135,6 +135,8 @@ export function resolvePluginConfig(
     command,
     isEnabled,
     scan,
+    clientUrl: options.clientUrl,
+    rootSelector: options.rootSelector,
   }
 }
 
