@@ -1,5 +1,6 @@
 import { getRpcClient } from '@react-devtools/kit'
 import { useEffect, useState } from 'react'
+import { Switch } from '../components/Switch'
 import { pluginEvents } from '../events'
 
 interface ScanConfig {
@@ -38,16 +39,6 @@ interface ServerRpcFunctions {
   callPluginRPC: (pluginId: string, rpcName: string, ...args: any[]) => Promise<any>
   subscribeToPluginEvent: (pluginId: string, eventName: string) => () => void
   togglePanel: (visible: boolean) => void
-}
-
-function Toggle({ checked, onChange, label }: { checked: boolean, onChange: (checked: boolean) => void, label?: string }) {
-  return (
-    <label className="relative inline-flex cursor-pointer items-center">
-      <input type="checkbox" className="peer sr-only" checked={checked} onChange={e => onChange(e.target.checked)} />
-      <div className="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:border after:border-gray-300 dark:border-gray-600 after:rounded-full after:bg-white dark:bg-gray-700 peer-checked:bg-primary-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white dark:peer-focus:ring-primary-800"></div>
-      {label && <span className="ml-3 text-sm text-gray-900 font-medium dark:text-gray-300">{label}</span>}
-    </label>
-  )
 }
 
 export function ScanPage() {
@@ -296,7 +287,7 @@ export function ScanPage() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600 font-medium dark:text-gray-400">Scan</span>
-            <Toggle
+            <Switch
               checked={isRunning}
               onChange={(checked) => {
                 if (checked)
