@@ -46,17 +46,17 @@ const FPSMeter = ({ fps }: { fps: number | null }) => {
     return null
 
   let colorClass = 'text-gray-600 dark:text-gray-400'
-  if (fps < 15)
+  if (fps < 30)
     colorClass = 'text-red-600 dark:text-red-400'
-  else if (fps < 30)
+  else if (fps < 50)
     colorClass = 'text-yellow-600 dark:text-yellow-400'
 
   return (
-    <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 text-xs font-mono dark:bg-gray-800">
-      <span className={`font-bold ${colorClass}`}>
+    <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 font-mono dark:bg-gray-800">
+      <span className={`text-sm text-purple-600 font-bold dark:text-purple-400 ${colorClass}`}>
         {fps}
       </span>
-      <span className="text-gray-500 dark:text-gray-500">FPS</span>
+      <span className="text-xs">FPS</span>
     </div>
   )
 }

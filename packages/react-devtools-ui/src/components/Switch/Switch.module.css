@@ -19,27 +19,57 @@
 
 .track {
   position: relative;
-  height: 1.5rem;
-  width: 2.75rem;
   border-radius: 9999px;
   background-color: var(--color-neutral-200);
   border: 1px solid transparent; /* Add border for visibility in disabled state */
   transition:
     background-color 0.2s ease-in-out,
     border-color 0.2s ease-in-out;
+
+  /* Default variables (can be overridden by size classes) */
+  --switch-width: 2.75rem;
+  --switch-height: 1.5rem;
+  --knob-size: 1.25rem;
+  --knob-offset: 0px; /* Reset to 0 to ensure centering with border */
+
+  width: var(--switch-width);
+  height: var(--switch-height);
 }
 
 .track::after {
   content: '';
   position: absolute;
-  top: 1px; /* Adjusted for border */
-  left: 1px; /* Adjusted for border */
-  height: 1.25rem;
-  width: 1.25rem;
+  top: var(--knob-offset);
+  left: var(--knob-offset);
+  height: var(--knob-size);
+  width: var(--knob-size);
   border-radius: 9999px;
   background-color: white;
   border: 1px solid var(--color-neutral-300);
   transition: transform 0.2s ease-in-out;
+  box-sizing: border-box; /* Ensure border is included in size */
+}
+
+/* Size variants */
+.size-sm {
+  --switch-width: 1.75rem; /* 28px */
+  --switch-height: 1rem; /* 16px */
+  --knob-size: calc(1rem - 2px); /* 14px - accounting for border */
+  --knob-offset: 0px;
+}
+
+.size-md {
+  --switch-width: 2.25rem; /* 36px */
+  --switch-height: 1.25rem; /* 20px */
+  --knob-size: calc(1.25rem - 2px); /* 18px */
+  --knob-offset: 0px;
+}
+
+.size-lg {
+  --switch-width: 2.75rem; /* 44px */
+  --switch-height: 1.5rem; /* 24px */
+  --knob-size: calc(1.5rem - 2px); /* 22px */
+  --knob-offset: 0px;
 }
 
 /* Checked state */
@@ -48,7 +78,9 @@
 }
 
 .input:checked + .track::after {
-  transform: translateX(100%);
+  /* Calculate translation based on width, knob size and offsets */
+  /* Subtract 2px for the transparent border on left and right */
+  transform: translateX(calc(var(--switch-width) - var(--knob-size) - (var(--knob-offset) * 2) - 2px));
   border-color: white;
 }
 

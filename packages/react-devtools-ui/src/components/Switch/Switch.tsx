@@ -1,10 +1,13 @@
 import type { FC, InputHTMLAttributes } from 'react'
 import styles from './Switch.module.css'
 
-export interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+export type SwitchSize = 'sm' | 'md' | 'lg'
+
+export interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'size'> {
   checked?: boolean
   onChange?: (checked: boolean) => void
   label?: string
+  size?: SwitchSize
 }
 
 export const Switch: FC<SwitchProps> = ({
@@ -13,12 +16,18 @@ export const Switch: FC<SwitchProps> = ({
   label,
   className = '',
   disabled,
+  size = 'md',
   ...props
 }) => {
   const containerClass = [
     styles.switch,
     disabled && styles.disabled,
     className,
+  ].filter(Boolean).join(' ')
+
+  const trackClass = [
+    styles.track,
+    styles[`size-${size}`],
   ].filter(Boolean).join(' ')
 
   return (
@@ -31,7 +40,7 @@ export const Switch: FC<SwitchProps> = ({
         disabled={disabled}
         {...props}
       />
-      <div className={styles.track} />
+      <div className={trackClass} />
       {label && (
         <span className={styles.label}>
           {label}
