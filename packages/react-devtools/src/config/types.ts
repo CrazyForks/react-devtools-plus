@@ -48,10 +48,65 @@ export interface ScanConfig extends ReactDevtoolsScanOptions {
 }
 
 /**
+ * User Plugin View Configuration
+ * 用户插件视图配置
+ */
+export interface UserPluginView {
+  /**
+   * Sidebar label
+   * 侧边栏标题
+   */
+  title: string
+
+  /**
+   * Sidebar icon (Lucide icon name or SVG string)
+   * 侧边栏图标
+   */
+  icon: string
+
+  /**
+   * Path to the React component file
+   * React 组件文件路径
+   */
+  src: string
+}
+
+/**
+ * User Plugin Configuration
+ * 用户插件配置
+ */
+export interface UserPlugin {
+  /**
+   * Plugin unique name
+   * 插件唯一名称
+   */
+  name: string
+
+  /**
+   * Plugin view configuration
+   * 插件视图配置
+   */
+  view?: UserPluginView
+
+  /**
+   * Setup function (runs in the browser/client context)
+   * NOTE: This is difficult to transmit from Node config to Browser.
+   * For now, we focus on View extensions. Logic extensions might need a different approach.
+   */
+  // setup?: (context: any) => void
+}
+
+/**
  * Plugin options interface
  * 插件配置接口
  */
 export interface ReactDevToolsPluginOptions {
+  /**
+   * Custom plugins
+   * 自定义插件
+   */
+  plugins?: UserPlugin[]
+
   /**
    * Insert overlay script by appending to files that match this filter.
    * When not provided, the script will be injected into index.html automatically.
@@ -179,6 +234,7 @@ export interface ReactDevToolsPluginOptions {
  * 解析后的插件配置
  */
 export interface ResolvedPluginConfig {
+  plugins: UserPlugin[]
   appendTo: string | RegExp | undefined
   enabledEnvironments: EnabledEnvironments
   injectSource: boolean

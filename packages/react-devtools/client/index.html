@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>React DevTools</title>
+    <script>
+      // Setup Vite React Refresh preamble mocks to allow loading plugins from Vite server
+      window.__vite_plugin_react_preamble_installed__ = true;
+      window.$RefreshReg$ = () => {};
+      window.$RefreshSig$ = () => (type) => type;
+    </script>
     <style>
       * {
         margin: 0;
@@ -22,8 +28,8 @@
         height: 100vh;
       }
     </style>
-    <script type="module" crossorigin src="./assets/main-8IYdWGNo.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/main-C-ixeV7j.css">
+    <script type="module" crossorigin src="./assets/main-o7qLRE0D.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/main-D3kOrLxO.css">
   </head>
   <body>
     <div id="root"></div>

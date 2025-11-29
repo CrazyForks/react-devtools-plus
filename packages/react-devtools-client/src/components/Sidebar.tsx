@@ -1,3 +1,4 @@
+import type { LoadedPlugin } from '~/types/plugin'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ReactLogo from '~/components/assets/ReactLogo'
 
@@ -31,6 +32,30 @@ function SettingsIcon({ className }: { className?: string }) {
   )
 }
 
+function DefaultPluginIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+      <path d="M16 16v2" />
+      <path d="M8 16v2" />
+      <path d="M16 6v2" />
+      <path d="M8 6v2" />
+    </svg>
+  )
+}
+
+function getIcon(iconStr?: string) {
+  if (!iconStr)
+    return DefaultPluginIcon
+  if (iconStr.startsWith('<svg')) {
+    return ({ className }: { className?: string }) => (
+      <div className={className} dangerouslySetInnerHTML={{ __html: iconStr }} />
+    )
+  }
+  return DefaultPluginIcon
+}
+
 function NavItem({ to, icon: Icon, label }: { to: string, icon: any, label: string }) {
   const location = useLocation()
   const isActive = location.pathname === to
@@ -52,7 +77,7 @@ function NavItem({ to, icon: Icon, label }: { to: string, icon: any, label: stri
   )
 }
 
-export function Sidebar() {
+export function Sidebar({ plugins = [] }: { plugins?: LoadedPlugin[] }) {
   return (
     <div className="z-50 h-full w-12 flex flex-col border-r border-base bg-base py-4">
       {/* Header (Overview) */}
@@ -64,6 +89,14 @@ export function Sidebar() {
       <div className="scrollbar-none flex flex-1 flex-col items-center gap-2 overflow-y-auto">
         <NavItem to="/components" icon={ComponentsIcon} label="Components" />
         <NavItem to="/scan" icon={ScanIcon} label="React Scan" />
+        {plugins.map(plugin => (
+          <NavItem
+            key={plugin.name}
+            to={`/plugins/${plugin.name}`}
+            icon={getIcon(plugin.view?.icon)}
+            label={plugin.view?.title || plugin.name}
+          />
+        ))}
       </div>
 
       {/* Footer (Settings) */}

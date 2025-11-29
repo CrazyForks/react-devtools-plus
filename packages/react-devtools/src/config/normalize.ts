@@ -3,7 +3,8 @@
  * 配置规范化和验证
  */
 
-import type { ReactDevToolsPluginOptions, ResolvedPluginConfig, ScanConfig } from './types'
+import type { ReactDevToolsPluginOptions, ResolvedPluginConfig, ScanConfig, UserPlugin } from './types'
+import path from 'node:path'
 
 /**
  * Normalize base path
@@ -125,7 +126,26 @@ export function resolvePluginConfig(
   const injectSource = shouldInjectSource(injectSourceOption, mode, command)
   const scan = normalizeScanConfig(options.scan, command)
 
+  // Normalize plugins
+  const plugins = (options.plugins || []).map((plugin): UserPlugin => {
+    if (plugin.view && plugin.view.src) {
+      let src = plugin.view.src
+      if (!path.isAbsolute(src)) {
+        src = path.resolve(projectRoot, src)
+      }
+      return {
+        ...plugin,
+        view: {
+          ...plugin.view,
+          src, // Resolved absolute path
+        },
+      }
+    }
+    return plugin
+  })
+
   return {
+    plugins,
     appendTo: options.appendTo,
     enabledEnvironments: enabledEnvironments ?? true,
     injectSource,

@@ -46,6 +46,7 @@ import {
   injectDevToolsEntries,
   setupWebpackDevServerMiddlewares,
 } from './integrations/webpack.js'
+import { createPluginsMiddleware } from './middleware/plugins.js'
 import { shouldProcessFile, transformSourceCode } from './utils/babel-transform.js'
 import {
   DEVTOOLS_OPTIONS_ID,
@@ -227,6 +228,15 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
 
         const servePath = getClientPath(reactDevtoolsPath)
         setupDevServerMiddlewares(server, pluginConfig, servePath)
+
+        // Serve plugins manifest
+        server.middlewares.use(createPluginsMiddleware(pluginConfig, (filePath) => {
+          if (process.platform === 'win32') {
+            return `/@fs/${filePath.replace(/\\/g, '/')}`
+          }
+          return `/@fs${filePath}`
+        }))
+
         wrapPrintUrls(server)
       },
 

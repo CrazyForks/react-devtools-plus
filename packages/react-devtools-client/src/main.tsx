@@ -1,12 +1,22 @@
 import type { Root } from 'react-dom/client'
 import { ThemeProvider } from '@react-devtools/ui'
-import { StrictMode } from 'react'
+import React, { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import { App } from './App'
 import '@unocss/reset/tailwind.css'
 import 'virtual:uno.css'
 import '@react-devtools/ui/style.css'
+
+// Hack: Hack to suppress "can't detect preamble" error when loading plugins from Vite server
+// in the built DevTools client.
+// @ts-expect-error - global variable
+window.__vite_plugin_react_preamble_installed__ = true
+
+// Expose React for plugins loaded in non-Vite environments (like Webpack)
+// where module resolution for 'react' might not be available.
+// @ts-expect-error - global variable
+window.React = React
 
 let root: Root | null = null
 

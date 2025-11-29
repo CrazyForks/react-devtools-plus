@@ -1,6 +1,7 @@
+import type { LoadedPlugin, UserPlugin } from '~/types/plugin'
 import { createRpcClient, getRpcClient, openInEditor } from '@react-devtools/kit'
 import { useTheme } from '@react-devtools/ui'
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar } from '~/components/Sidebar'
 import { pluginEvents } from './events'
@@ -27,6 +28,48 @@ export function App() {
   const [tree, setTree] = useState<any>(null)
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const { theme } = useTheme()
+  const [plugins, setPlugins] = useState<LoadedPlugin[]>([])
+
+  // Fetch and load plugins
+  useEffect(() => {
+    async function loadPlugins() {
+      try {
+        const response = await fetch('/__react_devtools__/plugins-manifest.json')
+        if (!response.ok)
+          return
+        const pluginManifests: UserPlugin[] = await response.json()
+
+        const loadedPlugins = await Promise.all(
+          pluginManifests.map(async (plugin) => {
+            if (plugin.view?.src) {
+              try {
+                // Use dynamic import to load the component
+                // We assume the src is an absolute path or handled by the server
+                // @ts-expect-error vite-ignore
+                const module = await import(/* @vite-ignore */ plugin.view.src)
+                return {
+                  ...plugin,
+                  component: module.default || module,
+                }
+              }
+              catch (e) {
+                console.error(`[React DevTools] Failed to load plugin ${plugin.name}:`, e)
+                return plugin
+              }
+            }
+            return plugin
+          }),
+        )
+
+        setPlugins(loadedPlugins)
+      }
+      catch (e) {
+        console.error('[React DevTools] Failed to load plugins manifest:', e)
+      }
+    }
+
+    loadPlugins()
+  }, [])
 
   // Sync theme changes to parent overlay
   useEffect(() => {
@@ -108,7 +151,7 @@ export function App() {
 
   return (
     <div className="h-screen w-full flex overflow-hidden bg-base text-base font-sans">
-      <Sidebar />
+      <Sidebar plugins={plugins} />
 
       {/* Main Content */}
       <div className="min-w-0 flex flex-1 flex-col overflow-hidden bg-gray-50 dark:bg-neutral-950">
@@ -126,6 +169,26 @@ export function App() {
           />
           <Route path="/scan" element={<ScanPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          {plugins.map((plugin) => {
+            const Component = plugin.component
+            if (!Component)
+              return null
+            return (
+              <Route
+                key={plugin.name}
+                path={`/plugins/${plugin.name}`}
+                element={(
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <Component
+                      tree={tree}
+                      selectedNodeId={selectedNodeId}
+                      theme={theme}
+                    />
+                  </Suspense>
+                )}
+              />
+            )
+          })}
         </Routes>
       </div>
     </div>

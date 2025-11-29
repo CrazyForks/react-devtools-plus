@@ -14,7 +14,7 @@ import {
   isDevServerV3,
   isWebpack4,
 } from '../compat'
-import { createOpenInEditorMiddleware, serveClient } from '../middleware'
+import { createOpenInEditorMiddleware, createPluginFileMiddleware, createPluginsMiddleware, serveClient } from '../middleware'
 import { createSourceAttributePlugin } from '../utils/babel-transform'
 
 type Compiler = any
@@ -37,9 +37,28 @@ export function setupWebpackDevServerMiddlewares(
   const devServerOptions = compiler.options.devServer as any
 
   // Define middlewares to be applied
+  // ORDER MATTERS! Specific API routes must come before the client static file serving
+  // because the client middleware (sirv) handles SPA fallback (returns index.html for 404s)
+  // which would shadow our API routes if placed earlier.
   const middlewares = [
     {
+      name: 'react-devtools-plugins-manifest',
+      // Mount globally so middleware handles path matching (same as Vite)
+      middleware: createPluginsMiddleware(config, (filePath) => {
+        // Map absolute file path to /__react_devtools__/file?path=...
+        // Use encodeURIComponent to handle special characters in path
+        return `/__react_devtools__/file?path=${encodeURIComponent(filePath)}`
+      }),
+    },
+    {
+      name: 'react-devtools-plugin-file',
+      // Mount globally to debug why path matching fails.
+      // The middleware itself handles path checking.
+      middleware: createPluginFileMiddleware(),
+    },
+    {
       name: 'react-devtools-open-in-editor',
+      path: '/__react_devtools__/open-in-editor',
       middleware: createOpenInEditorMiddleware(
         config.projectRoot,
         config.sourcePathMode,

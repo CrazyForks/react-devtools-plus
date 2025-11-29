@@ -5,3 +5,5 @@
 
 export * from './client-server'
 export * from './open-in-editor'
+export * from './plugin-file'
+export * from './plugins'
