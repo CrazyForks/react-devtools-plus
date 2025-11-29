@@ -1,9 +1,10 @@
-import { Badge, Button, Card, Input, PRESET_COLORS, useTheme } from '@react-devtools/ui'
+import { Badge, Button, Card, Input, PRESET_COLORS, Switch, useTheme } from '@react-devtools/ui'
 import { useState } from 'react'
 
 export function ThemeDemo() {
   const { theme, toggleMode, setPrimaryColor } = useTheme()
   const [inputValue, setInputValue] = useState('')
+  const [switchValue, setSwitchValue] = useState(false)
 
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -87,6 +88,16 @@ export function ThemeDemo() {
           <Input size="sm" placeholder="Small" />
           <Input size="md" placeholder="Medium" />
           <Input size="lg" placeholder="Large" />
+        </div>
+      </Card>
+
+      {/* Switch Component */}
+      <Card title="🔘 Switch 组件" style={{ marginBottom: '24px' }}>
+        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+          <Switch checked={switchValue} onChange={setSwitchValue} label="Toggle me" />
+          <Switch checked label="Checked by default" />
+          <Switch disabled label="Disabled" />
+          <Switch checked disabled label="Checked & Disabled" />
         </div>
       </Card>
 
