@@ -85,6 +85,30 @@ function updateToolbarVisibility(visible: boolean) {
 let scanInstance: ScanInstance | null = null
 let currentOptions: ReactDevtoolsScanOptions = {}
 
+// Internal FPS counter
+let fps = 60
+let frameCount = 0
+let lastTime = typeof performance !== 'undefined' ? performance.now() : Date.now()
+
+const updateFPS = () => {
+  if (typeof performance === 'undefined' || typeof requestAnimationFrame === 'undefined')
+    return
+
+  frameCount++
+  const now = performance.now()
+  if (now - lastTime >= 1000) {
+    fps = frameCount
+    frameCount = 0
+    lastTime = now
+  }
+  requestAnimationFrame(updateFPS)
+}
+
+// Start FPS tracking
+if (typeof requestAnimationFrame !== 'undefined') {
+  requestAnimationFrame(updateFPS)
+}
+
 /**
  * Extract performance data from React Scan internals
  */
@@ -398,6 +422,8 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
         return () => {}
       }
     },
+
+    getFPS: () => fps,
   }
 }
 

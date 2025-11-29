@@ -41,6 +41,26 @@ interface ServerRpcFunctions {
   togglePanel: (visible: boolean) => void
 }
 
+const FPSMeter = ({ fps }: { fps: number | null }) => {
+  if (fps === null)
+    return null
+
+  let colorClass = 'text-gray-600 dark:text-gray-400'
+  if (fps < 15)
+    colorClass = 'text-red-600 dark:text-red-400'
+  else if (fps < 30)
+    colorClass = 'text-yellow-600 dark:text-yellow-400'
+
+  return (
+    <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 text-xs font-mono dark:bg-gray-800">
+      <span className={`font-bold ${colorClass}`}>
+        {fps}
+      </span>
+      <span className="text-gray-500 dark:text-gray-500">FPS</span>
+    </div>
+  )
+}
+
 export function ScanPage() {
   const [isRunning, setIsRunning] = useState(false)
   const [config, setConfig] = useState<ScanConfig>({
@@ -55,6 +75,21 @@ export function ScanPage() {
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [isInspecting, setIsInspecting] = useState(false)
   const [focusedComponent, setFocusedComponent] = useState<ComponentInfo | null>(null)
+  const [fps, setFps] = useState<number | null>(null)
+
+  const fetchFps = async () => {
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (!rpc?.callPluginRPC)
+      return
+
+    try {
+      const currentFps = await rpc.callPluginRPC('react-scan', 'getFPS')
+      setFps(currentFps as number)
+    }
+    catch (error) {
+      // Ignore errors for FPS polling
+    }
+  }
 
   const fetchPerformanceData = async () => {
     const rpc = getRpcClient<ServerRpcFunctions>()
@@ -140,8 +175,15 @@ export function ScanPage() {
   useEffect(() => {
     if (isRunning && autoRefresh) {
       fetchPerformanceData()
-      const interval = setInterval(fetchPerformanceData, 1000) // Refresh every second
-      return () => clearInterval(interval)
+      fetchFps()
+
+      const dataInterval = setInterval(fetchPerformanceData, 1000) // Refresh data every second
+      const fpsInterval = setInterval(fetchFps, 500) // Refresh FPS every 500ms
+
+      return () => {
+        clearInterval(dataInterval)
+        clearInterval(fpsInterval)
+      }
     }
   }, [isRunning, autoRefresh])
 
@@ -285,6 +327,18 @@ export function ScanPage() {
           </p>
         </div>
         <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={handleToggleInspect}
+            title={isInspecting ? 'Click to cancel inspection' : 'Select component in the page'}
+            className={`rounded p-1.5 transition-colors ${isInspecting ? 'bg-primary-500 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6" strokeDasharray="4 4" />
+              <path d="m12 12 4 10 1.7-4.3L22 16Z" fill="currentColor" />
+            </svg>
+          </button>
+          <div className="h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600 font-medium dark:text-gray-400">Scan</span>
             <Switch
@@ -297,18 +351,7 @@ export function ScanPage() {
               }}
             />
           </div>
-          <div className="h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
-          <button
-            type="button"
-            onClick={handleToggleInspect}
-            title={isInspecting ? 'Click to cancel inspection' : 'Select component in the page'}
-            className={`rounded p-2 transition-colors ${isInspecting ? 'bg-primary-500 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6" />
-              <path d="m12 12 4 10 1.7-4.3L22 16Z" />
-            </svg>
-          </button>
+          <FPSMeter fps={fps} />
         </div>
       </div>
 

@@ -424,6 +424,19 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
       },
 
       /**
+       * Get current FPS
+       */
+      getFPS: () => {
+        try {
+          const scan = getScanInstance()
+          return scan?.getFPS() || 0
+        }
+        catch {
+          return 0
+        }
+      },
+
+      /**
        * Start component inspection mode
        */
       startInspecting: () => {

@@ -151,6 +151,11 @@ export interface ScanInstance {
    * Subscribe to inspection state changes
    */
   onInspectStateChange: (callback: (state: any) => void) => () => void
+
+  /**
+   * Get current FPS
+   */
+  getFPS: () => number
 }
 
 /**
