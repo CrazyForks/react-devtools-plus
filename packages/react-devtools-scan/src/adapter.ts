@@ -46,6 +46,42 @@ function getScan() {
   return getGlobalObject('__REACT_SCAN_SCAN__') || scan
 }
 
+/**
+ * Update toolbar visibility in the shadow DOM
+ */
+function updateToolbarVisibility(visible: boolean) {
+  if (typeof document === 'undefined')
+    return
+
+  try {
+    const update = () => {
+      const root = document.getElementById('react-scan-root')
+      if (!root || !root.shadowRoot)
+        return
+
+      let style = root.shadowRoot.getElementById('react-scan-devtools-style')
+      if (!style) {
+        style = document.createElement('style')
+        style.id = 'react-scan-devtools-style'
+        root.shadowRoot.appendChild(style)
+      }
+
+      style.textContent = visible ? '' : '#react-scan-toolbar { display: none !important; }'
+    }
+
+    // Try immediately
+    update()
+
+    // And retry in next frame to ensure DOM is ready if just initialized
+    requestAnimationFrame(update)
+    // And one more time for good measure given React Scan's async nature
+    setTimeout(update, 100)
+  }
+  catch (e) {
+    // Ignore errors
+  }
+}
+
 let scanInstance: ScanInstance | null = null
 let currentOptions: ReactDevtoolsScanOptions = {}
 
@@ -144,17 +180,27 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
     setOptions: (newOptions: Partial<ReactDevtoolsScanOptions>) => {
       currentOptions = { ...currentOptions, ...newOptions }
 
+      // We need to force showToolbar to true in the actual options passed to react-scan
+      // so that the container/inspector is initialized. We'll handle visibility via CSS.
+      const effectiveOptions = { ...currentOptions }
+      if (effectiveOptions.enabled) {
+        effectiveOptions.showToolbar = true
+      }
+
       if (currentOptions.enabled) {
         const scanFn = getScan()
         if (scanFn) {
-          scanFn(currentOptions)
+          scanFn(effectiveOptions)
         }
         else {
-          getSetOptions()(currentOptions)
+          getSetOptions()(effectiveOptions)
         }
+
+        // Apply visibility override
+        updateToolbarVisibility(!!currentOptions.showToolbar)
       }
       else {
-        getSetOptions()(currentOptions)
+        getSetOptions()(effectiveOptions)
       }
     },
 
@@ -167,6 +213,9 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
       }
 
       const options = { ...currentOptions, enabled: true }
+      // Force showToolbar to true
+      const effectiveOptions = { ...options, showToolbar: true }
+
       const scanFn = getScan()
       const isInstrumented = internals?.instrumentation && !internals.instrumentation.isPaused.value
 
@@ -174,21 +223,23 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
       if (scanFn) {
         // Always call scanFn to ensure options are applied and it's active
         // Even if instrumented, we need to ensure it's using our options
-        scanFn(options)
+        scanFn(effectiveOptions)
       }
       else {
         // Fallback to setOptions if scanFn not available
         const current = getGetOptions()()?.value || {}
-        const hasChanges = Object.keys(options).some((key) => {
-          return options[key as keyof ReactDevtoolsScanOptions] !== current[key as keyof typeof current]
+        const hasChanges = Object.keys(effectiveOptions).some((key) => {
+          return effectiveOptions[key as keyof ReactDevtoolsScanOptions] !== current[key as keyof typeof current]
         })
 
         if (hasChanges || !isInstrumented) {
-          getSetOptions()(options)
+          getSetOptions()(effectiveOptions)
         }
       }
 
       currentOptions = options
+      // Apply visibility override
+      updateToolbarVisibility(!!currentOptions.showToolbar)
     },
 
     stop: () => {
@@ -206,11 +257,13 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
     },
 
     hideToolbar: () => {
-      getSetOptions()({ showToolbar: false })
+      currentOptions.showToolbar = false
+      updateToolbarVisibility(false)
     },
 
     showToolbar: () => {
-      getSetOptions()({ showToolbar: true })
+      currentOptions.showToolbar = true
+      updateToolbarVisibility(true)
     },
 
     getToolbarVisibility: () => {
