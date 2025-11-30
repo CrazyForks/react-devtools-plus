@@ -443,14 +443,26 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
       const { mode, command } = getWebpackModeAndCommand(compiler)
       const projectRoot = getWebpackContext(compiler)
 
+      console.log('[React DevTools] Webpack hook called')
+      console.log('[React DevTools] Mode:', mode, 'Command:', command)
+      console.log('[React DevTools] Has devServer:', !!compiler.options.devServer)
+
       pluginConfig = resolvePluginConfig(options, projectRoot, mode, command)
+
+      console.log('[React DevTools] Plugin enabled:', pluginConfig?.isEnabled)
+      console.log('[React DevTools] Inject source:', pluginConfig?.injectSource)
 
       if (!pluginConfig?.isEnabled) {
         return
       }
 
       // Setup dev server middlewares
-      if (command === 'serve' && pluginConfig) {
+      // For Next.js, devServer might not be set, but we still want to inject source attributes
+      // So we check for development mode instead
+      const isDev = mode === 'development'
+      console.log('[React DevTools] isDev:', isDev)
+
+      if ((command === 'serve' || isDev) && pluginConfig) {
         const servePath = getClientPath(reactDevtoolsPath)
         setupWebpackDevServerMiddlewares(compiler, pluginConfig, servePath)
 

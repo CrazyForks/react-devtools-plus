@@ -297,39 +297,113 @@ export function injectBabelPlugin(
   }
 
   const plugin = createSourceAttributePlugin(projectRoot, sourcePathMode)
-  rules.forEach(rule => visitRuleAndInjectPlugin(rule, plugin))
+  
+  // First, try to inject into existing babel-loader rules
+  let injected = false
+  rules.forEach((rule) => {
+    if (visitRuleAndInjectPlugin(rule, plugin)) {
+      injected = true
+    }
+  })
+  
+  // If no babel-loader found (e.g., Next.js with SWC), add a custom loader
+  if (!injected) {
+    addSourceAttributeLoader(compiler, projectRoot, sourcePathMode)
+  }
+}
+
+/**
+ * Add a custom loader for source attribute injection
+ * This is used when babel-loader is not available (e.g., Next.js with SWC)
+ */
+function addSourceAttributeLoader(
+  compiler: Compiler,
+  projectRoot: string,
+  sourcePathMode: SourcePathMode,
+) {
+  const rules = compiler.options.module?.rules
+  if (!rules) return
+
+  // Resolve loader path relative to this file's location
+  // In dist, this will be at dist/index.js, and loader is at dist/utils/source-attribute-loader.cjs
+  // Use path and fs that are already imported at the top of the file
+  const loaderPath = path.resolve(__dirname, 'utils', 'source-attribute-loader.cjs')
+  
+  console.log('[React DevTools] Adding source attribute loader')
+  console.log('[React DevTools] __dirname:', __dirname)
+  console.log('[React DevTools] Loader path:', loaderPath)
+  console.log('[React DevTools] Loader exists:', fs.existsSync(loaderPath))
+  
+  if (!fs.existsSync(loaderPath)) {
+    console.warn('[React DevTools] Source attribute loader not found at:', loaderPath)
+    return
+  }
+  
+  rules.unshift({
+    test: /\.[jt]sx$/,
+    exclude: /node_modules/,
+    enforce: 'pre' as const,
+    use: [
+      {
+        loader: loaderPath,
+        options: {
+          projectRoot,
+          sourcePathMode,
+        },
+      },
+    ],
+  })
+  
+  console.log('[React DevTools] Source attribute loader added successfully')
 }
 
 /**
  * Recursively visit webpack rules and inject Babel plugin
+ * Returns true if babel-loader was found and plugin was injected
  */
-function visitRuleAndInjectPlugin(rule: any, plugin: any) {
+function visitRuleAndInjectPlugin(rule: any, plugin: any): boolean {
+  let found = false
+  
   // Handle oneOf rules
   if (rule.oneOf) {
-    rule.oneOf.forEach((r: any) => visitRuleAndInjectPlugin(r, plugin))
-    return
+    rule.oneOf.forEach((r: any) => {
+      if (visitRuleAndInjectPlugin(r, plugin)) {
+        found = true
+      }
+    })
+    return found
   }
 
   // Handle rule.use (array or object)
   if (rule.use) {
     const uses = Array.isArray(rule.use) ? rule.use : [rule.use]
-    uses.forEach((use: any) => injectPluginToLoader(use, plugin))
+    uses.forEach((use: any) => {
+      if (injectPluginToLoader(use, plugin)) {
+        found = true
+      }
+    })
   }
 
   // Handle rule.loader (shortcut)
   if (rule.loader && rule.loader.includes('babel-loader')) {
     injectPluginToOptions(rule, plugin)
+    found = true
   }
+  
+  return found
 }
 
 /**
  * Inject plugin to a loader configuration
+ * Returns true if babel-loader was found
  */
-function injectPluginToLoader(use: any, plugin: any) {
+function injectPluginToLoader(use: any, plugin: any): boolean {
   const loaderName = typeof use === 'string' ? use : use.loader
   if (loaderName && loaderName.includes('babel-loader') && typeof use !== 'string') {
     injectPluginToOptions(use, plugin)
+    return true
   }
+  return false
 }
 
 /**

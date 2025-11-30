@@ -34,7 +34,22 @@ export function App() {
   useEffect(() => {
     async function loadPlugins() {
       try {
-        const response = await fetch('/__react_devtools__/plugins-manifest.json')
+        // Determine the base path for plugins manifest
+        // If loaded from /api/devtools, use /api/devtools/plugins-manifest.json
+        // Otherwise use the default /__react_devtools__/plugins-manifest.json
+        const currentPath = window.location.pathname
+        let manifestUrl = '/__react_devtools__/plugins-manifest.json'
+        
+        // Check if we're loaded from a custom path (e.g., /api/devtools in Next.js)
+        if (currentPath.startsWith('/api/')) {
+          // Extract the base path (e.g., /api/devtools)
+          const pathParts = currentPath.split('/').filter(Boolean)
+          if (pathParts.length >= 2) {
+            manifestUrl = `/${pathParts[0]}/${pathParts[1]}/plugins-manifest.json`
+          }
+        }
+        
+        const response = await fetch(manifestUrl)
         if (!response.ok)
           return
         const pluginManifests: UserPlugin[] = await response.json()

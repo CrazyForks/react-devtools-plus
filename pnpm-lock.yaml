@@ -247,24 +247,12 @@ importers:
 
   packages/playground/nextjs:
     dependencies:
-      '@babel/core':
-        specifier: ^7.24.0
-        version: 7.28.5
-      '@babel/preset-react':
-        specifier: ^7.24.0
-        version: 7.28.5(@babel/core@7.28.5)
-      '@babel/preset-typescript':
-        specifier: ^7.24.0
-        version: 7.28.5(@babel/core@7.28.5)
-      '@react-devtools/overlay':
+      '@react-devtools/nextjs':
         specifier: workspace:*
-        version: link:../../react-devtools-overlay
-      launch-editor:
-        specifier: ^2.6.1
-        version: 2.12.0
+        version: link:../../react-devtools-nextjs
       next:
         specifier: 14.2.3
-        version: 14.2.3(@babel/core@7.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.94.2)
+        version: 14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.94.2)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -642,6 +630,37 @@ importers:
         version: 0.15.12(@arethetypeswrong/core@0.18.2)(publint@0.3.15)(typescript@5.9.3)
       typescript:
         specifier: ^5.5.0
+        version: 5.9.3
+
+  packages/react-devtools-nextjs:
+    dependencies:
+      '@react-devtools/overlay':
+        specifier: workspace:*
+        version: link:../react-devtools-overlay
+      launch-editor:
+        specifier: ^2.6.1
+        version: 2.12.0
+      react-devtools:
+        specifier: workspace:*
+        version: link:../react-devtools
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.19.25
+      '@types/react':
+        specifier: ^18.3.3
+        version: 18.3.27
+      next:
+        specifier: ^14.2.3
+        version: 14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.94.2)
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      tsup:
+        specifier: ^8.0.2
+        version: 8.5.1(@microsoft/api-extractor@7.55.1(@types/node@20.19.25))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
+      typescript:
+        specifier: ^5.4.5
         version: 5.9.3
 
   packages/react-devtools-overlay:
@@ -16465,7 +16484,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  next@14.2.3(@babel/core@7.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.94.2):
+  next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.94.2):
     dependencies:
       '@next/env': 14.2.3
       '@swc/helpers': 0.5.5
@@ -16475,7 +16494,7 @@ snapshots:
       postcss: 8.4.31
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      styled-jsx: 5.1.1(@babel/core@7.28.5)(react@18.3.1)
+      styled-jsx: 5.1.1(react@18.3.1)
     optionalDependencies:
       '@next/swc-darwin-arm64': 14.2.3
       '@next/swc-darwin-x64': 14.2.3
@@ -17362,7 +17381,7 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       tsx: 4.20.6
     optionalDependencies:
-      next: 14.2.3(@babel/core@7.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.94.2)
+      next: 14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.94.2)
       react-router: 6.30.2(react@18.3.1)
       react-router-dom: 6.30.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       unplugin: 2.1.0
@@ -18277,12 +18296,10 @@ snapshots:
     dependencies:
       webpack: 5.103.0(webpack-cli@5.1.4)
 
-  styled-jsx@5.1.1(@babel/core@7.28.5)(react@18.3.1):
+  styled-jsx@5.1.1(react@18.3.1):
     dependencies:
       client-only: 0.0.1
       react: 18.3.1
-    optionalDependencies:
-      '@babel/core': 7.28.5
 
   stylehacks@7.0.7(postcss@8.5.6):
     dependencies:

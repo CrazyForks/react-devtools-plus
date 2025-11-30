@@ -47,3 +47,6 @@ export type { ReactDevToolsPluginOptions } from './unplugin.js'
 export { createPluginsMiddleware, createPluginFileMiddleware, serveClient, createOpenInEditorMiddleware } from './middleware/index.js'
 export { resolvePluginConfig } from './config/normalize.js'
 export { getClientPath } from './utils/paths.js'
+
+// Export Babel plugin for manual integration (e.g. Next.js with custom Babel config)
+export { createSourceAttributePlugin } from './utils/babel-transform.js'

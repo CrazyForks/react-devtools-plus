@@ -195,7 +195,7 @@ export function toggleInspector(enabled: boolean, options: ToggleInspectorOption
   if (enabled) {
     window.addEventListener('mouseover', handleMouseOver, true)
     window.addEventListener('click', handleClick, true)
-    document.body.style.cursor = 'default'
+    document.body.style.cursor = 'crosshair'
   }
   else {
     window.removeEventListener('mouseover', handleMouseOver, true)
