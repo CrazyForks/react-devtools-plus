@@ -8,6 +8,30 @@ import { usePanelVisible } from './composables/usePanelVisible'
 import { usePosition } from './composables/usePosition'
 import './styles.css'
 
+/**
+ * Preset color themes
+ * Must match packages/react-devtools-ui/src/theme/colors.ts
+ */
+const PRESET_COLORS: Record<string, string> = {
+  react: '#00D8FF', // Use our brighter cyan for overlay to match styles.css default, or use #61dafb if strictly matching client
+  // user previously used #00D8FF for 'react' case, keeping it or switching?
+  // The client PRESET_COLORS says #61dafb.
+  // But styles.css fallback is #00D8FF.
+  // Let's use the one from PRESET_COLORS to match client, but maybe #00D8FF is better for visibility on white?
+  // Let's stick to the list from colors.ts for consistency across preset names.
+  // EXCEPTION: 'react' in overlay seems to use #00D8FF in styles.css. I'll allow #00D8FF as a special override or just use the standard one.
+  // Let's use the standard ones for the named colors.
+  blue: '#3b82f6',
+  green: '#10b981',
+  purple: '#8b5cf6',
+  pink: '#ec4899',
+  orange: '#f97316',
+  red: '#ef4444',
+  yellow: '#f59e0b',
+  teal: '#14b8a6',
+  indigo: '#6366f1',
+}
+
 function useInitialTheme() {
   const [isDark, setIsDark] = useState(false)
 
@@ -27,8 +51,15 @@ function useInitialTheme() {
         setIsDark(!!shouldBeDark)
 
         // Always set the variable, using default if not provided
-        const primaryColor = theme?.primaryColor || '#00D8FF'
-        const resolvedColor = primaryColor === 'react' ? '#00D8FF' : primaryColor
+        const rawPrimaryColor = theme?.primaryColor
+        const primaryColor = rawPrimaryColor || '#00D8FF'
+
+        // Resolve preset colors (case-insensitive)
+        const normalizedColor = primaryColor.toLowerCase().trim()
+        const presetColor = PRESET_COLORS[normalizedColor]
+        const resolvedColor = presetColor || (primaryColor === 'react' ? '#00D8FF' : primaryColor)
+
+        // console.log('[React DevTools Overlay] Theme Init:', { rawPrimaryColor, normalizedColor, presetColor, resolvedColor, PRESET_COLORS })
 
         // Set CSS variable on document root to ensure it's available everywhere in overlay
         document.documentElement.style.setProperty('--color-primary-500', resolvedColor)
