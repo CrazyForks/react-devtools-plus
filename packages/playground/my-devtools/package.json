@@ -1,0 +1,28 @@
+{
+  "name": "my-devtools",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "react-devtools": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "react": "^18.3.1",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5"
+  }
+}

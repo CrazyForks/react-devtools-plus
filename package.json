@@ -56,7 +56,8 @@
     "prepare": "simple-git-hooks",
     "test": "vitest --environment jsdom",
     "play": "turbo dev --filter=./packages/playground/react",
-    "play:webpack": "turbo dev --filter=./packages/playground/react-webpack"
+    "play:webpack": "turbo dev --filter=./packages/playground/react-webpack",
+    "play:my-devtools": "turbo dev --filter=./packages/playground/my-devtools-play"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^5.4.1",
