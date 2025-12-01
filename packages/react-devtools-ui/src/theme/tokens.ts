@@ -1,4 +1,5 @@
 import type { ColorPalette } from './types'
+import { colord } from 'colord'
 
 /**
  * Design tokens for spacing
@@ -134,48 +135,58 @@ export function generateCSSVariables(
 ) {
   const vars: Record<string, string> = {}
 
+  const setVar = (name: string, value: string) => {
+    vars[name] = value
+    // Generate RGB variable for opacity support
+    // Handle hex colors
+    if (value.startsWith('#')) {
+      const rgb = colord(value).toRgb()
+      vars[`${name}-rgb`] = `${rgb.r} ${rgb.g} ${rgb.b}`
+    }
+  }
+
   // Color palettes
   Object.entries(colors).forEach(([name, palette]) => {
     Object.entries(palette).forEach(([shade, value]) => {
-      vars[`--color-${name}-${shade}`] = value
+      setVar(`--color-${name}-${shade}`, value)
     })
   })
 
   // Neutral colors
   Object.entries(neutral).forEach(([shade, value]) => {
-    vars[`--color-neutral-${shade}`] = value
+    setVar(`--color-neutral-${shade}`, value)
   })
 
   // Semantic colors (based on mode)
   if (mode === 'light') {
-    vars['--color-bg-base'] = neutral[50]
-    vars['--color-bg-elevated'] = neutral[100]
-    vars['--color-bg-hover'] = neutral[200]
-    vars['--color-bg-active'] = neutral[300]
+    setVar('--color-bg-base', neutral[50])
+    setVar('--color-bg-elevated', neutral[100])
+    setVar('--color-bg-hover', neutral[200])
+    setVar('--color-bg-active', neutral[300])
 
-    vars['--color-text-primary'] = neutral[900]
-    vars['--color-text-secondary'] = neutral[700]
-    vars['--color-text-tertiary'] = neutral[500]
-    vars['--color-text-disabled'] = neutral[400]
+    setVar('--color-text-primary', neutral[900])
+    setVar('--color-text-secondary', neutral[700])
+    setVar('--color-text-tertiary', neutral[500])
+    setVar('--color-text-disabled', neutral[400])
 
-    vars['--color-border-base'] = neutral[300]
-    vars['--color-border-hover'] = neutral[400]
-    vars['--color-border-focus'] = colors.primary[500]
+    setVar('--color-border-base', neutral[300])
+    setVar('--color-border-hover', neutral[400])
+    setVar('--color-border-focus', colors.primary[500])
   }
   else {
-    vars['--color-bg-base'] = neutral[950]
-    vars['--color-bg-elevated'] = neutral[900]
-    vars['--color-bg-hover'] = neutral[800]
-    vars['--color-bg-active'] = neutral[700]
+    setVar('--color-bg-base', neutral[950])
+    setVar('--color-bg-elevated', neutral[900])
+    setVar('--color-bg-hover', neutral[800])
+    setVar('--color-bg-active', neutral[700])
 
-    vars['--color-text-primary'] = neutral[50]
-    vars['--color-text-secondary'] = neutral[300]
-    vars['--color-text-tertiary'] = neutral[500]
-    vars['--color-text-disabled'] = neutral[600]
+    setVar('--color-text-primary', neutral[50])
+    setVar('--color-text-secondary', neutral[300])
+    setVar('--color-text-tertiary', neutral[500])
+    setVar('--color-text-disabled', neutral[600])
 
-    vars['--color-border-base'] = neutral[700]
-    vars['--color-border-hover'] = neutral[600]
-    vars['--color-border-focus'] = colors.primary[500]
+    setVar('--color-border-base', neutral[700])
+    setVar('--color-border-hover', neutral[600])
+    setVar('--color-border-focus', colors.primary[500])
   }
 
   // Spacing
