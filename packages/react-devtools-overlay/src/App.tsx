@@ -132,6 +132,7 @@ export function App() {
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
+        transition: isDragging ? 'none' : 'left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
       }}
       onMouseMove={bringUp}
     >

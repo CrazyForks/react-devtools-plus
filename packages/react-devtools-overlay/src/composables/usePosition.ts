@@ -105,6 +105,36 @@ export function usePosition(panelVisible: boolean) {
     }, 2000)
   }
 
+  const snapToEdge = (x: number, y: number) => {
+    const { innerWidth, innerHeight } = window
+    const snapMargin = 25
+
+    const distLeft = x
+    const distRight = innerWidth - x
+    const distTop = y
+    const distBottom = innerHeight - y
+
+    const min = Math.min(distLeft, distRight, distTop, distBottom)
+
+    let newX = x
+    let newY = y
+
+    if (min === distLeft)
+      newX = snapMargin
+    else if (min === distRight)
+      newX = innerWidth - snapMargin
+    else if (min === distTop)
+      newY = snapMargin
+    else newY = innerHeight - snapMargin // Bottom
+
+    // Clamp the other axis to be within bounds (with margin)
+    // This prevents it from being stuck in a corner if we only snapped one axis
+    newX = Math.max(snapMargin, Math.min(innerWidth - snapMargin, newX))
+    newY = Math.max(snapMargin, Math.min(innerHeight - snapMargin, newY))
+
+    return { x: newX, y: newY }
+  }
+
   const handleButtonPointerDown = (
     e: React.PointerEvent,
     onToggle: () => void,
@@ -142,7 +172,11 @@ export function usePosition(panelVisible: boolean) {
       window.removeEventListener('pointermove', handlePointerMove)
       window.removeEventListener('pointerup', handlePointerUp)
 
-      if (!wasDragging) {
+      if (wasDragging) {
+        // Snap to edge on release
+        setPosition(prev => snapToEdge(prev.x, prev.y))
+      }
+      else {
         onToggle()
       }
     }
