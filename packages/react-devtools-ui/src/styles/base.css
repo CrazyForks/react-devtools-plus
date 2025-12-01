@@ -108,3 +108,27 @@ table {
 [data-theme='dark'] ::selection {
   background-color: var(--color-primary-800);
 }
+
+/* View Transition support */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2147483646; /* Ensure it's above everything */
+}
+
+/* Dark mode specific adjustments for better blending */
+[data-theme='dark'] ::view-transition-old(root) {
+  z-index: 2147483646;
+}
+
+[data-theme='dark'] ::view-transition-new(root) {
+  z-index: 1;
+}

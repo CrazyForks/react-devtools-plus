@@ -11,7 +11,7 @@ interface ThemeContextValue {
   config: ThemeConfig
   setMode: (mode: ThemeMode) => void
   setPrimaryColor: (color: string) => void
-  toggleMode: () => void
+  toggleMode: (event?: React.MouseEvent) => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
@@ -131,10 +131,52 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
       setConfig(prev => ({ ...prev, primaryColor }))
     },
 
-    toggleMode: () => {
+    toggleMode: (event?: React.MouseEvent) => {
       const currentMode = resolveThemeMode(config.mode || 'auto')
       const nextMode = currentMode === 'light' ? 'dark' : 'light'
-      setConfig(prev => ({ ...prev, mode: nextMode }))
+
+      // Use View Transitions API if available
+      // @ts-expect-error View Transition API is experimental
+      if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        setConfig(prev => ({ ...prev, mode: nextMode }))
+        return
+      }
+
+      // Get click position or center of screen
+      const x = event?.clientX ?? window.innerWidth / 2
+      const y = event?.clientY ?? window.innerHeight / 2
+
+      // Calculate distance to furthest corner
+      const endRadius = Math.hypot(
+        Math.max(x, window.innerWidth - x),
+        Math.max(y, window.innerHeight - y),
+      )
+
+      // @ts-expect-error View Transition API is experimental
+      const transition = document.startViewTransition(() => {
+        setConfig(prev => ({ ...prev, mode: nextMode }))
+      })
+
+      transition.ready.then(() => {
+        const clipPath = [
+          `circle(0px at ${x}px ${y}px)`,
+          `circle(${endRadius}px at ${x}px ${y}px)`,
+        ]
+
+        // Animate the new view expanding from the click point
+        document.documentElement.animate(
+          {
+            clipPath: nextMode === 'dark' ? clipPath : [...clipPath].reverse(),
+          },
+          {
+            duration: 400,
+            easing: 'ease-in-out',
+            pseudoElement: nextMode === 'dark'
+              ? '::view-transition-new(root)'
+              : '::view-transition-old(root)',
+          },
+        )
+      })
     },
   }), [theme, config])
 
