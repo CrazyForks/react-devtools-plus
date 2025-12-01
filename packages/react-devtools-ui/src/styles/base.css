@@ -124,11 +124,3 @@ table {
   z-index: 2147483646; /* Ensure it's above everything */
 }
 
-/* Dark mode specific adjustments for better blending */
-[data-theme='dark'] ::view-transition-old(root) {
-  z-index: 2147483646;
-}
-
-[data-theme='dark'] ::view-transition-new(root) {
-  z-index: 1;
-}

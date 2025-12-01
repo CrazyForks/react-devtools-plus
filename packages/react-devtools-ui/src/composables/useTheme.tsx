@@ -1,6 +1,7 @@
 import type { FC, ReactNode } from 'react'
 import type { Theme, ThemeConfig, ThemeMode } from '../theme/types'
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { applyTheme, createTheme, resolveThemeMode, watchSystemDarkMode } from '../theme'
 
 /**
@@ -145,7 +146,7 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
       // Get click position or center of screen
       const x = event?.clientX ?? window.innerWidth / 2
       const y = event?.clientY ?? window.innerHeight / 2
-
+      
       // Calculate distance to furthest corner
       const endRadius = Math.hypot(
         Math.max(x, window.innerWidth - x),
@@ -154,7 +155,9 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
 
       // @ts-expect-error View Transition API is experimental
       const transition = document.startViewTransition(() => {
-        setConfig(prev => ({ ...prev, mode: nextMode }))
+        flushSync(() => {
+          setConfig(prev => ({ ...prev, mode: nextMode }))
+        })
       })
 
       transition.ready.then(() => {
@@ -166,14 +169,12 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
         // Animate the new view expanding from the click point
         document.documentElement.animate(
           {
-            clipPath: nextMode === 'dark' ? clipPath : [...clipPath].reverse(),
+            clipPath: clipPath,
           },
           {
             duration: 400,
             easing: 'ease-in-out',
-            pseudoElement: nextMode === 'dark'
-              ? '::view-transition-new(root)'
-              : '::view-transition-old(root)',
+            pseudoElement: '::view-transition-new(root)',
           },
         )
       })
