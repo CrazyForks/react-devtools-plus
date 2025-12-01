@@ -1,9 +1,14 @@
 import type { ComponentTreeNode } from '@react-devtools/kit'
-import React from 'react'
+import { getRpcClient } from '@react-devtools/kit'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ReactLogo from '~/components/assets/ReactLogo'
 import { useComponentTreeHook } from '~/composables/useComponentTreeHook'
 import pkg from '../../package.json'
+
+interface ServerRpcFunctions {
+  getReactVersion: () => Promise<string | null>
+}
 
 interface OverviewPageProps {
   tree: ComponentTreeNode | null
@@ -37,7 +42,20 @@ function Card({ children, className = '', to }: { children: React.ReactNode, cla
 
 export function OverviewPage({ tree }: OverviewPageProps) {
   const componentCount = tree ? countComponents(tree) : 0
-  const reactVersion = '18.3.1' // Mock version for now
+  const [reactVersion, setReactVersion] = useState<string | null>(null)
+
+  // Get React version from the host page
+  useEffect(() => {
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (rpc) {
+      rpc.getReactVersion().then((version: string | null) => {
+        setReactVersion(version)
+      }).catch(() => {
+        // Fallback if RPC fails
+        setReactVersion(null)
+      })
+    }
+  }, [])
 
   // Ensure component tree hook is installed
   useComponentTreeHook(tree)
@@ -64,8 +82,7 @@ export function OverviewPage({ tree }: OverviewPageProps) {
           <Card className="theme-card-primary">
             <ReactLogo className="mb-1 h-8 w-8 text-primary-500" />
             <span className="text-xl text-primary-500 font-bold">
-              v
-              {reactVersion}
+              {reactVersion ? `v${reactVersion}` : 'React'}
             </span>
           </Card>
           <Card className="theme-card-primary" to="/components">

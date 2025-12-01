@@ -474,6 +474,39 @@ function detectExistingRoots(rendererID: number) {
   return false
 }
 
+/**
+ * Get the React version from the renderer
+ */
+export function getReactVersion(): string | null {
+  const globalObj = globalThis as typeof globalThis & { __REACT_DEVTOOLS_GLOBAL_HOOK__?: ReactDevToolsHook }
+  const hook = globalObj.__REACT_DEVTOOLS_GLOBAL_HOOK__
+
+  if (!hook || !hook.renderers) {
+    return null
+  }
+
+  // Try to get version from the first renderer
+  for (const renderer of hook.renderers.values()) {
+    if (renderer && renderer.version) {
+      return renderer.version
+    }
+    // Some versions store it differently
+    if (renderer && renderer.reconcilerVersion) {
+      return renderer.reconcilerVersion
+    }
+  }
+
+  // Fallback: try to get from React global
+  if (typeof window !== 'undefined') {
+    const React = (window as any).React
+    if (React && React.version) {
+      return React.version
+    }
+  }
+
+  return null
+}
+
 export function installReactHook(showHostComponents: () => boolean) {
   const globalObj = globalThis as typeof globalThis & { __REACT_DEVTOOLS_GLOBAL_HOOK__?: ReactDevToolsHook }
 
