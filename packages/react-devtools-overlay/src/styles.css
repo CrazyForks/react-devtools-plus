@@ -215,28 +215,66 @@
   width: min(80vw, 1000px);
   height: min(60vh, 800px);
   pointer-events: auto;
-  transform: translate(-50%, calc(-100% - 24px)); /* Adjusted spacing */
-  visibility: inherit;
+  /* Default transform (bottom) */
+  transform: translate(-50%, calc(-100% - 24px)) scale(1);
+  transform-origin: center bottom;
+  opacity: 1;
+  visibility: visible;
+
+  /* Playful entry animation */
   transition:
     opacity 0.3s ease,
-    transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+    visibility 0s linear 0s;
 }
 
-/* Bottom position overrides */
+/* Hidden state - Playful exit */
+.react-devtools-iframe-container--hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+
+  /* Quicker, simpler exit, delay visibility until done */
+  transition:
+    opacity 0.2s ease,
+    transform 0.3s cubic-bezier(0.4, 0, 1, 1),
+    visibility 0s linear 0.3s;
+}
+
+/* Bottom position (Default) */
 .react-devtools-anchor[data-position='bottom'] .react-devtools-iframe-container {
-  transform: translate(-50%, calc(-100% - 24px));
+  transform-origin: center bottom;
+  transform: translate(-50%, calc(-100% - 24px)) scale(1);
+}
+.react-devtools-anchor[data-position='bottom'] .react-devtools-iframe-container--hidden {
+  transform: translate(-50%, calc(-100% - 10px)) scale(0.8);
 }
 
+/* Top position */
 .react-devtools-anchor[data-position='top'] .react-devtools-iframe-container {
-  transform: translate(-50%, calc(0% + 60px));
+  transform-origin: center top;
+  transform: translate(-50%, calc(0% + 60px)) scale(1);
+}
+.react-devtools-anchor[data-position='top'] .react-devtools-iframe-container--hidden {
+  transform: translate(-50%, calc(0% + 46px)) scale(0.8);
 }
 
+/* Left position */
 .react-devtools-anchor[data-position='left'] .react-devtools-iframe-container {
-  transform: translate(calc(0% + 60px), -50%);
+  transform-origin: left center;
+  transform: translate(calc(0% + 60px), -50%) scale(1);
+}
+.react-devtools-anchor[data-position='left'] .react-devtools-iframe-container--hidden {
+  transform: translate(calc(0% + 46px), -50%) scale(0.8);
 }
 
+/* Right position */
 .react-devtools-anchor[data-position='right'] .react-devtools-iframe-container {
-  transform: translate(calc(-100% - 24px), -50%);
+  transform-origin: right center;
+  transform: translate(calc(-100% - 24px), -50%) scale(1);
+}
+.react-devtools-anchor[data-position='right'] .react-devtools-iframe-container--hidden {
+  transform: translate(calc(-100% - 10px), -50%) scale(0.8);
 }
 
 @media (min-width: 1400px) {

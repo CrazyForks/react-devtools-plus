@@ -20,10 +20,7 @@ export function IframeContainer({ iframeRef, visible }: IframeContainerProps) {
   return (
     <div
       ref={containerRef}
-      className="react-devtools-iframe-container"
-      style={{
-        display: visible ? 'block' : 'none',
-      }}
+      className={`react-devtools-iframe-container ${visible ? '' : 'react-devtools-iframe-container--hidden'}`}
     />
   )
 }
