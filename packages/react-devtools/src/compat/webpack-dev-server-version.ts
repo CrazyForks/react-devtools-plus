@@ -30,18 +30,23 @@ export interface DevServerVersionInfo {
  * Detect webpack-dev-server version from devServer options and compiler context
  *
  * Detection strategy:
- * 1. Check for v3-specific options (contentBase, before, after)
- * 2. Check for v4+-specific options (static, setupMiddlewares)
- * 3. Read package.json from node_modules
+ * 1. First, check the actual installed package version (most reliable)
+ * 2. Then check for v4+-specific options (static, setupMiddlewares)
+ * 3. Then check for v3-specific options (contentBase, before, after)
  * 4. Default to v4+ API
+ *
+ * Note: We prioritize package.json detection over config options because
+ * in monorepos with hoisted dependencies, the config might use v3 options
+ * but the actual installed package could be v4+.
  */
 export function detectDevServerVersion(
   devServerOptions: any,
   compiler: Compiler,
 ): DevServerVersionInfo {
-  // Check for v3-specific options
-  if (hasV3Options(devServerOptions)) {
-    return { major: 3, version: '3.x', isV3: true, isV4Plus: false }
+  // First, try to detect from package.json (most reliable)
+  const detectedVersion = detectFromPackageJson(compiler)
+  if (detectedVersion) {
+    return detectedVersion
   }
 
   // Check for v4+ specific options
@@ -49,10 +54,9 @@ export function detectDevServerVersion(
     return { major: 4, version: '4.x+', isV3: false, isV4Plus: true }
   }
 
-  // Try to default from package.json
-  const detectedVersion = detectFromPackageJson(compiler)
-  if (detectedVersion) {
-    return detectedVersion
+  // Check for v3-specific options
+  if (hasV3Options(devServerOptions)) {
+    return { major: 3, version: '3.x', isV3: true, isV4Plus: false }
   }
 
   // Default to v4+ API as it's more common in modern setups
