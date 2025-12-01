@@ -71,7 +71,9 @@ function SpotlightCard({
   return (
     <div
       ref={divRef}
-      className={`relative overflow-hidden border border-base rounded-xl bg-base shadow-sm transition-colors duration-300 ${to ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-[#1a1a1a]' : ''}  ${className}`}
+      // Outer container acts as the border
+      // bg-gray-200/gray-800 is the default border color
+      className={`relative rounded-xl bg-gray-200 dark:bg-gray-800 shadow-sm transition-colors duration-300 ${to ? 'cursor-pointer' : ''} ${className}`}
       onClick={handleClick}
       onMouseMove={handleMouseMove}
       onFocus={handleFocus}
@@ -79,15 +81,30 @@ function SpotlightCard({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div
-        className="pointer-events-none absolute opacity-0 transition duration-300 -inset-px"
+      {/* Spotlight Border Layer */}
+      {/* This layer sits on top of the default border color but below the content */}
+      <div 
+        className="pointer-events-none absolute inset-0 rounded-xl transition-opacity duration-300"
         style={{
-          opacity,
-          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 40%)`,
+          opacity: 1,
+          background: `radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), ${spotlightColor}, transparent 40%)`
         }}
       />
-      <div className="relative flex flex-col items-center justify-center gap-3 p-6">
-        {children}
+      
+      {/* Content with inner border */}
+      {/* m-[1px] creates the border effect by revealing the background */}
+      <div className={`relative z-10 m-[1px] h-[calc(100%-2px)] w-[calc(100%-2px)] flex flex-col items-center justify-center gap-3 rounded-[11px] bg-base p-6 ${to ? 'transition-colors duration-300 hover:bg-gray-50 dark:hover:bg-[#1a1a1a]' : ''}`}>
+        {/* Inner Spotlight (Hover effect) */}
+        <div
+          className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 rounded-[11px]"
+          style={{
+            opacity,
+            background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 40%)`,
+          }}
+        />
+        <div className="relative z-10 flex flex-col items-center justify-center gap-3">
+          {children}
+        </div>
       </div>
     </div>
   )
@@ -96,6 +113,7 @@ function SpotlightCard({
 export function OverviewPage({ tree }: OverviewPageProps) {
   const componentCount = tree ? countComponents(tree) : 0
   const [reactVersion, setReactVersion] = useState<string | null>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
 
   // Get React version from the host page
   useEffect(() => {
@@ -108,6 +126,27 @@ export function OverviewPage({ tree }: OverviewPageProps) {
         setReactVersion(null)
       })
     }
+  }, [])
+
+  // Handle global mouse move for border proximity
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!gridRef.current) return
+      
+      const cards = gridRef.current.getElementsByClassName('spotlight-card')
+      for (const card of cards) {
+        const rect = card.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+        
+        // Update CSS variables for border light
+        ;(card as HTMLElement).style.setProperty('--mouse-x', `${x}px`)
+        ;(card as HTMLElement).style.setProperty('--mouse-y', `${y}px`)
+      }
+    }
+    
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
 
   // Ensure component tree hook is installed
@@ -134,8 +173,11 @@ export function OverviewPage({ tree }: OverviewPageProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 mb-12 max-w-5xl w-full gap-6 md:grid-cols-3 sm:grid-cols-2">
-          <SpotlightCard className="group min-h-[160px]">
+        <div 
+          ref={gridRef}
+          className="grid grid-cols-1 mb-12 max-w-5xl w-full gap-6 md:grid-cols-3 sm:grid-cols-2"
+        >
+          <SpotlightCard className="spotlight-card group min-h-[160px]">
             <div className="rounded-full bg-primary-500/10 p-4 transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary-500/20">
               <ReactLogo className="h-8 w-8 text-primary-500" />
             </div>
@@ -147,7 +189,7 @@ export function OverviewPage({ tree }: OverviewPageProps) {
             </div>
           </SpotlightCard>
 
-          <SpotlightCard className="group min-h-[160px]" to="/components">
+          <SpotlightCard className="spotlight-card group min-h-[160px]" to="/components">
             <div className="rounded-full bg-primary-500/10 p-4 transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary-500/20">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect width="7" height="7" x="14" y="3" rx="1" />
@@ -162,7 +204,7 @@ export function OverviewPage({ tree }: OverviewPageProps) {
             </div>
           </SpotlightCard>
 
-          <SpotlightCard className="group min-h-[160px]">
+          <SpotlightCard className="spotlight-card group min-h-[160px]">
             <div className="rounded-full bg-primary-500/10 p-4 transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary-500/20">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
