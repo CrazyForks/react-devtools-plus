@@ -5,6 +5,7 @@ import { useState } from 'react'
 interface ComponentDetailsPanelProps {
   details: ComponentDetails | null
   onSelectNode?: (id: string) => void
+  onScrollToComponent?: () => void
 }
 
 interface CollapsibleSectionProps {
@@ -12,6 +13,27 @@ interface CollapsibleSectionProps {
   children: React.ReactNode
   defaultOpen?: boolean
   badge?: React.ReactNode
+}
+
+// Simple Tooltip component - shows below the element to avoid being clipped
+function Tooltip({ content, children }: { content: string, children: React.ReactNode }) {
+  const [visible, setVisible] = useState(false)
+
+  return (
+    <div
+      className="relative inline-flex"
+      onMouseEnter={() => setVisible(true)}
+      onMouseLeave={() => setVisible(false)}
+    >
+      {children}
+      {visible && (
+        <div className="absolute left-1/2 top-full z-[9999] mt-1.5 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white shadow-lg -translate-x-1/2 dark:bg-gray-700">
+          {content}
+          <div className="absolute bottom-full left-1/2 border-4 border-transparent border-b-gray-900 -translate-x-1/2 dark:border-b-gray-700" />
+        </div>
+      )}
+    </div>
+  )
 }
 
 function CollapsibleSection({ title, children, defaultOpen = true, badge }: CollapsibleSectionProps) {
@@ -333,7 +355,7 @@ function SourceSection({ source, onOpenInEditor }: { source?: ComponentDetails['
   )
 }
 
-export function ComponentDetailsPanel({ details, onSelectNode }: ComponentDetailsPanelProps) {
+export function ComponentDetailsPanel({ details, onSelectNode, onScrollToComponent }: ComponentDetailsPanelProps) {
   if (!details) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-sm text-gray-400">
@@ -346,14 +368,38 @@ export function ComponentDetailsPanel({ details, onSelectNode }: ComponentDetail
     )
   }
 
-  const handleOpenInEditor = () => {
+  // Try to get source from details.source or from data-source-path prop
+  const getSourceInfo = () => {
     if (details.source) {
+      return details.source
+    }
+    // Try to parse data-source-path from props
+    const dataSourcePath = details.props['data-source-path']
+    if (dataSourcePath && dataSourcePath.type === 'string') {
+      // Format: "fileName:line:column" or just "fileName"
+      const pathValue = dataSourcePath.value.replace(/^"|"$/g, '') // Remove quotes
+      const parts = pathValue.split(':')
+      if (parts.length >= 1) {
+        return {
+          fileName: parts[0],
+          lineNumber: parts[1] ? Number.parseInt(parts[1], 10) : 1,
+          columnNumber: parts[2] ? Number.parseInt(parts[2], 10) : 1,
+        }
+      }
+    }
+    return null
+  }
+
+  const sourceInfo = getSourceInfo()
+
+  const handleOpenInEditor = () => {
+    if (sourceInfo) {
       const rpc = getRpcClient() as any
       if (rpc?.openInEditor) {
         rpc.openInEditor({
-          fileName: details.source.fileName,
-          line: details.source.lineNumber,
-          column: details.source.columnNumber,
+          fileName: sourceInfo.fileName,
+          line: sourceInfo.lineNumber,
+          column: sourceInfo.columnNumber,
         })
       }
     }
@@ -366,28 +412,49 @@ export function ComponentDetailsPanel({ details, onSelectNode }: ComponentDetail
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2 dark:border-gray-700">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-primary-600 font-mono dark:text-primary-400">
+        <div className="min-w-0 flex flex-1 items-center gap-2">
+          <span className="truncate text-sm text-primary-600 font-mono dark:text-primary-400">
             {'<'}
             {details.name}
             {'>'}
           </span>
           {getBadgeForTag(details.tag)}
         </div>
-        {details.source && (
-          <button
-            type="button"
-            className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-            onClick={handleOpenInEditor}
-            title="Open in editor"
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-              <polyline points="15 3 21 3 21 9" />
-              <line x1="10" y1="14" x2="21" y2="3" />
-            </svg>
-          </button>
-        )}
+        <div className="flex items-center gap-0.5">
+          {/* Scroll to component button - crosshair/target icon like Vue DevTools */}
+          <Tooltip content="Scroll to component">
+            <button
+              type="button"
+              className="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+              onClick={onScrollToComponent}
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 2v4" />
+                <path d="M12 18v4" />
+                <path d="M2 12h4" />
+                <path d="M18 12h4" />
+              </svg>
+            </button>
+          </Tooltip>
+          {/* Open in editor button - external link icon like Vue DevTools */}
+          {sourceInfo && (
+            <Tooltip content="Open in editor">
+              <button
+                type="button"
+                className="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                onClick={handleOpenInEditor}
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+              </button>
+            </Tooltip>
+          )}
+        </div>
       </div>
 
       {/* Content */}

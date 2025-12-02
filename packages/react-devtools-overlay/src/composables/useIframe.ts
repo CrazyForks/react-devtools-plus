@@ -1,5 +1,5 @@
 import { globalPluginManager } from '@react-devtools/core'
-import { createRpcServer, getComponentDetails, getFiberById, getReactVersion, getRpcServer, hideHighlight, highlightNode, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
+import { createRpcServer, getComponentDetails, getFiberById, getReactVersion, getRpcServer, hideHighlight, highlightNode, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, scrollToNode, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
 import { useEffect, useRef } from 'react'
 
 /**
@@ -186,6 +186,14 @@ export function useIframe(
         },
         hideHighlight() {
           hideHighlight()
+        },
+        scrollToComponent(fiberId: string) {
+          const fiber = getFiberById(fiberId)
+          if (fiber) {
+            scrollToNode(fiber)
+            // Also highlight the component briefly
+            highlightNode(fiber)
+          }
         },
         rebuildTree(showHostComponents: boolean) {
           rebuildTree(showHostComponents)

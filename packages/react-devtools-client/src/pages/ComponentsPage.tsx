@@ -168,9 +168,10 @@ interface SplitPaneProps {
   search: string
   isLoadingDetails: boolean
   componentDetails: ComponentDetails | null
+  onScrollToComponent?: () => void
 }
 
-function SplitPane({ tree, showHostComponents, selectedNodeId, onSelectNode, search, isLoadingDetails, componentDetails }: SplitPaneProps) {
+function SplitPane({ tree, showHostComponents, selectedNodeId, onSelectNode, search, isLoadingDetails, componentDetails, onScrollToComponent }: SplitPaneProps) {
   const [panelWidth, setPanelWidth] = useState(320)
   const isDragging = useRef(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -248,6 +249,7 @@ function SplitPane({ tree, showHostComponents, selectedNodeId, onSelectNode, sea
               <ComponentDetailsPanel
                 details={componentDetails}
                 onSelectNode={onSelectNode}
+                onScrollToComponent={onScrollToComponent}
               />
             )}
       </div>
@@ -341,6 +343,15 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
     onSelectNode?.(id)
   }, [onSelectNode])
 
+  const handleScrollToComponent = useCallback(() => {
+    if (!selectedNodeId)
+      return
+    const rpc = getRpcClient() as any
+    if (rpc?.scrollToComponent) {
+      rpc.scrollToComponent(selectedNodeId)
+    }
+  }, [selectedNodeId])
+
   if (!tree) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-gray-500">
@@ -401,6 +412,7 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
         search={search}
         isLoadingDetails={isLoadingDetails}
         componentDetails={componentDetails}
+        onScrollToComponent={handleScrollToComponent}
       />
     </div>
   )

@@ -329,3 +329,31 @@ export function cleanupHighlight() {
   el?.remove()
   window.clearTimeout(highlightHideTimer)
 }
+
+/**
+ * Scroll the page to make the component visible
+ */
+export function scrollToNode(fiber: FiberNode | null) {
+  if (!fiber)
+    return
+
+  // If the fiber itself is a host component (DOM element), scroll to it directly
+  if (fiber.tag === REACT_TAGS.HostComponent && fiber.stateNode instanceof Element) {
+    const element = fiber.stateNode
+    element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' })
+    return
+  }
+
+  // For non-host components, find the first host element
+  const elements = new Set<Element>()
+  collectHostElements(fiber, elements)
+
+  if (elements.size === 0)
+    return
+
+  // Scroll to the first element
+  const firstElement = Array.from(elements)[0]
+  if (firstElement) {
+    firstElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' })
+  }
+}
