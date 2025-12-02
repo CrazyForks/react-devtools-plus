@@ -123,4 +123,3 @@ table {
 ::view-transition-new(root) {
   z-index: 2147483646; /* Ensure it's above everything */
 }
-

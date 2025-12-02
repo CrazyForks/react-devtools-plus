@@ -71,7 +71,7 @@ function SpotlightCard({
   return (
     <div
       ref={divRef}
-      className={`relative overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800/50 shadow-sm transition-colors duration-300 ${to ? 'cursor-pointer' : ''} ${className}`}
+      className={`relative overflow-hidden rounded-xl bg-gray-100 shadow-sm transition-colors duration-300 dark:bg-gray-800/50 ${to ? 'cursor-pointer' : ''}  ${className}`}
       onClick={handleClick}
       onMouseMove={handleMouseMove}
       onFocus={handleFocus}
@@ -80,19 +80,19 @@ function SpotlightCard({
       onMouseLeave={handleMouseLeave}
     >
       {/* Spotlight Border Layer - High intensity */}
-      <div 
+      <div
         className="pointer-events-none absolute inset-0 rounded-xl transition-opacity duration-300"
         style={{
           opacity: 1,
-          background: `radial-gradient(500px circle at var(--mouse-x) var(--mouse-y), ${spotlightColor}, transparent 40%)`
+          background: `radial-gradient(500px circle at var(--mouse-x) var(--mouse-y), ${spotlightColor}, transparent 40%)`,
         }}
       />
-      
+
       {/* Content with inner border */}
       <div className={`relative z-10 m-[1px] h-[calc(100%-2px)] w-[calc(100%-2px)] flex flex-col items-center justify-center gap-3 rounded-[11px] bg-white p-6 dark:bg-[#121212] ${to ? 'transition-colors duration-300 hover:bg-gray-50 dark:hover:bg-[#1a1a1a]' : ''}`}>
         {/* Inner Spotlight (Hover effect) - Optional/Subtle */}
         <div
-          className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 rounded-[11px]"
+          className="pointer-events-none absolute rounded-[11px] opacity-0 transition duration-300 -inset-px"
           style={{
             opacity,
             background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, ${spotlightColor.replace('/ 0.5)', '/ 0.05')}, transparent 40%)`,
@@ -127,20 +127,21 @@ export function OverviewPage({ tree }: OverviewPageProps) {
   // Handle global mouse move for border proximity
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!gridRef.current) return
-      
+      if (!gridRef.current)
+        return
+
       const cards = gridRef.current.getElementsByClassName('spotlight-card')
       for (const card of cards) {
         const rect = card.getBoundingClientRect()
         const x = e.clientX - rect.left
         const y = e.clientY - rect.top
-        
+
         // Update CSS variables for border light
         ;(card as HTMLElement).style.setProperty('--mouse-x', `${x}px`)
         ;(card as HTMLElement).style.setProperty('--mouse-y', `${y}px`)
       }
     }
-    
+
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
@@ -169,7 +170,7 @@ export function OverviewPage({ tree }: OverviewPageProps) {
           </div>
         </div>
 
-        <div 
+        <div
           ref={gridRef}
           className="grid grid-cols-1 mb-12 max-w-5xl w-full gap-6 md:grid-cols-3 sm:grid-cols-2"
         >

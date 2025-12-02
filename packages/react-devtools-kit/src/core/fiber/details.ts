@@ -276,4 +276,3 @@ export function getComponentDetails(fiber: FiberNode): ComponentDetails {
     key: fiber.key,
   }
 }
-
