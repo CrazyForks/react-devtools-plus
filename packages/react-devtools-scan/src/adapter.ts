@@ -36,20 +36,17 @@ function getInternals() {
     if (typeof window !== 'undefined') {
       // Check parent window first (Host App)
       if (window.parent && window.parent !== window && (window.parent as any).__REACT_SCAN__?.ReactScanInternals) {
-        console.log('[React Scan] Using parent window ReactScanInternals')
         return (window.parent as any).__REACT_SCAN__.ReactScanInternals
       }
       // Then check current window
       if ((window as any).__REACT_SCAN__?.ReactScanInternals) {
-        console.log('[React Scan] Using current window ReactScanInternals')
         return (window as any).__REACT_SCAN__.ReactScanInternals
       }
     }
   }
-  catch (e) {
-    console.error('[React Scan] Error accessing window.__REACT_SCAN__:', e)
+  catch {
+    // Accessing parent might fail cross-origin
   }
-  console.log('[React Scan] Using imported ReactScanInternals')
   return ReactScanInternals
 }
 
@@ -60,20 +57,17 @@ function getSetOptions() {
     if (typeof window !== 'undefined') {
       // Check parent window first (Host App)
       if (window.parent && window.parent !== window && (window.parent as any).__REACT_SCAN__?.setOptions) {
-        console.log('[React Scan] Using parent window setOptions')
         return (window.parent as any).__REACT_SCAN__.setOptions
       }
       // Then check current window
       if ((window as any).__REACT_SCAN__?.setOptions) {
-        console.log('[React Scan] Using current window setOptions')
         return (window as any).__REACT_SCAN__.setOptions
       }
     }
   }
-  catch (e) {
+  catch {
     // Accessing parent might fail cross-origin
   }
-  console.log('[React Scan] Using imported setOptions')
   return setScanOptions
 }
 
@@ -254,11 +248,8 @@ function setupOnRenderCallback(): () => void {
   try {
     const internals = getInternals()
     if (!internals) {
-      console.warn('[React Scan] No internals found for onRender setup')
       return () => {}
     }
-
-    console.log('[React Scan] Setting up onRender callback')
 
     // Get the current onRender callback if any
     const originalOnRender = internals.options?.value?.onRender
@@ -338,8 +329,8 @@ function setupOnRenderCallback(): () => void {
           hookIndex++
         }
       }
-      catch (e) {
-        console.error('[React Scan] Error extracting changes:', e)
+      catch {
+        // Ignore extraction errors
       }
 
       // Accumulate changes - increment count if same name exists, otherwise add new
@@ -387,46 +378,33 @@ function setupOnRenderCallback(): () => void {
         timestamp: focusedComponentTracker.timestamp,
       }
 
-      console.log('[React Scan] Notifying callbacks, count:', focusedComponentChangeCallbacks.size)
       focusedComponentChangeCallbacks.forEach((cb) => {
         try {
           cb(info)
         }
-        catch (e) {
-          console.error('[React Scan] Error in focused component change callback:', e)
+        catch {
+          // Ignore callback errors
         }
       })
     }
 
     // Set onRender directly on window.__REACT_SCAN__.ReactScanInternals.options.value
-    // This is the exact same method that works when manually tested in console
     try {
       const globalReactScan = (window as any).__REACT_SCAN__
       if (globalReactScan?.ReactScanInternals?.options?.value) {
-        const currentOptions = globalReactScan.ReactScanInternals.options.value
+        const currentOpts = globalReactScan.ReactScanInternals.options.value
         globalReactScan.ReactScanInternals.options.value = {
-          ...currentOptions,
+          ...currentOpts,
           onRender: trackingOnRender,
         }
-        console.log('[React Scan] onRender set directly on window.__REACT_SCAN__.ReactScanInternals.options.value')
-        console.log('[React Scan] Verification:', globalReactScan.ReactScanInternals.options.value.onRender === trackingOnRender)
-      }
-      else {
-        console.warn('[React Scan] window.__REACT_SCAN__.ReactScanInternals.options.value not available')
       }
     }
-    catch (e) {
-      console.error('[React Scan] Failed to set onRender on global:', e)
+    catch {
+      // Ignore errors setting onRender
     }
-
-    // Log the current state for debugging
-    const isPaused = internals.instrumentation?.isPaused?.value
-    const inspectState = internals.Store?.inspectState?.value?.kind
-    console.log('[React Scan] Current state - isPaused:', isPaused, 'inspectState:', inspectState)
 
     // Ensure instrumentation is not paused if we want to track renders
     if (internals.instrumentation?.isPaused) {
-      console.log('[React Scan] Ensuring instrumentation is not paused')
       internals.instrumentation.isPaused.value = false
     }
 
@@ -443,8 +421,7 @@ function setupOnRenderCallback(): () => void {
       }
     }
   }
-  catch (error) {
-    console.error('[React Scan] Failed to setup onRender callback:', error)
+  catch {
     return () => {}
   }
 }
@@ -532,8 +509,8 @@ function extractPerformanceData(): ComponentPerformanceData[] {
 
     performanceData.sort((a, b) => b.totalTime - a.totalTime)
   }
-  catch (error) {
-    console.error('[React Scan] Failed to extract performance data:', error)
+  catch {
+    // Ignore extraction errors
   }
 
   return performanceData
@@ -599,10 +576,7 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
       const internals = getInternals()
       const { instrumentation } = internals || {}
 
-      console.log('[React Scan] start() called, instrumentation:', !!instrumentation)
-
       if (instrumentation && instrumentation.isPaused) {
-        console.log('[React Scan] Setting isPaused to false')
         instrumentation.isPaused.value = false
       }
 
@@ -613,13 +587,9 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
       const scanFn = getScan()
       const isInstrumented = internals?.instrumentation && !internals.instrumentation.isPaused.value
 
-      console.log('[React Scan] start() - scanFn:', !!scanFn, 'isInstrumented:', isInstrumented)
-
       // Only reinitialize if not already instrumented
       if (scanFn) {
         // Always call scanFn to ensure options are applied and it's active
-        // Even if instrumented, we need to ensure it's using our options
-        console.log('[React Scan] Calling scanFn with options:', effectiveOptions)
         scanFn(effectiveOptions)
       }
       else {
@@ -644,15 +614,6 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
         onRenderCleanup()
       }
       onRenderCleanup = setupOnRenderCallback()
-
-      // Log the final state after setup
-      const finalInternals = getInternals()
-      console.log('[React Scan] After start() - internals:', {
-        hasOptions: !!finalInternals?.options,
-        hasOnRender: !!finalInternals?.options?.value?.onRender,
-        isPaused: finalInternals?.instrumentation?.isPaused?.value,
-        fiberRootsCount: finalInternals?.instrumentation?.fiberRoots?.size || 'N/A',
-      })
     },
 
     stop: () => {
@@ -706,8 +667,8 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
           Store.legacyReportData.clear()
         }
       }
-      catch (error) {
-        console.error('[React Scan] Failed to clear performance data:', error)
+      catch {
+        // Ignore errors
       }
     },
 
@@ -721,8 +682,8 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
           }
         }
       }
-      catch (error) {
-        console.error('[React Scan] Failed to start inspecting:', error)
+      catch {
+        // Ignore errors
       }
     },
 
@@ -735,8 +696,8 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
           }
         }
       }
-      catch (error) {
-        console.error('[React Scan] Failed to stop inspecting:', error)
+      catch {
+        // Ignore errors
       }
     },
 
@@ -772,8 +733,8 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
           }
         }
       }
-      catch (error) {
-        console.error('[React Scan] Failed to focus component:', error)
+      catch {
+        // Ignore errors
       }
     },
 
@@ -792,8 +753,7 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
         }
         return null
       }
-      catch (error) {
-        console.error('[React Scan] Failed to get focused component:', error)
+      catch {
         return null
       }
     },
@@ -876,8 +836,8 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
                         try {
                           cb(info)
                         }
-                        catch (e) {
-                          console.error('[React Scan] Error in focused component change callback:', e)
+                        catch {
+                          // Ignore callback errors
                         }
                       })
                     }
@@ -900,8 +860,7 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
         }
         return () => {}
       }
-      catch (error) {
-        console.error('[React Scan] Failed to subscribe to inspect state:', error)
+      catch {
         return () => {}
       }
     },
@@ -921,9 +880,7 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
     },
 
     onFocusedComponentChange: (callback: (info: FocusedComponentRenderInfo) => void) => {
-      console.log('[React Scan] Registering focused component change callback')
       focusedComponentChangeCallbacks.add(callback)
-      console.log('[React Scan] Total callbacks registered:', focusedComponentChangeCallbacks.size)
       return () => {
         focusedComponentChangeCallbacks.delete(callback)
       }
@@ -934,8 +891,6 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
      * This is used when inspectState.kind is not 'focused' but we still want to track renders
      */
     setFocusedComponentByName: (componentName: string) => {
-      console.log('[React Scan] Setting focused component by name:', componentName)
-
       // Clean up previous tracker
       if (focusedComponentTracker?.unsubscribe) {
         focusedComponentTracker.unsubscribe()
@@ -949,8 +904,6 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
         timestamp: Date.now(),
         unsubscribe: null,
       }
-
-      console.log('[React Scan] Focused component tracker created for:', componentName)
     },
 
     clearFocusedComponentChanges: () => {

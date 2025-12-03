@@ -56,12 +56,9 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           try {
             handler(data)
           }
-          catch (error) {
-            console.error(`[React Scan Plugin] Error in event handler for "${eventName}":`, error)
+          catch {
+            // Ignore event handler errors
           }
-        }
-        else {
-          console.warn(`[React Scan Plugin] Invalid event handler for "${eventName}":`, handler)
         }
       })
     }
@@ -158,14 +155,12 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
 
           // Subscribe to focused component render changes
           scan.onFocusedComponentChange((info) => {
-            // Emit focused component render event with changes
-            console.log('[React Scan Plugin] Focused component changed:', info)
             emit('focused-component-render', info)
           })
         }
       }
-      catch (error) {
-        console.error('[React Scan Plugin] Failed to set up inspect state listener:', error)
+      catch {
+        // Ignore errors setting up inspect state listener
       }
 
       // Listen for component tree changes if context supports it
@@ -307,8 +302,7 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           }
           return false
         }
-        catch (err) {
-          console.error('[React Scan Plugin] RPC start failed:', err)
+        catch {
           return false
         }
       },
@@ -398,8 +392,7 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           const scan = getScanInstance()
           return scan?.getPerformanceData() || []
         }
-        catch (error) {
-          console.error('[React Scan Plugin] Failed to get performance data:', error)
+        catch {
           return []
         }
       },
@@ -421,8 +414,7 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           }
           return scan.getPerformanceSummary()
         }
-        catch (error) {
-          console.error('[React Scan Plugin] Failed to get performance summary:', error)
+        catch {
           return {
             totalRenders: 0,
             totalComponents: 0,
@@ -445,8 +437,7 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           }
           return false
         }
-        catch (error) {
-          console.error('[React Scan Plugin] Failed to clear performance data:', error)
+        catch {
           return false
         }
       },
@@ -476,8 +467,7 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           }
           return false
         }
-        catch (error) {
-          console.error('[React Scan Plugin] Failed to start inspecting:', error)
+        catch {
           return false
         }
       },
@@ -494,8 +484,7 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           }
           return false
         }
-        catch (error) {
-          console.error('[React Scan Plugin] Failed to stop inspecting:', error)
+        catch {
           return false
         }
       },
@@ -525,8 +514,7 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           }
           return false
         }
-        catch (error) {
-          console.error('[React Scan Plugin] Failed to focus component:', error)
+        catch {
           return false
         }
       },
@@ -545,8 +533,7 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           }
           return null
         }
-        catch (error) {
-          console.error('[React Scan Plugin] Failed to get focused component:', error)
+        catch {
           return null
         }
       },
@@ -559,8 +546,7 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           const scan = getScanInstance()
           return scan?.getFocusedComponentRenderInfo() || null
         }
-        catch (error) {
-          console.error('[React Scan Plugin] Failed to get focused component render info:', error)
+        catch {
           return null
         }
       },
@@ -577,8 +563,7 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           }
           return false
         }
-        catch (error) {
-          console.error('[React Scan Plugin] Failed to clear focused component changes:', error)
+        catch {
           return false
         }
       },
@@ -595,8 +580,7 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           }
           return false
         }
-        catch (error) {
-          console.error('[React Scan Plugin] Failed to set focused component by name:', error)
+        catch {
           return false
         }
       },
