@@ -584,6 +584,36 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
           return false
         }
       },
+
+      /**
+       * Get the component tree with render counts
+       */
+      getComponentTree: () => {
+        try {
+          const scan = getScanInstance()
+          return scan?.getComponentTree() || []
+        }
+        catch {
+          return []
+        }
+      },
+
+      /**
+       * Clear component tree render counts
+       */
+      clearComponentTree: () => {
+        try {
+          const scan = getScanInstance()
+          if (scan) {
+            scan.clearComponentTree()
+            return true
+          }
+          return false
+        }
+        catch {
+          return false
+        }
+      },
     },
 
     /**

@@ -120,7 +120,7 @@ function ChangeRow({ change, index }: { change: ChangeInfo, index: number }) {
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-all hover:bg-gray-50 dark:hover:bg-gray-800/50"
+        className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-left transition-all hover:bg-gray-50 dark:hover:bg-gray-800/50"
       >
         <svg
           className={`h-3 w-3 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
@@ -150,7 +150,7 @@ function ChangeRow({ change, index }: { change: ChangeInfo, index: number }) {
       </button>
 
       {isExpanded && (
-        <div className="ml-6 space-y-1 pb-2 pl-2">
+        <div className="ml-6 pb-2 pl-2 space-y-1">
           {/* Previous value */}
           <div className="flex items-start gap-2 rounded-md bg-red-50 px-3 py-2 dark:bg-red-950/30">
             <span className="select-none text-red-500 font-mono dark:text-red-400">-</span>
@@ -187,7 +187,7 @@ function ChangesSection({ title, changes }: { title: string, changes: ChangeInfo
 
   return (
     <div className="space-y-2">
-      <h4 className="px-1 text-xs text-gray-500 font-semibold uppercase tracking-wider dark:text-gray-400">
+      <h4 className="px-1 text-xs text-gray-500 font-semibold tracking-wider uppercase dark:text-gray-400">
         {title}
       </h4>
       <div className="space-y-1">
@@ -226,13 +226,13 @@ export function RenderReasonPanel({ componentName, renderCount, renderInfo, onCl
   return (
     <div
       ref={panelRef}
-      className={`relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-neutral-900 ${isFlashing ? 'ring-2 ring-primary-400 ring-opacity-50' : ''}`}
+      className={`relative h-full flex flex-col overflow-hidden ${isFlashing ? 'ring-2 ring-primary-400 ring-opacity-50' : ''}`}
     >
       {/* Animated gradient background */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary-50/50 via-transparent to-purple-50/50 dark:from-primary-900/20 dark:to-purple-900/20" />
+      <div className="absolute inset-0 from-primary-50/50 via-transparent to-purple-50/50 bg-gradient-to-br -z-10 dark:from-primary-900/20 dark:to-purple-900/20" />
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white px-4 py-3 dark:border-gray-800 dark:from-gray-900 dark:to-neutral-900">
+      <div className="flex items-center justify-between border-b border-gray-100 from-gray-50 to-white bg-gradient-to-r px-4 py-3 dark:border-gray-800 dark:from-gray-900 dark:to-neutral-900">
         <div className="flex items-center gap-3">
           <h3 className="text-lg text-gray-900 font-semibold tracking-tight dark:text-gray-100">
             {componentName}
@@ -266,7 +266,7 @@ export function RenderReasonPanel({ componentName, renderCount, renderInfo, onCl
       </div>
 
       {/* Why did it render? */}
-      <div className="p-4">
+      <div className="flex-1 overflow-y-auto p-4">
         <h4 className="mb-4 flex items-center gap-2 text-base text-gray-800 font-medium dark:text-gray-200">
           <svg className="h-5 w-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -317,4 +317,3 @@ export function RenderReasonPanel({ componentName, renderCount, renderInfo, onCl
     </div>
   )
 }
-

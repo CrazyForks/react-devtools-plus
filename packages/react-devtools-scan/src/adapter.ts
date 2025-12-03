@@ -3,8 +3,8 @@
  * Provides a clean interface to control React Scan from the DevTools UI
  */
 
-import type { AggregatedChanges, ChangeInfo, ComponentPerformanceData, FocusedComponentRenderInfo, PerformanceSummary, ReactDevtoolsScanOptions, ScanInstance } from './types'
-import { getDisplayName, getFiberId } from 'bippy'
+import type { AggregatedChanges, ChangeInfo, ComponentPerformanceData, ComponentTreeNode, FocusedComponentRenderInfo, PerformanceSummary, ReactDevtoolsScanOptions, ScanInstance } from './types'
+import { _fiberRoots, getDisplayName, getFiberId, isCompositeFiber } from 'bippy'
 import { getOptions as getScanOptions, ReactScanInternals, scan, setOptions as setScanOptions } from 'react-scan'
 
 // Helper to get shared internals from global window
@@ -261,6 +261,9 @@ function setupOnRenderCallback(): () => void {
         originalOnRender(fiber, renders)
       }
 
+      // Always track fiber render count for component tree
+      trackFiberRender(fiber)
+
       // Check if we have a focused component tracker
       if (!focusedComponentTracker) {
         return
@@ -451,6 +454,287 @@ const updateFPS = () => {
 // Start FPS tracking
 if (typeof requestAnimationFrame !== 'undefined') {
   requestAnimationFrame(updateFPS)
+}
+
+// Component render count tracking
+const componentRenderCounts = new Map<number, number>()
+
+/**
+ * Find React fiber from a DOM element
+ */
+function getFiberFromElement(element: Element): any {
+  // React 16+ uses __reactFiber$ prefix
+  // React 17+ might use __reactInternalInstance$
+  const keys = Object.keys(element)
+  for (const key of keys) {
+    if (key.startsWith('__reactFiber$') || key.startsWith('__reactInternalInstance$')) {
+      return (element as any)[key]
+    }
+  }
+  return null
+}
+
+/**
+ * Find the root fiber by traversing up the tree
+ */
+function findRootFiber(fiber: any): any {
+  if (!fiber)
+    return null
+
+  let current = fiber
+  while (current.return) {
+    current = current.return
+  }
+
+  // current is now the HostRoot fiber
+  // The FiberRoot is stored in current.stateNode
+  return current.stateNode || current
+}
+
+/**
+ * Get fiber roots by finding React root containers in the DOM
+ */
+function getFiberRoots(): Set<any> {
+  const roots = new Set<any>()
+
+  const findRootsInDocument = (doc: Document) => {
+    try {
+      // Common React root element IDs
+      const rootSelectors = ['#root', '#app', '#__next', '[data-reactroot]', '#react-root']
+
+      for (const selector of rootSelectors) {
+        const elements = doc.querySelectorAll(selector)
+        elements.forEach((element) => {
+          // Try the element itself first
+          let fiber = getFiberFromElement(element)
+
+          // If not found, try the first child element (React usually attaches fiber to rendered elements)
+          if (!fiber && element.firstElementChild) {
+            fiber = getFiberFromElement(element.firstElementChild)
+          }
+
+          // Try any descendant with fiber
+          if (!fiber) {
+            const descendants = element.querySelectorAll('*')
+            for (const desc of descendants) {
+              fiber = getFiberFromElement(desc)
+              if (fiber)
+                break
+            }
+          }
+
+          if (fiber) {
+            const rootFiber = findRootFiber(fiber)
+            if (rootFiber) {
+              roots.add(rootFiber)
+            }
+          }
+        })
+      }
+
+      // Also try to find any element with React fiber
+      if (roots.size === 0) {
+        const allElements = doc.querySelectorAll('*')
+        for (const element of allElements) {
+          const fiber = getFiberFromElement(element)
+          if (fiber) {
+            const rootFiber = findRootFiber(fiber)
+            if (rootFiber) {
+              roots.add(rootFiber)
+              break // Found one root, that's enough
+            }
+          }
+        }
+      }
+    }
+    catch {
+      // Ignore errors
+    }
+  }
+
+  try {
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      // Try parent window first (Host App where React runs)
+      if (window.parent && window.parent !== window) {
+        try {
+          findRootsInDocument(window.parent.document)
+        }
+        catch {
+          // Cross-origin access denied
+        }
+      }
+
+      // Also try current window
+      if (roots.size === 0) {
+        findRootsInDocument(document)
+      }
+    }
+
+    // Fallback: Try bippy's _fiberRoots
+    if (roots.size === 0 && _fiberRoots) {
+      // WeakSet cannot be iterated, but we can try to use it if it's actually a Set
+      if (typeof (_fiberRoots as any).forEach === 'function') {
+        (_fiberRoots as any).forEach((root: any) => roots.add(root))
+      }
+    }
+  }
+  catch {
+    // Ignore errors
+  }
+
+  return roots
+}
+
+/**
+ * Get render count for a fiber from react-scan's reportData
+ */
+function getFiberRenderCount(fiber: any): number {
+  try {
+    const fiberId = getFiberId(fiber)
+    // Check our local tracking first
+    const localCount = componentRenderCounts.get(fiberId)
+    if (localCount !== undefined) {
+      return localCount
+    }
+
+    // Try to get from react-scan's Store.reportData
+    const { Store } = getInternals()
+    if (Store?.reportData) {
+      const componentName = getDisplayName(fiber.type) || 'Unknown'
+      let totalCount = 0
+      Store.reportData.forEach((data: any) => {
+        if (data.componentName === componentName) {
+          totalCount += data.count || 0
+        }
+      })
+      return totalCount
+    }
+  }
+  catch {
+    // Ignore errors
+  }
+  return 0
+}
+
+/**
+ * Build component tree node from fiber
+ */
+function buildTreeNode(fiber: any, depth: number = 0, maxDepth: number = 50): ComponentTreeNode | null {
+  if (!fiber || depth > maxDepth)
+    return null
+
+  try {
+    // Only include composite components (not DOM elements)
+    const isComposite = isCompositeFiber(fiber)
+    const name = getDisplayName(fiber.type)
+
+    // For composite components, create a node
+    if (isComposite && name) {
+      const fiberId = getFiberId(fiber)
+      const renderCount = getFiberRenderCount(fiber)
+
+      const node: ComponentTreeNode = {
+        id: String(fiberId),
+        name,
+        type: typeof fiber.type === 'function' ? 'function' : 'class',
+        renderCount,
+        lastRenderTime: 0,
+        children: [],
+      }
+
+      // Process children
+      let child = fiber.child
+      while (child) {
+        const childNode = buildTreeNode(child, depth + 1, maxDepth)
+        if (childNode) {
+          node.children.push(childNode)
+        }
+        else if (child.child) {
+          // If the child itself is not composite, traverse its children
+          let grandChild = child.child
+          while (grandChild) {
+            const grandChildNode = buildTreeNode(grandChild, depth + 1, maxDepth)
+            if (grandChildNode) {
+              node.children.push(grandChildNode)
+            }
+            grandChild = grandChild.sibling
+          }
+        }
+        child = child.sibling
+      }
+
+      return node
+    }
+
+    // For non-composite fibers, traverse children to find composite descendants
+    let child = fiber.child
+    const compositeChildren: ComponentTreeNode[] = []
+    while (child) {
+      const childNode = buildTreeNode(child, depth, maxDepth)
+      if (childNode) {
+        compositeChildren.push(childNode)
+      }
+      child = child.sibling
+    }
+
+    // If we found composite children but this fiber isn't composite,
+    // return the first child as a proxy (or null if multiple)
+    if (compositeChildren.length === 1) {
+      return compositeChildren[0]
+    }
+
+    return null
+  }
+  catch {
+    return null
+  }
+}
+
+/**
+ * Extract component tree from fiber roots
+ */
+function extractComponentTree(): ComponentTreeNode[] {
+  const trees: ComponentTreeNode[] = []
+
+  try {
+    const fiberRoots = getFiberRoots()
+
+    fiberRoots.forEach((root: any) => {
+      // FiberRoot has current property pointing to the HostRoot fiber
+      const rootFiber = root.current || root
+      if (!rootFiber)
+        return
+
+      // The actual component tree starts from the HostRoot's child
+      let child = rootFiber.child
+      while (child) {
+        const node = buildTreeNode(child, 0)
+        if (node) {
+          trees.push(node)
+        }
+        child = child.sibling
+      }
+    })
+  }
+  catch {
+    // Ignore errors
+  }
+
+  return trees
+}
+
+/**
+ * Track render count for a fiber (called from onRender callback)
+ */
+function trackFiberRender(fiber: any): void {
+  try {
+    const fiberId = getFiberId(fiber)
+    const current = componentRenderCounts.get(fiberId) || 0
+    componentRenderCounts.set(fiberId, current + 1)
+  }
+  catch {
+    // Ignore errors
+  }
 }
 
 /**
@@ -912,6 +1196,20 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
         focusedComponentTracker.changes = { propsChanges: [], stateChanges: [], contextChanges: [] }
         focusedComponentTracker.timestamp = Date.now()
       }
+    },
+
+    /**
+     * Get the component tree with render counts
+     */
+    getComponentTree: () => {
+      return extractComponentTree()
+    },
+
+    /**
+     * Clear component render count tracking
+     */
+    clearComponentTree: () => {
+      componentRenderCounts.clear()
     },
   }
 }

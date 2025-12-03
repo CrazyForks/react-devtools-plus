@@ -206,6 +206,16 @@ export interface ScanInstance {
    * This is used when inspectState.kind is not 'focused' but we still want to track renders
    */
   setFocusedComponentByName: (componentName: string) => void
+
+  /**
+   * Get the component tree with render counts
+   */
+  getComponentTree: () => ComponentTreeNode[]
+
+  /**
+   * Clear component render count tracking
+   */
+  clearComponentTree: () => void
 }
 
 /**

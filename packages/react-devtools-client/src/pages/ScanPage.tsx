@@ -1,6 +1,7 @@
 import { getRpcClient } from '@react-devtools/kit'
 import { Checkbox, Select, Switch } from '@react-devtools/ui'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { ComponentTreePanel } from '../components/ComponentTreePanel'
 import { RenderReasonPanel } from '../components/RenderReasonPanel'
 import { pluginEvents } from '../events'
 
@@ -55,6 +56,17 @@ interface FocusedComponentRenderInfo {
   timestamp: number
 }
 
+interface ComponentTreeNode {
+  id: string
+  name: string
+  type: string
+  renderCount: number
+  lastRenderTime: number
+  averageTime?: number
+  unnecessary?: number
+  children: ComponentTreeNode[]
+}
+
 // Define server-side RPC functions that the client can call
 interface ServerRpcFunctions {
   callPluginRPC: (pluginId: string, rpcName: string, ...args: any[]) => Promise<any>
@@ -98,6 +110,8 @@ export function ScanPage() {
   const [focusedComponent, setFocusedComponent] = useState<ComponentInfo | null>(null)
   const [focusedRenderInfo, setFocusedRenderInfo] = useState<FocusedComponentRenderInfo | null>(null)
   const [fps, setFps] = useState<number | null>(null)
+  const [componentTree, setComponentTree] = useState<ComponentTreeNode[]>([])
+  const treeRefreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const fetchFps = async () => {
     const rpc = getRpcClient<ServerRpcFunctions>()
@@ -129,6 +143,48 @@ export function ScanPage() {
     }
     catch (error) {
       console.debug('[Scan Page] Failed to fetch performance data:', error)
+    }
+  }
+
+  const fetchComponentTree = async () => {
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (!rpc?.callPluginRPC)
+      return
+
+    try {
+      const tree = await rpc.callPluginRPC('react-scan', 'getComponentTree')
+      if (Array.isArray(tree)) {
+        setComponentTree(tree as ComponentTreeNode[])
+      }
+    }
+    catch {
+      // Ignore errors for tree polling
+    }
+  }
+
+  const handleClearComponentTree = async () => {
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (!rpc?.callPluginRPC)
+      return
+
+    try {
+      await rpc.callPluginRPC('react-scan', 'clearComponentTree')
+      setComponentTree([])
+    }
+    catch {
+      // Ignore errors
+    }
+  }
+
+  const handleSelectTreeComponent = (node: ComponentTreeNode) => {
+    // Update focused component when selecting from tree
+    setFocusedComponent({ componentName: node.name, fiber: null, domElement: null })
+    setFocusedRenderInfo(null)
+
+    // Also set up tracking for this component
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (rpc?.callPluginRPC) {
+      rpc.callPluginRPC('react-scan', 'setFocusedComponentByName', node.name).catch(() => {})
     }
   }
 
@@ -222,6 +278,27 @@ export function ScanPage() {
     const fpsInterval = setInterval(fetchFps, 500) // Refresh FPS every 500ms
     return () => clearInterval(fpsInterval)
   }, [])
+
+  // Refresh component tree when scan is running
+  useEffect(() => {
+    if (isRunning) {
+      fetchComponentTree()
+      treeRefreshIntervalRef.current = setInterval(fetchComponentTree, 1000)
+    }
+    else {
+      if (treeRefreshIntervalRef.current) {
+        clearInterval(treeRefreshIntervalRef.current)
+        treeRefreshIntervalRef.current = null
+      }
+    }
+
+    return () => {
+      if (treeRefreshIntervalRef.current) {
+        clearInterval(treeRefreshIntervalRef.current)
+        treeRefreshIntervalRef.current = null
+      }
+    }
+  }, [isRunning])
 
   const handleToggleScan = async () => {
     const rpc = getRpcClient<ServerRpcFunctions>()
@@ -407,17 +484,45 @@ export function ScanPage() {
 
       {/* Content */}
       <div className="flex-1 overflow-auto p-4">
-        <div className="mx-auto max-w-2xl space-y-6">
-          {/* Focused Component Render Reason Panel */}
-          {focusedComponent && (
-            <RenderReasonPanel
-              componentName={focusedComponent.componentName}
-              renderCount={focusedRenderInfo?.renderCount || 0}
-              renderInfo={focusedRenderInfo}
-              onClear={handleClearFocusedChanges}
-            />
-          )}
+        {/* Component Analysis Row - Two Column Layout */}
+        {isRunning && (
+          <div className="grid grid-cols-2 mb-6 gap-4">
+            {/* Focused Component Render Reason Panel */}
+            <div className="h-[360px] overflow-hidden border border-base rounded-lg bg-white shadow-sm dark:bg-neutral-900">
+              {focusedComponent
+                ? (
+                    <RenderReasonPanel
+                      componentName={focusedComponent.componentName}
+                      renderCount={focusedRenderInfo?.renderCount || 0}
+                      renderInfo={focusedRenderInfo}
+                      onClear={handleClearFocusedChanges}
+                    />
+                  )
+                : (
+                    <div className="h-full flex flex-col items-center justify-center p-4 text-sm text-gray-500">
+                      <svg className="mb-3 h-12 w-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m12 12 4 10 1.7-4.3L22 16Z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6" strokeDasharray="4 4" />
+                      </svg>
+                      <p>No component selected</p>
+                      <p className="mt-1 text-xs opacity-70">Use inspect mode or click a component in the tree</p>
+                    </div>
+                  )}
+            </div>
 
+            {/* Component Tree Panel */}
+            <div className="h-[360px] overflow-hidden border border-base rounded-lg bg-white shadow-sm dark:bg-neutral-900">
+              <ComponentTreePanel
+                tree={componentTree}
+                onSelectComponent={handleSelectTreeComponent}
+                selectedComponentName={focusedComponent?.componentName}
+                onClear={handleClearComponentTree}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="mx-auto max-w-4xl space-y-6">
           {/* Performance Summary Card */}
           {isRunning && performanceSummary && (
             <div className="border border-base rounded-lg bg-white p-6 shadow-sm dark:bg-neutral-900">
