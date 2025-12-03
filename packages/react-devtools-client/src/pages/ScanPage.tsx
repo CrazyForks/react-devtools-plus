@@ -32,6 +32,7 @@ interface PerformanceSummary {
 
 interface ComponentInfo {
   componentName: string
+  componentId?: string
   fiber: any
   domElement: Element | null
 }
@@ -178,7 +179,7 @@ export function ScanPage() {
 
   const handleSelectTreeComponent = (node: ComponentTreeNode) => {
     // Update focused component when selecting from tree
-    setFocusedComponent({ componentName: node.name, fiber: null, domElement: null })
+    setFocusedComponent({ componentName: node.name, componentId: node.id, fiber: null, domElement: null })
     setFocusedRenderInfo(null)
 
     // Also set up tracking for this component
@@ -224,18 +225,8 @@ export function ScanPage() {
         }
         else if (state.kind === 'focused' || state.kind === 'inspect-off') {
           rpc.togglePanel(true)
-
-          // If we have a component name from the state, set up tracking
-          if (state.componentName && state.componentName !== 'Unknown') {
-            try {
-              await rpc.callPluginRPC('react-scan', 'setFocusedComponentByName', state.componentName)
-              setFocusedComponent({ componentName: state.componentName })
-              setFocusedRenderInfo(null)
-            }
-            catch (e) {
-              console.error('[Scan Page] Failed to set focused component:', e)
-            }
-          }
+          // Note: focusedComponent is set by handleFocusChange via component-focused event
+          // which includes the componentId for proper selection
         }
       }
 
@@ -515,6 +506,7 @@ export function ScanPage() {
               <ComponentTreePanel
                 tree={componentTree}
                 onSelectComponent={handleSelectTreeComponent}
+                selectedComponentId={focusedComponent?.componentId}
                 selectedComponentName={focusedComponent?.componentName}
                 onClear={handleClearComponentTree}
               />

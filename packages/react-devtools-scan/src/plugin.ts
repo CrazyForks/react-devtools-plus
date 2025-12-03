@@ -6,6 +6,7 @@
  */
 
 import type { ReactDevtoolsScanOptions, ScanInstance } from './types'
+import { getDisplayName, getFiberId } from 'bippy'
 import { getScanInstance, resetScanInstance } from './adapter'
 
 /**
@@ -114,7 +115,7 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
         const scan = getScanInstance()
         if (scan) {
           // Track the last hovered component during inspection
-          let lastInspectedComponent: { componentName: string } | null = null
+          let lastInspectedComponent: { componentName: string, componentId?: string } | null = null
 
           scan.onInspectStateChange((state: any) => {
             // Emit inspect state change event
@@ -126,10 +127,11 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
             }
             emit('inspect-state-changed', sanitizedState)
 
-            // Track component during inspecting state
-            if (state.kind === 'inspecting' && state.hoveredDomElement) {
-              // Try to get component name from the hovered element
-              // This will be used when inspection ends
+            // Track component during inspecting state - save hovered component info
+            if (state.kind === 'inspecting' && state.fiber) {
+              const componentName = getDisplayName(state.fiber.type) || 'Unknown'
+              const componentId = String(getFiberId(state.fiber))
+              lastInspectedComponent = { componentName, componentId }
             }
 
             // If a component is focused, emit focused component info and set up tracking
@@ -144,8 +146,7 @@ export function createScanPlugin(config: ScanPluginConfig = {}): any {
               }
             }
 
-            // When inspection ends (inspect-off), check if we had a hovered component
-            // and emit it as focused
+            // When inspection ends (inspect-off), emit the last inspected component
             if (state.kind === 'inspect-off' && lastInspectedComponent) {
               emit('component-focused', lastInspectedComponent)
               scan.setFocusedComponentByName(lastInspectedComponent.componentName)

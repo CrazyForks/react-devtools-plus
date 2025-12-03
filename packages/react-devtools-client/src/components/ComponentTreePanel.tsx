@@ -59,6 +59,7 @@ interface ComponentTreeNode {
 interface ComponentTreePanelProps {
   tree: ComponentTreeNode[]
   onSelectComponent?: (node: ComponentTreeNode) => void
+  selectedComponentId?: string
   selectedComponentName?: string
   onClear?: () => void
 }
@@ -100,6 +101,7 @@ function TreeNode({
   node,
   depth = 0,
   onSelect,
+  selectedId,
   selectedName,
   searchTerm,
   expandedNodes,
@@ -110,6 +112,7 @@ function TreeNode({
   node: ComponentTreeNode
   depth?: number
   onSelect?: (node: ComponentTreeNode) => void
+  selectedId?: string
   selectedName?: string
   searchTerm: string
   expandedNodes: Set<string>
@@ -119,7 +122,8 @@ function TreeNode({
 }) {
   const hasChildren = node.children.length > 0
   const isExpanded = expandedNodes.has(node.id)
-  const isSelected = selectedName === node.name
+  // Use ID for matching when available, fall back to name
+  const isSelected = selectedId ? selectedId === node.id : selectedName === node.name
   const matchesSearch = searchTerm && node.name.toLowerCase().includes(searchTerm.toLowerCase())
   const isAnimating = animatingCounts.has(node.id)
 
@@ -198,6 +202,7 @@ function TreeNode({
               node={child}
               depth={depth + 1}
               onSelect={onSelect}
+              selectedId={selectedId}
               selectedName={selectedName}
               searchTerm={searchTerm}
               expandedNodes={expandedNodes}
@@ -218,6 +223,7 @@ function TreeNode({
 export function ComponentTreePanel({
   tree,
   onSelectComponent,
+  selectedComponentId,
   selectedComponentName,
   onClear,
 }: ComponentTreePanelProps) {
@@ -290,14 +296,16 @@ export function ComponentTreePanel({
   // Track the last selected component to avoid repeated scrolling
   const lastScrolledToRef = useRef<string | null>(null)
 
-  // Find path to a component by name and return all ancestor IDs
-  const findPathToComponent = useCallback((nodes: ComponentTreeNode[], targetName: string, path: string[] = []): string[] | null => {
+  // Find path to a component by ID or name and return all ancestor IDs
+  const findPathToComponent = useCallback((nodes: ComponentTreeNode[], targetId: string | undefined, targetName: string | undefined, path: string[] = []): string[] | null => {
     for (const node of nodes) {
-      if (node.name === targetName) {
+      // Match by ID if provided, otherwise by name
+      const isMatch = targetId ? node.id === targetId : node.name === targetName
+      if (isMatch) {
         return path
       }
       if (node.children.length > 0) {
-        const result = findPathToComponent(node.children, targetName, [...path, node.id])
+        const result = findPathToComponent(node.children, targetId, targetName, [...path, node.id])
         if (result) {
           return result
         }
@@ -309,8 +317,9 @@ export function ComponentTreePanel({
   // Auto-expand and scroll to selected component (only when selection changes)
   useEffect(() => {
     // Only scroll if the selected component changed
-    if (selectedComponentName && selectedComponentName !== lastScrolledToRef.current && tree.length > 0) {
-      const path = findPathToComponent(tree, selectedComponentName)
+    const selectionKey = selectedComponentId || selectedComponentName
+    if (selectionKey && selectionKey !== lastScrolledToRef.current && tree.length > 0) {
+      const path = findPathToComponent(tree, selectedComponentId, selectedComponentName)
       if (path) {
         // Expand all ancestors
         setExpandedNodes((prev) => {
@@ -320,7 +329,7 @@ export function ComponentTreePanel({
         })
 
         // Mark as scrolled to
-        lastScrolledToRef.current = selectedComponentName
+        lastScrolledToRef.current = selectionKey
 
         // Scroll to the selected node after a short delay to allow expansion
         setTimeout(() => {
@@ -342,11 +351,11 @@ export function ComponentTreePanel({
         }, 100)
       }
     }
-    else if (!selectedComponentName) {
+    else if (!selectedComponentId && !selectedComponentName) {
       // Reset when no component is selected
       lastScrolledToRef.current = null
     }
-  }, [selectedComponentName, tree, findPathToComponent])
+  }, [selectedComponentId, selectedComponentName, tree, findPathToComponent])
 
   // Toggle node expansion
   const handleToggleExpand = useCallback((id: string) => {
@@ -520,6 +529,7 @@ export function ComponentTreePanel({
                   key={node.id}
                   node={node}
                   onSelect={onSelectComponent}
+                  selectedId={selectedComponentId}
                   selectedName={selectedComponentName}
                   searchTerm={searchTerm}
                   expandedNodes={expandedNodes}

@@ -1028,8 +1028,10 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
         if (Store?.inspectState) {
           const state = Store.inspectState.value
           if (state.kind === 'focused') {
+            const fiberId = getFiberId(state.fiber)
             return {
               componentName: getDisplayName(state.fiber.type) || 'Unknown',
+              componentId: String(fiberId),
               fiber: state.fiber,
               domElement: state.focusedDomElement,
             }
@@ -1130,11 +1132,8 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
               }
             }
             else if (state.kind === 'inspect-off') {
-              // Clean up when inspect is turned off
-              if (focusedComponentTracker?.unsubscribe) {
-                focusedComponentTracker.unsubscribe()
-              }
-              focusedComponentTracker = null
+              // Don't clear the tracker here - it will be managed by setFocusedComponentByName
+              // The tracker needs to persist to continue tracking renders after selection
             }
 
             // Call the original callback
@@ -1187,6 +1186,11 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
         changes: { propsChanges: [], stateChanges: [], contextChanges: [] },
         timestamp: Date.now(),
         unsubscribe: null,
+      }
+
+      // Ensure onRender callback is set up for tracking
+      if (!onRenderCleanup) {
+        onRenderCleanup = setupOnRenderCallback()
       }
     },
 
