@@ -7,6 +7,7 @@ import { Sidebar } from '~/components/Sidebar'
 import { pluginEvents } from './events'
 import { ComponentsPage } from './pages/ComponentsPage'
 import { OverviewPage } from './pages/OverviewPage'
+import { RoutesPage } from './pages/RoutesPage'
 import { ScanPage } from './pages/ScanPage'
 import { SettingsPage } from './pages/SettingsPage'
 
@@ -179,6 +180,7 @@ export function App() {
               />
             )}
           />
+          <Route path="/routes" element={<RoutesPage />} />
           <Route path="/scan" element={<ScanPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           {plugins.map((plugin) => {

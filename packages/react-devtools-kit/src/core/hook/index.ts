@@ -1,5 +1,6 @@
 import type { ComponentTreeNode, FiberRoot, ReactDevToolsHook } from '../../types'
 import { buildTree } from '../fiber/tree'
+import { setFiberRoot } from '../router'
 
 const fiberRoots = new Map<number, Set<FiberRoot>>()
 let updateTimer: ReturnType<typeof setTimeout> | null = null
@@ -107,6 +108,9 @@ function handleTreeUpdate(root: FiberRoot, showHostComponents: () => boolean) {
   if (lastRootCurrent === root?.current)
     return
   lastRootCurrent = root?.current
+
+  // Update the fiber root reference for router module
+  setFiberRoot(root)
 
   if (updateTimer)
     clearTimeout(updateTimer)
