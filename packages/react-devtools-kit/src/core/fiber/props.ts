@@ -517,6 +517,50 @@ export function setContextValueFromJson(
 }
 
 /**
+ * Set a nested property within a Context Provider's value
+ *
+ * @param fiberId - The fiber ID of the Context Provider
+ * @param path - Dot-separated path to the property (e.g., "theme.mode")
+ * @param value - The string representation of the new value
+ * @param valueType - The expected type of the value
+ * @returns Whether the operation succeeded
+ */
+export function setContextValueAtPath(
+  fiberId: string,
+  path: string,
+  value: string,
+  valueType: string,
+): boolean {
+  const fiber = getFiberById(fiberId)
+  if (!fiber) {
+    console.warn(`[React DevTools] Fiber not found: ${fiberId}`)
+    return false
+  }
+
+  if (fiber.tag !== REACT_TAGS.ContextProvider) {
+    console.warn(`[React DevTools] Fiber is not a Context Provider`)
+    return false
+  }
+
+  try {
+    const parsedValue = parseValue(value, valueType)
+    const pathParts = path.split('.')
+
+    // Get current context value
+    const currentValue = fiber.memoizedProps?.value
+
+    // Create new value with the nested path updated
+    const newValue = setNestedValue(currentValue, pathParts, parsedValue)
+
+    return applyContextValue(fiber, newValue, fiberId)
+  }
+  catch (error) {
+    console.warn('[React DevTools] Failed to set context value at path:', error)
+    return false
+  }
+}
+
+/**
  * Apply a value to a Context Provider
  *
  * Context Provider is essentially a component with a `value` prop.

@@ -1,5 +1,5 @@
 import { globalPluginManager } from '@react-devtools/core'
-import { clearNavigationHistory, createRpcServer, getAllContexts, getAppFiberRoot, getComponentDetails, getComponentHookStates, getContextProviderInfo, getFiberById, getReactVersion, getRouterInfo, getRpcServer, hideHighlight, highlightNode, isEditableProp, navigateTo, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, scrollToNode, setComponentProp, setContextValue, setContextValueFromJson, setHookState, setHookStateFromJson, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
+import { clearNavigationHistory, createRpcServer, getAllContexts, getAppFiberRoot, getComponentDetails, getComponentHookStates, getContextProviderInfo, getFiberById, getReactVersion, getRouterInfo, getRpcServer, hideHighlight, highlightNode, isEditableProp, navigateTo, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, scrollToNode, setComponentProp, setContextValue, setContextValueAtPath, setContextValueFromJson, setHookState, setHookStateFromJson, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
 import { useEffect, useRef } from 'react'
 
 /**
@@ -256,6 +256,9 @@ export function useIframe(
         },
         setContextValueFromJson(fiberId: string, jsonValue: string) {
           return setContextValueFromJson(fiberId, jsonValue)
+        },
+        setContextValueAtPath(fiberId: string, path: string, value: string, valueType: string) {
+          return setContextValueAtPath(fiberId, path, value, valueType)
         },
         getComponentHookStates(fiberId: string) {
           return getComponentHookStates(fiberId)

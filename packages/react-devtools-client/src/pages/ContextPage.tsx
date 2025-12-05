@@ -40,6 +40,7 @@ interface ServerRpcFunctions {
   openInEditor: (options: { fileName: string, line: number, column: number }) => void
   setContextValue: (fiberId: string, value: string, valueType: string) => Promise<boolean>
   setContextValueFromJson: (fiberId: string, jsonValue: string) => Promise<boolean>
+  setContextValueAtPath: (fiberId: string, path: string, value: string, valueType: string) => Promise<boolean>
 }
 
 // Icons
@@ -375,12 +376,25 @@ function JsonEditor({ value, onSave, onCancel }: JsonEditorProps) {
 interface EditableContextValueProps {
   value: PropValue
   fiberId: string
+  /** Dot-separated path for nested properties (empty for root) */
+  path?: string
+  /** Property name to display (for nested properties) */
+  propName?: string
+  /** Indentation depth */
+  depth?: number
   onValueChange?: () => void
 }
 
-function EditableContextValue({ value, fiberId, onValueChange }: EditableContextValueProps) {
+function EditableContextValue({
+  value,
+  fiberId,
+  path = '',
+  propName,
+  depth = 0,
+  onValueChange,
+}: EditableContextValueProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(depth < 2)
   const hasChildren = value.children && Object.keys(value.children).length > 0
   const isExpandable = hasChildren && (value.type === 'object' || value.type === 'array')
   const isSimpleEditable = isEditableType(value.type)
@@ -400,35 +414,57 @@ function EditableContextValue({ value, fiberId, onValueChange }: EditableContext
 
   const handleSaveSimple = useCallback(async (newValue: string) => {
     const rpc = getRpcClient<ServerRpcFunctions>()
-    if (rpc?.setContextValue) {
-      try {
-        const success = await rpc.setContextValue(fiberId, newValue, value.type)
-        if (success) {
-          onValueChange?.()
+
+    try {
+      let success = false
+      if (path) {
+        // Nested property - use setContextValueAtPath
+        if (rpc?.setContextValueAtPath) {
+          success = await rpc.setContextValueAtPath(fiberId, path, newValue, value.type)
         }
       }
-      catch (error) {
-        console.error('[ContextPage] Failed to set context value:', error)
+      else {
+        // Root value - use setContextValue
+        if (rpc?.setContextValue) {
+          success = await rpc.setContextValue(fiberId, newValue, value.type)
+        }
+      }
+      if (success) {
+        onValueChange?.()
       }
     }
+    catch (error) {
+      console.error('[ContextPage] Failed to set context value:', error)
+    }
     setIsEditing(false)
-  }, [fiberId, value.type, onValueChange])
+  }, [fiberId, path, value.type, onValueChange])
 
   const handleSaveJson = useCallback(async (jsonValue: string) => {
     const rpc = getRpcClient<ServerRpcFunctions>()
-    if (rpc?.setContextValueFromJson) {
-      try {
-        const success = await rpc.setContextValueFromJson(fiberId, jsonValue)
-        if (success) {
-          onValueChange?.()
+
+    try {
+      let success = false
+      if (path) {
+        // Nested property - parse JSON and use setContextValueAtPath
+        if (rpc?.setContextValueAtPath) {
+          success = await rpc.setContextValueAtPath(fiberId, path, jsonValue, 'object')
         }
       }
-      catch (error) {
-        console.error('[ContextPage] Failed to set context value:', error)
+      else {
+        // Root value - use setContextValueFromJson
+        if (rpc?.setContextValueFromJson) {
+          success = await rpc.setContextValueFromJson(fiberId, jsonValue)
+        }
+      }
+      if (success) {
+        onValueChange?.()
       }
     }
+    catch (error) {
+      console.error('[ContextPage] Failed to set context value:', error)
+    }
     setIsEditing(false)
-  }, [fiberId, onValueChange])
+  }, [fiberId, path, onValueChange])
 
   const handleCancel = useCallback(() => {
     setIsEditing(false)
@@ -447,10 +483,13 @@ function EditableContextValue({ value, fiberId, onValueChange }: EditableContext
     )
   }
 
+  const paddingLeft = depth * 12
+
   return (
     <div className="text-xs font-mono">
       <div
         className={`group flex items-center gap-1 py-0.5 ${isExpandable && !isEditing ? 'cursor-pointer' : ''} rounded`}
+        style={{ paddingLeft: `${paddingLeft}px` }}
         onClick={!isEditing ? handleToggle : undefined}
       >
         {isExpandable
@@ -468,6 +507,14 @@ function EditableContextValue({ value, fiberId, onValueChange }: EditableContext
           : (
               <span className="w-3 flex-shrink-0" />
             )}
+
+        {/* Property name (for nested properties) */}
+        {propName !== undefined && (
+          <>
+            <span className="text-pink-600 dark:text-pink-400">{propName}</span>
+            <span className="text-gray-400">:</span>
+          </>
+        )}
 
         {/* Value display or editor */}
         {isEditing && isSimpleEditable
@@ -505,14 +552,20 @@ function EditableContextValue({ value, fiberId, onValueChange }: EditableContext
 
       {isExpanded && hasChildren && !isEditing && (
         <div>
-          {Object.entries(value.children!).map(([childName, childValue]) => (
-            <div key={childName} className="flex items-start gap-1 py-0.5" style={{ paddingLeft: '12px' }}>
-              <span className="w-3 flex-shrink-0" />
-              <span className="text-pink-600 dark:text-pink-400">{childName}</span>
-              <span className="text-gray-400">:</span>
-              <ContextValueDisplay value={childValue} depth={1} />
-            </div>
-          ))}
+          {Object.entries(value.children!).map(([childName, childValue]) => {
+            const childPath = path ? `${path}.${childName}` : childName
+            return (
+              <EditableContextValue
+                key={childName}
+                value={childValue}
+                fiberId={fiberId}
+                path={childPath}
+                propName={childName}
+                depth={depth + 1}
+                onValueChange={onValueChange}
+              />
+            )
+          })}
         </div>
       )}
     </div>
