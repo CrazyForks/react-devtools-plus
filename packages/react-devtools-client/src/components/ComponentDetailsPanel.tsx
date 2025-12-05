@@ -1,6 +1,6 @@
 import type { ComponentDetails, HookInfo, PropValue, RenderedByInfo } from '@react-devtools/kit'
 import { getRpcClient, REACT_TAGS } from '@react-devtools/kit'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface ServerRpcFunctions {
   setComponentProp: (fiberId: string, propPath: string, value: string, valueType: string) => boolean
@@ -141,69 +141,132 @@ function isEditablePropName(name: string): boolean {
   return !nonEditableProps.includes(name)
 }
 
-interface EditableValueInputProps {
+// Icons for edit actions
+function PencilIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+      <path d="m15 5 4 4" />
+    </svg>
+  )
+}
+
+function CancelIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="m15 9-6 6" />
+      <path d="m9 9 6 6" />
+    </svg>
+  )
+}
+
+function SaveIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+      <polyline points="17 21 17 13 7 13 7 21" />
+      <polyline points="7 3 7 8 15 8" />
+    </svg>
+  )
+}
+
+/**
+ * Inline editor with cancel and save buttons (Vue DevTools style)
+ */
+interface InlineEditorProps {
   value: string
   type: string
   onSave: (newValue: string) => void
   onCancel: () => void
 }
 
-function EditableValueInput({ value, type, onSave, onCancel }: EditableValueInputProps) {
+function InlineEditor({ value, type, onSave, onCancel }: InlineEditorProps) {
   // Remove quotes from string values for editing
   const initialValue = type === 'string' ? value.replace(/^"|"$/g, '') : value
   const [editValue, setEditValue] = useState(initialValue)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => {
+    inputRef.current?.focus()
+    inputRef.current?.select()
+  }, [])
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault()
+      e.stopPropagation()
       onSave(editValue)
     }
     else if (e.key === 'Escape') {
       e.preventDefault()
+      e.stopPropagation()
       onCancel()
     }
   }
 
-  const handleBlur = () => {
+  const handleSaveClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     onSave(editValue)
   }
 
-  // Auto focus and select on mount
-  useState(() => {
-    setTimeout(() => {
-      inputRef.current?.focus()
-      inputRef.current?.select()
-    }, 0)
-  })
-
-  if (type === 'boolean') {
-    return (
-      <select
-        value={editValue}
-        onChange={e => setEditValue(e.target.value)}
-        onBlur={() => onSave(editValue)}
-        onKeyDown={handleKeyDown}
-        className="h-5 border border-primary-400 rounded bg-white px-1 text-xs text-purple-600 dark:bg-gray-800 dark:text-purple-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
-        autoFocus
-      >
-        <option value="true">true</option>
-        <option value="false">false</option>
-      </select>
-    )
+  const handleCancelClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onCancel()
   }
 
   return (
-    <input
-      ref={inputRef}
-      type={type === 'number' ? 'number' : 'text'}
-      value={editValue}
-      onChange={e => setEditValue(e.target.value)}
-      onKeyDown={handleKeyDown}
-      onBlur={handleBlur}
-      className={`h-5 min-w-[60px] max-w-[200px] border border-primary-400 rounded bg-white px-1 text-xs font-mono dark:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-primary-500 ${getValueColorClass(type)}`}
-      style={{ width: `${Math.max(60, editValue.length * 7 + 16)}px` }}
-    />
+    <div className="inline-flex items-center gap-1">
+      {type === 'boolean'
+        ? (
+            <select
+              value={editValue}
+              onChange={e => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="h-6 border-2 border-primary-400 rounded bg-white px-1 text-xs text-purple-600 dark:bg-gray-800 dark:text-purple-400 focus:outline-none"
+              autoFocus
+            >
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
+          )
+        : (
+            <input
+              ref={inputRef}
+              type={type === 'number' ? 'number' : 'text'}
+              value={editValue}
+              onChange={e => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="h-6 min-w-[80px] border-2 border-primary-400 rounded bg-white px-2 text-xs font-mono dark:bg-gray-800 focus:outline-none"
+              style={{ width: `${Math.max(80, editValue.length * 8 + 24)}px` }}
+            />
+          )}
+
+      {/* Cancel button */}
+      <button
+        type="button"
+        onClick={handleCancelClick}
+        className="flex h-6 w-6 items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+        title="Cancel (Esc)"
+      >
+        <CancelIcon />
+      </button>
+
+      {/* Save button */}
+      <button
+        type="button"
+        onClick={handleSaveClick}
+        className="flex h-6 w-6 items-center justify-center rounded text-primary-500 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/30"
+        title="Save (Enter)"
+      >
+        <SaveIcon />
+      </button>
+
+      {/* Show current value for reference */}
+      <span className="ml-1 text-xs text-gray-400">{value}</span>
+    </div>
   )
 }
 
@@ -235,11 +298,10 @@ function PropValueDisplay({ value, name, depth = 0, fiberId, propPath, onPropCha
     }
   }
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault()
     e.stopPropagation()
-    if (isEditable && !isEditing) {
-      setIsEditing(true)
-    }
+    setIsEditing(true)
   }
 
   const handleSave = useCallback(async (newValue: string) => {
@@ -275,16 +337,15 @@ function PropValueDisplay({ value, name, depth = 0, fiberId, propPath, onPropCha
   return (
     <div className="text-xs font-mono">
       <div
-        className={`group flex items-start gap-1 py-0.5 ${isExpandable ? 'cursor-pointer' : ''} ${isEditable ? 'hover:bg-primary-50 dark:hover:bg-primary-900/20' : ''} rounded`}
+        className={`group flex items-center gap-1 py-0.5 ${isExpandable && !isEditing ? 'cursor-pointer' : ''} rounded`}
         style={{ paddingLeft: `${depth * 12}px` }}
-        onClick={handleToggle}
-        onDoubleClick={handleDoubleClick}
+        onClick={!isEditing ? handleToggle : undefined}
       >
         {/* Expand/collapse arrow */}
         {isExpandable
           ? (
               <svg
-                className={`mt-0.5 h-3 w-3 flex-shrink-0 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                className={`h-3 w-3 flex-shrink-0 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -301,14 +362,14 @@ function PropValueDisplay({ value, name, depth = 0, fiberId, propPath, onPropCha
         {name !== undefined && (
           <>
             <span className="text-pink-600 dark:text-pink-400">{name}</span>
-            <span className="text-gray-400">:</span>
+            <span className="text-gray-400 mr-1">:</span>
           </>
         )}
 
-        {/* Value - editable or readonly */}
+        {/* Value display or editor */}
         {isEditing
           ? (
-              <EditableValueInput
+              <InlineEditor
                 value={value.value}
                 type={value.type}
                 onSave={handleSave}
@@ -323,18 +384,24 @@ function PropValueDisplay({ value, name, depth = 0, fiberId, propPath, onPropCha
                     <span className="ml-1 text-gray-400">{value.preview}</span>
                   )}
                 </span>
-                {/* Edit hint */}
+
+                {/* Edit button - appears on hover (Vue DevTools style) */}
                 {isEditable && (
-                  <span className="ml-1 text-[10px] text-gray-300 opacity-0 transition-opacity group-hover:opacity-100 dark:text-gray-600">
-                    (double-click to edit)
-                  </span>
+                  <button
+                    type="button"
+                    onClick={handleEditClick}
+                    className="ml-1 flex h-5 w-5 items-center justify-center rounded text-gray-300 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                    title="Edit value"
+                  >
+                    <PencilIcon className="h-3.5 w-3.5" />
+                  </button>
                 )}
               </>
             )}
       </div>
 
       {/* Expanded children */}
-      {isExpanded && hasChildren && (
+      {isExpanded && hasChildren && !isEditing && (
         <div>
           {Object.entries(value.children!).map(([childName, childValue]) => (
             <PropValueDisplay

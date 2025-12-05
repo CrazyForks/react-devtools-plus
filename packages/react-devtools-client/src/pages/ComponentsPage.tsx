@@ -169,9 +169,10 @@ interface SplitPaneProps {
   isLoadingDetails: boolean
   componentDetails: ComponentDetails | null
   onScrollToComponent?: () => void
+  onPropChange?: () => void
 }
 
-function SplitPane({ tree, showHostComponents, selectedNodeId, onSelectNode, search, isLoadingDetails, componentDetails, onScrollToComponent }: SplitPaneProps) {
+function SplitPane({ tree, showHostComponents, selectedNodeId, onSelectNode, search, isLoadingDetails, componentDetails, onScrollToComponent, onPropChange }: SplitPaneProps) {
   const [panelWidth, setPanelWidth] = useState(320)
   const isDragging = useRef(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -250,17 +251,7 @@ function SplitPane({ tree, showHostComponents, selectedNodeId, onSelectNode, sea
                 details={componentDetails}
                 onSelectNode={onSelectNode}
                 onScrollToComponent={onScrollToComponent}
-                onPropChange={() => {
-                  // Re-fetch component details after prop change
-                  if (selectedNodeId) {
-                    const rpc = getRpcClient<ServerRpcFunctions>()
-                    if (rpc?.getComponentDetails) {
-                      rpc.getComponentDetails(selectedNodeId)
-                        .then(setComponentDetails)
-                        .catch(console.debug)
-                    }
-                  }
-                }}
+                onPropChange={onPropChange}
               />
             )}
       </div>
@@ -424,6 +415,17 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
         isLoadingDetails={isLoadingDetails}
         componentDetails={componentDetails}
         onScrollToComponent={handleScrollToComponent}
+        onPropChange={() => {
+          // Re-fetch component details after prop change
+          if (selectedNodeId) {
+            const rpc = getRpcClient<ServerRpcFunctions>()
+            if (rpc?.getComponentDetails) {
+              rpc.getComponentDetails(selectedNodeId)
+                .then(setComponentDetails)
+                .catch(console.debug)
+            }
+          }
+        }}
       />
     </div>
   )

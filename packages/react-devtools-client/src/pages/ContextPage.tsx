@@ -1,6 +1,6 @@
 import type { PropValue } from '@react-devtools/kit'
 import { getRpcClient } from '@react-devtools/kit'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
  * Context Provider information (matches kit types)
@@ -38,6 +38,8 @@ interface ServerRpcFunctions {
   highlightNode: (fiberId: string) => void
   hideHighlight: () => void
   openInEditor: (options: { fileName: string, line: number, column: number }) => void
+  setContextValue: (fiberId: string, value: string, valueType: string) => Promise<boolean>
+  setContextValueFromJson: (fiberId: string, jsonValue: string) => Promise<boolean>
 }
 
 // Icons
@@ -118,6 +120,405 @@ function getValueColorClass(type: PropValue['type']) {
   }
 }
 
+/**
+ * Check if a value type is editable
+ */
+function isEditableType(type: string): boolean {
+  const editableTypes = ['string', 'number', 'boolean', 'null', 'undefined']
+  return editableTypes.includes(type)
+}
+
+// Icons for editing
+function PencilIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+      <path d="m15 5 4 4" />
+    </svg>
+  )
+}
+
+function CancelIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="m15 9-6 6" />
+      <path d="m9 9 6 6" />
+    </svg>
+  )
+}
+
+function SaveIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+      <polyline points="17 21 17 13 7 13 7 21" />
+      <polyline points="7 3 7 8 15 8" />
+    </svg>
+  )
+}
+
+/**
+ * Inline editor with cancel and save buttons (Vue DevTools style)
+ */
+interface InlineEditorProps {
+  value: string
+  type: string
+  onSave: (newValue: string) => void
+  onCancel: () => void
+}
+
+function InlineEditor({ value, type, onSave, onCancel }: InlineEditorProps) {
+  const initialValue = type === 'string' ? value.replace(/^"|"$/g, '') : value
+  const [editValue, setEditValue] = useState(initialValue)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    inputRef.current?.focus()
+    inputRef.current?.select()
+  }, [])
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      e.stopPropagation()
+      onSave(editValue)
+    }
+    else if (e.key === 'Escape') {
+      e.preventDefault()
+      e.stopPropagation()
+      onCancel()
+    }
+  }
+
+  const handleSaveClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onSave(editValue)
+  }
+
+  const handleCancelClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onCancel()
+  }
+
+  return (
+    <div className="inline-flex items-center gap-1">
+      {type === 'boolean'
+        ? (
+            <select
+              value={editValue}
+              onChange={e => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="h-6 border-2 border-primary-400 rounded bg-white px-1 text-xs text-purple-600 dark:bg-gray-800 dark:text-purple-400 focus:outline-none"
+              autoFocus
+            >
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
+          )
+        : (
+            <input
+              ref={inputRef}
+              type={type === 'number' ? 'number' : 'text'}
+              value={editValue}
+              onChange={e => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="h-6 min-w-[80px] border-2 border-primary-400 rounded bg-white px-2 text-xs font-mono dark:bg-gray-800 focus:outline-none"
+              style={{ width: `${Math.max(80, editValue.length * 8 + 24)}px` }}
+            />
+          )}
+
+      {/* Cancel button */}
+      <button
+        type="button"
+        onClick={handleCancelClick}
+        className="flex h-6 w-6 items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+        title="Cancel (Esc)"
+      >
+        <CancelIcon />
+      </button>
+
+      {/* Save button */}
+      <button
+        type="button"
+        onClick={handleSaveClick}
+        className="flex h-6 w-6 items-center justify-center rounded text-primary-500 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/30"
+        title="Save (Enter)"
+      >
+        <SaveIcon />
+      </button>
+
+      {/* Show current value for reference */}
+      <span className="ml-1 text-xs text-gray-400">{value}</span>
+    </div>
+  )
+}
+
+/**
+ * Convert PropValue back to actual JavaScript value for JSON serialization
+ */
+function propValueToJs(value: PropValue): any {
+  switch (value.type) {
+    case 'string':
+      // Remove surrounding quotes
+      return value.value.replace(/^"|"$/g, '')
+    case 'number':
+      return Number(value.value)
+    case 'boolean':
+      return value.value === 'true'
+    case 'null':
+      return null
+    case 'undefined':
+      return undefined
+    case 'array':
+      if (value.children) {
+        return Object.keys(value.children)
+          .sort((a, b) => Number(a) - Number(b))
+          .map(key => propValueToJs(value.children![key]))
+      }
+      return []
+    case 'object':
+      if (value.children) {
+        const result: Record<string, any> = {}
+        for (const [key, childValue] of Object.entries(value.children)) {
+          result[key] = propValueToJs(childValue)
+        }
+        return result
+      }
+      return {}
+    default:
+      return value.value
+  }
+}
+
+/**
+ * JSON Editor component for editing complex objects
+ */
+interface JsonEditorProps {
+  value: PropValue
+  onSave: (jsonValue: string) => void
+  onCancel: () => void
+}
+
+function JsonEditor({ value, onSave, onCancel }: JsonEditorProps) {
+  const jsValue = propValueToJs(value)
+  const [jsonText, setJsonText] = useState(() => JSON.stringify(jsValue, null, 2))
+  const [error, setError] = useState<string | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    textareaRef.current?.focus()
+  }, [])
+
+  const handleSave = () => {
+    try {
+      JSON.parse(jsonText) // Validate JSON
+      setError(null)
+      onSave(jsonText)
+    }
+    catch (e) {
+      setError('Invalid JSON')
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      onCancel()
+    }
+    else if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault()
+      handleSave()
+    }
+  }
+
+  return (
+    <div className="mt-2 space-y-2">
+      <textarea
+        ref={textareaRef}
+        value={jsonText}
+        onChange={e => setJsonText(e.target.value)}
+        onKeyDown={handleKeyDown}
+        className={`w-full h-48 border rounded bg-white p-2 text-xs font-mono dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 ${error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+        spellCheck={false}
+      />
+      {error && (
+        <p className="text-xs text-red-500">{error}</p>
+      )}
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] text-gray-400">
+          Cmd/Ctrl+S to save, Escape to cancel
+        </span>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded bg-gray-100 px-3 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            className="rounded bg-primary-500 px-3 py-1 text-xs text-white transition-colors hover:bg-primary-600"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface EditableContextValueProps {
+  value: PropValue
+  fiberId: string
+  onValueChange?: () => void
+}
+
+function EditableContextValue({ value, fiberId, onValueChange }: EditableContextValueProps) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(true)
+  const hasChildren = value.children && Object.keys(value.children).length > 0
+  const isExpandable = hasChildren && (value.type === 'object' || value.type === 'array')
+  const isSimpleEditable = isEditableType(value.type)
+  const isComplexEditable = value.type === 'object' || value.type === 'array'
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isExpandable && !isEditing) {
+      setIsExpanded(!isExpanded)
+    }
+  }
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsEditing(true)
+  }
+
+  const handleSaveSimple = useCallback(async (newValue: string) => {
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (rpc?.setContextValue) {
+      try {
+        const success = await rpc.setContextValue(fiberId, newValue, value.type)
+        if (success) {
+          onValueChange?.()
+        }
+      }
+      catch (error) {
+        console.error('[ContextPage] Failed to set context value:', error)
+      }
+    }
+    setIsEditing(false)
+  }, [fiberId, value.type, onValueChange])
+
+  const handleSaveJson = useCallback(async (jsonValue: string) => {
+    const rpc = getRpcClient<ServerRpcFunctions>()
+    if (rpc?.setContextValueFromJson) {
+      try {
+        const success = await rpc.setContextValueFromJson(fiberId, jsonValue)
+        if (success) {
+          onValueChange?.()
+        }
+      }
+      catch (error) {
+        console.error('[ContextPage] Failed to set context value:', error)
+      }
+    }
+    setIsEditing(false)
+  }, [fiberId, onValueChange])
+
+  const handleCancel = useCallback(() => {
+    setIsEditing(false)
+  }, [])
+
+  // For complex types (object/array) in edit mode, show JSON editor
+  if (isEditing && isComplexEditable) {
+    return (
+      <div className="w-full">
+        <JsonEditor
+          value={value}
+          onSave={handleSaveJson}
+          onCancel={handleCancel}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="text-xs font-mono">
+      <div
+        className={`group flex items-center gap-1 py-0.5 ${isExpandable && !isEditing ? 'cursor-pointer' : ''} rounded`}
+        onClick={!isEditing ? handleToggle : undefined}
+      >
+        {isExpandable
+          ? (
+              <svg
+                className={`h-3 w-3 flex-shrink-0 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            )
+          : (
+              <span className="w-3 flex-shrink-0" />
+            )}
+
+        {/* Value display or editor */}
+        {isEditing && isSimpleEditable
+          ? (
+              <InlineEditor
+                value={value.value}
+                type={value.type}
+                onSave={handleSaveSimple}
+                onCancel={handleCancel}
+              />
+            )
+          : (
+              <>
+                <span className={getValueColorClass(value.type)} title={value.preview || value.value}>
+                  {value.value}
+                  {value.preview && !isExpanded && (
+                    <span className="ml-1 text-gray-400">{value.preview}</span>
+                  )}
+                </span>
+
+                {/* Edit button - appears on hover (Vue DevTools style) */}
+                {(isSimpleEditable || isComplexEditable) && (
+                  <button
+                    type="button"
+                    className="ml-1 flex h-5 w-5 items-center justify-center rounded text-gray-300 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                    onClick={handleEditClick}
+                    title={isComplexEditable ? 'Edit as JSON' : 'Edit value'}
+                  >
+                    <PencilIcon className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </>
+            )}
+      </div>
+
+      {isExpanded && hasChildren && !isEditing && (
+        <div>
+          {Object.entries(value.children!).map(([childName, childValue]) => (
+            <div key={childName} className="flex items-start gap-1 py-0.5" style={{ paddingLeft: '12px' }}>
+              <span className="w-3 flex-shrink-0" />
+              <span className="text-pink-600 dark:text-pink-400">{childName}</span>
+              <span className="text-gray-400">:</span>
+              <ContextValueDisplay value={childValue} depth={1} />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function ContextValueDisplay({ value, depth = 0 }: { value: PropValue, depth?: number }) {
   const [isExpanded, setIsExpanded] = useState(depth < 2)
   const hasChildren = value.children && Object.keys(value.children).length > 0
@@ -182,9 +583,10 @@ interface ProviderCardProps {
   provider: ContextProviderInfo
   level?: number
   onSelectConsumer?: (fiberId: string) => void
+  onValueChange?: () => void
 }
 
-function ProviderCard({ provider, level = 0, onSelectConsumer }: ProviderCardProps) {
+function ProviderCard({ provider, level = 0, onSelectConsumer, onValueChange }: ProviderCardProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const [showConsumers, setShowConsumers] = useState(false)
 
@@ -295,11 +697,18 @@ function ProviderCard({ provider, level = 0, onSelectConsumer }: ProviderCardPro
         <div className="p-4">
           {/* Value section */}
           <div className="mb-3">
-            <div className="mb-1 text-xs text-gray-500 font-medium uppercase tracking-wide dark:text-gray-400">
+            <div className="mb-1 flex items-center gap-2 text-xs text-gray-500 font-medium uppercase tracking-wide dark:text-gray-400">
               Value
+              <span className="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] text-primary-600 font-normal normal-case dark:bg-primary-900/50 dark:text-primary-400">
+                editable
+              </span>
             </div>
             <div className="rounded bg-gray-50 p-2 dark:bg-gray-800/50">
-              <ContextValueDisplay value={provider.value} />
+              <EditableContextValue
+                value={provider.value}
+                fiberId={provider.fiberId}
+                onValueChange={onValueChange}
+              />
             </div>
           </div>
 
@@ -351,6 +760,7 @@ function ProviderCard({ provider, level = 0, onSelectConsumer }: ProviderCardPro
                   provider={child}
                   level={level + 1}
                   onSelectConsumer={onSelectConsumer}
+                  onValueChange={onValueChange}
                 />
               ))}
             </div>
@@ -394,10 +804,9 @@ export function ContextPage() {
     }
   }, [fetchContextTree, autoRefresh])
 
-  const handleSelectConsumer = useCallback((fiberId: string) => {
-    // Navigate to components page and select the consumer
+  const handleSelectConsumer = useCallback((_fiberId: string) => {
+    // TODO: Navigate to components page and select the consumer
     // This would need integration with the parent App component
-    console.log('[ContextPage] Select consumer:', fiberId)
   }, [])
 
   // Filter providers based on search query
@@ -501,6 +910,7 @@ export function ContextPage() {
                     key={provider.id}
                     provider={provider}
                     onSelectConsumer={handleSelectConsumer}
+                    onValueChange={fetchContextTree}
                   />
                 ))}
               </div>

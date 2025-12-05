@@ -1,5 +1,5 @@
 import { globalPluginManager } from '@react-devtools/core'
-import { clearNavigationHistory, createRpcServer, getAllContexts, getAppFiberRoot, getComponentDetails, getContextProviderInfo, getFiberById, getReactVersion, getRouterInfo, getRpcServer, hideHighlight, highlightNode, isEditableProp, navigateTo, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, scrollToNode, setComponentProp, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
+import { clearNavigationHistory, createRpcServer, getAllContexts, getAppFiberRoot, getComponentDetails, getComponentHookStates, getContextProviderInfo, getFiberById, getReactVersion, getRouterInfo, getRpcServer, hideHighlight, highlightNode, isEditableProp, navigateTo, onInspectorSelect, onOpenInEditor, onTreeUpdated, openInEditor, rebuildTree, scrollToNode, setComponentProp, setContextValue, setContextValueFromJson, setHookState, setHookStateFromJson, setIframeServerContext, toggleInspector } from '@react-devtools/kit'
 import { useEffect, useRef } from 'react'
 
 /**
@@ -250,6 +250,21 @@ export function useIframe(
           if (!root)
             return null
           return getContextProviderInfo(root, fiberId)
+        },
+        setContextValue(fiberId: string, value: string, valueType: string) {
+          return setContextValue(fiberId, value, valueType)
+        },
+        setContextValueFromJson(fiberId: string, jsonValue: string) {
+          return setContextValueFromJson(fiberId, jsonValue)
+        },
+        getComponentHookStates(fiberId: string) {
+          return getComponentHookStates(fiberId)
+        },
+        setHookState(fiberId: string, hookIndex: number, value: string, valueType: string) {
+          return setHookState(fiberId, hookIndex, value, valueType)
+        },
+        setHookStateFromJson(fiberId: string, hookIndex: number, jsonValue: string) {
+          return setHookStateFromJson(fiberId, hookIndex, jsonValue)
         },
         async callPluginRPC(pluginId: string, rpcName: string, ...args: any[]) {
           try {
