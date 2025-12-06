@@ -104,7 +104,14 @@ export function ScanPage() {
     log: false,
     clearLog: false,
   })
-  const [performanceSummary, setPerformanceSummary] = useState<PerformanceSummary | null>(null)
+  // Initialize with empty performance summary so the card always shows when scanning
+  const [performanceSummary, setPerformanceSummary] = useState<PerformanceSummary>({
+    totalRenders: 0,
+    totalComponents: 0,
+    unnecessaryRenders: 0,
+    averageRenderTime: 0,
+    slowestComponents: [],
+  })
   const [performanceData, setPerformanceData] = useState<ComponentPerformanceData[]>([])
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [isInspecting, setIsInspecting] = useState(false)
@@ -390,7 +397,13 @@ export function ScanPage() {
 
     try {
       await rpc.callPluginRPC('react-scan', 'clearPerformanceData')
-      setPerformanceSummary(null)
+      setPerformanceSummary({
+        totalRenders: 0,
+        totalComponents: 0,
+        unnecessaryRenders: 0,
+        averageRenderTime: 0,
+        slowestComponents: [],
+      })
       setPerformanceData([])
     }
     catch (error) {
@@ -516,7 +529,7 @@ export function ScanPage() {
 
         <div className="mx-auto max-w-4xl space-y-6">
           {/* Performance Summary Card */}
-          {isRunning && performanceSummary && (
+          {isRunning && (
             <div className="border border-base rounded-lg bg-white p-6 shadow-sm dark:bg-neutral-900">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg text-gray-900 font-medium dark:text-gray-100">
