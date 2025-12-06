@@ -311,6 +311,12 @@ export function useIframe(
         },
         subscribeToPluginEvent(pluginId: string, eventName: string) {
           try {
+            // Timeline is not a plugin, its events are already subscribed via onTimelineEvent
+            // Just return a no-op dispose function
+            if (pluginId === 'timeline') {
+              return () => {}
+            }
+
             const plugin = globalPluginManager.get(pluginId) as any
             if (!plugin) {
               console.error(`[React DevTools] Plugin "${pluginId}" not found`)
