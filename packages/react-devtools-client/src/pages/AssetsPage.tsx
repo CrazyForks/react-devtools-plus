@@ -1,4 +1,4 @@
-import { Input } from '@react-devtools-plus/ui'
+import { Checkbox, Input } from '@react-devtools-plus/ui'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 // Asset types
@@ -580,18 +580,16 @@ export function AssetsPage() {
               {showFilterMenu && (
                 <div className="absolute right-0 z-10 mt-1 w-48 border border-gray-200 rounded-md bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                   {uniqueExtensions.map(ext => (
-                    <label
+                    <div
                       key={ext}
-                      className="flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
-                      <input
-                        type="checkbox"
+                      <Checkbox
+                        label={ext}
                         checked={filteredExtensions.includes(ext)}
                         onChange={() => toggleExtension(ext)}
-                        className="h-4 w-4 border-gray-300 rounded text-primary-500"
                       />
-                      <span className="text-gray-700 dark:text-gray-300">{ext}</span>
-                    </label>
+                    </div>
                   ))}
                 </div>
               )}
