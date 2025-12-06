@@ -84,7 +84,7 @@ function SpotlightCard({
         className="pointer-events-none absolute inset-0 rounded-xl transition-opacity duration-300"
         style={{
           opacity: 1,
-          background: `radial-gradient(500px circle at var(--mouse-x) var(--mouse-y), ${spotlightColor}, transparent 40%)`,
+          background: `radial-gradient(340px circle at var(--mouse-x) var(--mouse-y), ${spotlightColor}, transparent 42%)`,
         }}
       />
 
@@ -95,7 +95,7 @@ function SpotlightCard({
           className="pointer-events-none absolute rounded-[11px] opacity-0 transition duration-300 -inset-px"
           style={{
             opacity,
-            background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, ${spotlightColor.replace('/ 0.5)', '/ 0.05')}, transparent 40%)`,
+            background: `radial-gradient(420px circle at ${position.x}px ${position.y}px, ${spotlightColor.replace('/ 0.5)', '/ 0.05')}, transparent 42%)`,
           }}
         />
         <div className="relative z-10 flex flex-col items-center justify-center gap-3">
