@@ -2,73 +2,88 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-2);
-  background-color: var(--color-bg-base);
-  border: 1px solid var(--color-border-base);
+  padding: 0 var(--spacing-3);
+  background: var(--surface-control);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  transition: all var(--duration-fast) var(--timing-easeInOut);
+  backdrop-filter: blur(var(--blur-1));
+  transition:
+    background-color var(--motion-hover),
+    border-color var(--motion-hover);
 }
 
 .wrapper:hover:not(.disabled) {
-  border-color: var(--color-border-hover);
+  background: var(--surface-control-strong);
+  border-color: var(--border-strong);
 }
 
 .wrapper:focus-within:not(.disabled) {
-  border-color: var(--color-primary-500);
-  box-shadow: 0 0 0 1px var(--color-primary-500);
+  background: var(--surface-control-strong);
+  border-color: var(--accent);
+  box-shadow: none;
 }
 
 /* Sizes */
 .size-sm {
-  height: 28px;
-  padding: 0 var(--spacing-2);
-  font-size: var(--font-size-xs);
+  height: 32px;
+  padding: 0 var(--spacing-3);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-base);
 }
 
 .size-md {
-  height: 36px;
-  padding: 0 var(--spacing-3);
+  height: 40px;
+  padding: 0 var(--spacing-4);
   font-size: var(--font-size-sm);
+  border-radius: var(--radius-base);
 }
 
 .size-lg {
-  height: 44px;
-  padding: 0 var(--spacing-4);
+  height: 48px;
+  padding: 0 var(--spacing-5);
   font-size: var(--font-size-base);
+  border-radius: var(--radius-md);
 }
 
 /* Status */
 .status-error {
-  border-color: var(--color-error-500);
+  border-color: var(--semantic-error);
+  box-shadow: none;
 }
 
 .status-error:focus-within {
-  border-color: var(--color-error-500);
-  box-shadow: 0 0 0 1px var(--color-error-500);
+  border-color: var(--semantic-error);
+  box-shadow: none;
 }
 
 .status-warning {
-  border-color: var(--color-warning-500);
+  border-color: var(--semantic-warning);
+  box-shadow: none;
 }
 
 .status-warning:focus-within {
-  border-color: var(--color-warning-500);
-  box-shadow: 0 0 0 1px var(--color-warning-500);
+  border-color: var(--semantic-warning);
+  box-shadow: none;
 }
 
 .status-success {
-  border-color: var(--color-success-500);
+  border-color: var(--semantic-success);
+  box-shadow: none;
 }
 
 .status-success:focus-within {
-  border-color: var(--color-success-500);
-  box-shadow: 0 0 0 1px var(--color-success-500);
+  border-color: var(--semantic-success);
+  box-shadow: none;
 }
 
 /* States */
 .disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
   background-color: var(--color-bg-hover);
+  border-color: var(--border-subtle);
+  box-shadow: none;
+  transform: none;
 }
 
 .block {
@@ -86,14 +101,31 @@
   color: var(--color-text-primary);
   font-family: inherit;
   font-size: inherit;
+  font-weight: var(--font-weight-normal);
+  caret-color: var(--accent);
+  transition:
+    color var(--motion-hover),
+    font-weight var(--motion-hover);
 }
 
 .input::placeholder {
   color: var(--color-text-tertiary);
+  opacity: 0.8;
 }
 
 .input:disabled {
   cursor: not-allowed;
+}
+
+.disabled .input,
+.disabled .prefix,
+.disabled .suffix {
+  color: var(--color-text-disabled);
+}
+
+.wrapper:focus-within .input {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
 }
 
 /* Prefix & Suffix */
@@ -104,6 +136,7 @@
   justify-content: center;
   color: var(--color-text-secondary);
   flex-shrink: 0;
+  transition: color var(--motion-hover);
 }
 
 /* Clear button */
@@ -111,20 +144,27 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   background: var(--color-text-tertiary);
-  border: none;
+  border: 1px solid transparent;
   border-radius: 50%;
   color: var(--color-bg-base);
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--timing-easeInOut);
+  backdrop-filter: blur(var(--blur-1));
+  transition:
+    background-color var(--motion-hover),
+    color var(--motion-hover),
+    box-shadow var(--motion-hover);
   flex-shrink: 0;
 }
 
 .clear:hover {
   background: var(--color-text-secondary);
+}
+
+.clear:active {
 }

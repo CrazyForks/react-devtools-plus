@@ -1,6 +1,6 @@
 import type { ComponentDetails, ComponentTreeNode } from '@react-devtools-plus/kit'
 import { getRpcClient, REACT_TAGS } from '@react-devtools-plus/kit'
-import { Checkbox } from '@react-devtools-plus/ui'
+import { Checkbox, Input } from '@react-devtools-plus/ui'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ComponentDetailsPanel } from '~/components/ComponentDetailsPanel'
 import { useComponentTreeHook } from '~/composables/useComponentTreeHook'
@@ -373,17 +373,19 @@ export function ComponentsPage({ tree, selectedNodeId, onSelectNode }: Component
       {/* Toolbar */}
       <div className="flex items-center gap-2 border-b border-base bg-base p-2">
         <div className="relative flex-1">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2">
-            <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <input
-            type="text"
+          <Input
+            size="sm"
             placeholder="Find components..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full border border-gray-200 rounded bg-gray-50 py-1.5 pl-8 pr-3 text-sm text-gray-900 transition-colors dark:border-gray-700 focus:border-primary-500 dark:bg-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            prefix={(
+              <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            )}
+            allowClear
+            onClear={() => setSearch('')}
+            block
           />
         </div>
         <button

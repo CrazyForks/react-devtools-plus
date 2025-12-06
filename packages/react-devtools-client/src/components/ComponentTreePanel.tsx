@@ -1,3 +1,4 @@
+import { Input } from '@react-devtools-plus/ui'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 // CSS animation keyframes
@@ -440,32 +441,26 @@ export function ComponentTreePanel({
       <div className="flex-shrink-0 border-b border-gray-100 p-3 dark:border-white/10">
         {/* Search input */}
         <div className="relative mb-3">
-          <input
+          <Input
             ref={searchInputRef}
-            type="text"
+            size="sm"
             placeholder="Component name, /regex..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-200 rounded bg-gray-50 px-3 py-1.5 pl-8 text-sm text-gray-900 transition-colors dark:border-white/10 focus:border-purple-500/50 dark:bg-black/30 dark:text-white focus:outline-none placeholder-gray-400 dark:placeholder-gray-500"
-          />
-          <svg
-            className="absolute left-2.5 top-1/2 h-4 w-4 text-gray-500 -translate-y-1/2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm('')}
-              className="absolute right-2 top-1/2 text-gray-500 -translate-y-1/2 hover:text-gray-700 dark:hover:text-gray-300"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            prefix={(
+              <svg
+                className="h-4 w-4 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-            </button>
-          )}
+            )}
+            allowClear
+            onClear={() => setSearchTerm('')}
+            block
+          />
         </div>
 
         {/* Stats and controls */}

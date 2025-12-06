@@ -1,5 +1,6 @@
 import type { ComponentDetails, HookInfo, PropValue, RenderedByInfo } from '@react-devtools-plus/kit'
 import { getRpcClient, REACT_TAGS } from '@react-devtools-plus/kit'
+import { Input } from '@react-devtools-plus/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface ServerRpcFunctions {
@@ -233,14 +234,15 @@ function InlineEditor({ value, type, onSave, onCancel }: InlineEditorProps) {
             </select>
           )
         : (
-            <input
+            <Input
               ref={inputRef}
+              size="sm"
               type={type === 'number' ? 'number' : 'text'}
               value={editValue}
               onChange={e => setEditValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="h-6 min-w-[80px] border-2 border-primary-400 rounded bg-white px-2 text-xs font-mono dark:bg-gray-800 focus:outline-none"
-              style={{ width: `${Math.max(80, editValue.length * 8 + 24)}px` }}
+              className="min-w-[96px] text-sm font-mono"
+              style={{ width: `${Math.max(96, editValue.length * 8 + 32)}px` }}
             />
           )}
 

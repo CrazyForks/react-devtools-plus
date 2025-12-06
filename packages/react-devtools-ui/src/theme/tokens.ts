@@ -13,6 +13,7 @@ export const spacing = {
   4: '16px',
   5: '20px',
   6: '24px',
+  7: '28px',
   8: '32px',
   10: '40px',
   12: '48px',
@@ -27,13 +28,13 @@ export const spacing = {
  */
 export const borderRadius = {
   'none': '0px',
-  'sm': '2px',
-  'base': '4px',
-  'md': '6px',
-  'lg': '8px',
-  'xl': '12px',
-  '2xl': '16px',
-  '3xl': '24px',
+  'sm': '6px',
+  'base': '10px',
+  'md': '14px',
+  'lg': '18px',
+  'xl': '24px',
+  '2xl': '32px',
+  '3xl': '48px',
   'full': '9999px',
 }
 
@@ -43,13 +44,13 @@ export const borderRadius = {
  */
 export const shadows = {
   'none': 'none',
-  'sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-  'base': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-  'md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-  'lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-  'xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
-  '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
-  'inner': 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
+  'sm': '0 8px 24px rgba(15, 23, 42, 0.06)',
+  'base': '0 10px 30px rgba(15, 23, 42, 0.08)',
+  'md': '0 14px 40px rgba(15, 23, 42, 0.1)',
+  'lg': '0 18px 55px rgba(15, 23, 42, 0.14)',
+  'xl': '0 22px 70px rgba(15, 23, 42, 0.18)',
+  '2xl': '0 32px 90px rgba(15, 23, 42, 0.22)',
+  'inner': 'inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(15, 23, 42, 0.06)',
 }
 
 /**
@@ -106,6 +107,8 @@ export const transitions = {
     easeIn: 'ease-in',
     easeOut: 'ease-out',
     easeInOut: 'ease-in-out',
+    smoothSpring: 'cubic-bezier(0.16, 1, 0.3, 1)',
+    softExit: 'cubic-bezier(0.33, 1, 0.68, 1)',
   },
 }
 
@@ -157,37 +160,107 @@ export function generateCSSVariables(
     setVar(`--color-neutral-${shade}`, value)
   })
 
-  // Semantic colors (based on mode)
+  // Semantic colors (based on mode) with opinionated surfaces
   if (mode === 'light') {
-    setVar('--color-bg-base', neutral[50])
-    setVar('--color-bg-elevated', neutral[100])
-    setVar('--color-bg-hover', neutral[200])
-    setVar('--color-bg-active', neutral[300])
+    const surfaces = {
+      surface: '#f7f9fb',
+      panel: 'rgba(255, 255, 255, 0.82)',
+      control: 'rgba(255, 255, 255, 0.92)',
+      controlStrong: 'rgba(255, 255, 255, 0.98)',
+      controlActive: '#e9eef5',
+      line: '#dfe5ec',
+      lineStrong: '#c6d2e1',
+      textPrimary: '#0f172a',
+      textSecondary: '#334155',
+      textTertiary: '#4b5563',
+      textMuted: '#94a3b8',
+      glowAccent: 'rgba(77, 163, 255, 0.35)',
+      glowAmbient: 'rgba(148, 163, 184, 0.25)',
+      contrast: '#111827',
+      blur: '12px',
+      blurStrong: '18px',
+    }
 
-    setVar('--color-text-primary', neutral[900])
-    setVar('--color-text-secondary', neutral[700])
-    setVar('--color-text-tertiary', neutral[500])
-    setVar('--color-text-disabled', neutral[400])
+    setVar('--color-bg-base', surfaces.surface)
+    setVar('--color-bg-elevated', surfaces.panel)
+    setVar('--color-bg-hover', surfaces.control)
+    setVar('--color-bg-active', surfaces.controlActive)
 
-    setVar('--color-border-base', neutral[300])
-    setVar('--color-border-hover', neutral[400])
+    setVar('--color-text-primary', surfaces.textPrimary)
+    setVar('--color-text-secondary', surfaces.textSecondary)
+    setVar('--color-text-tertiary', surfaces.textTertiary)
+    setVar('--color-text-disabled', surfaces.textMuted)
+
+    setVar('--color-border-base', surfaces.line)
+    setVar('--color-border-hover', surfaces.lineStrong)
     setVar('--color-border-focus', colors.primary[500])
+
+    setVar('--surface-base', surfaces.surface)
+    setVar('--surface-panel', surfaces.panel)
+    setVar('--surface-control', surfaces.control)
+    setVar('--surface-control-strong', surfaces.controlStrong)
+    setVar('--surface-contrast', surfaces.contrast)
+    setVar('--border-subtle', surfaces.line)
+    setVar('--border-strong', surfaces.lineStrong)
+    setVar('--glow-accent', surfaces.glowAccent)
+    setVar('--glow-ambient', surfaces.glowAmbient)
+    setVar('--blur-base', surfaces.blur)
+    setVar('--blur-strong', surfaces.blurStrong)
   }
   else {
-    setVar('--color-bg-base', neutral[950])
-    setVar('--color-bg-elevated', neutral[900])
-    setVar('--color-bg-hover', neutral[800])
-    setVar('--color-bg-active', neutral[700])
+    const surfaces = {
+      surface: '#0d1117',
+      panel: 'rgba(22, 27, 34, 0.72)',
+      control: 'rgba(25, 32, 43, 0.78)',
+      controlStrong: 'rgba(30, 38, 52, 0.82)',
+      controlActive: '#1c2533',
+      line: '#222b36',
+      lineStrong: '#2f3a48',
+      textPrimary: '#e8ecf3',
+      textSecondary: '#cbd5e1',
+      textTertiary: '#94a3b8',
+      textMuted: '#64748b',
+      glowAccent: 'rgba(108, 182, 255, 0.35)',
+      glowAmbient: 'rgba(15, 23, 42, 0.45)',
+      contrast: '#0b1017',
+      blur: '12px',
+      blurStrong: '18px',
+    }
 
-    setVar('--color-text-primary', neutral[50])
-    setVar('--color-text-secondary', neutral[300])
-    setVar('--color-text-tertiary', neutral[500])
-    setVar('--color-text-disabled', neutral[600])
+    setVar('--color-bg-base', surfaces.surface)
+    setVar('--color-bg-elevated', surfaces.panel)
+    setVar('--color-bg-hover', surfaces.control)
+    setVar('--color-bg-active', surfaces.controlActive)
 
-    setVar('--color-border-base', neutral[700])
-    setVar('--color-border-hover', neutral[600])
+    setVar('--color-text-primary', surfaces.textPrimary)
+    setVar('--color-text-secondary', surfaces.textSecondary)
+    setVar('--color-text-tertiary', surfaces.textTertiary)
+    setVar('--color-text-disabled', surfaces.textMuted)
+
+    setVar('--color-border-base', surfaces.line)
+    setVar('--color-border-hover', surfaces.lineStrong)
     setVar('--color-border-focus', colors.primary[500])
+
+    setVar('--surface-base', surfaces.surface)
+    setVar('--surface-panel', surfaces.panel)
+    setVar('--surface-control', surfaces.control)
+    setVar('--surface-control-strong', surfaces.controlStrong)
+    setVar('--surface-contrast', surfaces.contrast)
+    setVar('--border-subtle', surfaces.line)
+    setVar('--border-strong', surfaces.lineStrong)
+    setVar('--glow-accent', surfaces.glowAccent)
+    setVar('--glow-ambient', surfaces.glowAmbient)
+    setVar('--blur-base', surfaces.blur)
+    setVar('--blur-strong', surfaces.blurStrong)
   }
+
+  // Accent + semantics
+  setVar('--accent', colors.primary[500])
+  setVar('--accent-strong', colors.primary[600])
+  setVar('--accent-weak', colors.primary[300])
+  setVar('--semantic-success', colors.success[500])
+  setVar('--semantic-warning', colors.warning[500])
+  setVar('--semantic-error', colors.error[500])
 
   // Spacing
   Object.entries(spacing).forEach(([key, value]) => {
@@ -203,6 +276,16 @@ export function generateCSSVariables(
   Object.entries(shadows).forEach(([key, value]) => {
     vars[`--shadow-${key}`] = value
   })
+
+  // Motion primitives
+  vars['--motion-hover'] = `${transitions.duration.fast} ${transitions.timing.easeOut}`
+  vars['--motion-press'] = `${transitions.duration.fast} ${transitions.timing.smoothSpring}`
+  vars['--motion-overlay'] = `${transitions.duration.slow} ${transitions.timing.smoothSpring}`
+  vars['--motion-overlay-exit'] = `${transitions.duration.slower} ${transitions.timing.softExit}`
+
+  // Blur layers
+  vars['--blur-1'] = '12px'
+  vars['--blur-2'] = '18px'
 
   return vars
 }
