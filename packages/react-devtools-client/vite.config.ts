@@ -11,7 +11,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '~': resolve(__dirname, './src'),
-      '@react-devtools/kit': resolve(__dirname, '../react-devtools-kit/src/index.ts'),
+      '@react-devtools-plus/kit': resolve(__dirname, '../react-devtools-kit/src/index.ts'),
     },
   },
   build: {

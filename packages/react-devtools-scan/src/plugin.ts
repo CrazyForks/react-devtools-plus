@@ -28,7 +28,7 @@ export interface ScanPluginConfig extends ReactDevtoolsScanOptions {
  *
  * @example
  * ```typescript
- * import { createScanPlugin } from '@react-devtools/scan/plugin';
+ * import { createScanPlugin } from '@react-devtools-plus/scan/plugin';
  *
  * const scanPlugin = createScanPlugin({
  *   enabled: true,

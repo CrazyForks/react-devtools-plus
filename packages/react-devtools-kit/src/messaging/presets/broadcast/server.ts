@@ -1,4 +1,4 @@
-import { isBrowser } from '@react-devtools/shared'
+import { isBrowser } from '@react-devtools-plus/shared'
 import SuperJSON from 'superjson'
 import { MergeableChannelOptions } from '../../types/channel'
 

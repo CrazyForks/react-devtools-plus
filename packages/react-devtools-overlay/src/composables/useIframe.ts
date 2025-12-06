@@ -1,5 +1,5 @@
-import { globalPluginManager } from '@react-devtools/core'
-import { clearNavigationHistory, clearTimeline, createRpcServer, getAllContexts, getAppFiberRoot, getComponentDetails, getComponentHookStates, getContextProviderInfo, getFiberById, getReactVersion, getRouterInfo, getRpcServer, getTimelineState, hideHighlight, highlightNode, installTimelineEventListeners, isEditableProp, navigateTo, onInspectorSelect, onOpenInEditor, onTimelineEvent, onTreeUpdated, openInEditor, rebuildTree, scrollToNode, setComponentProp, setContextValue, setContextValueAtPath, setContextValueFromJson, setHookState, setHookStateFromJson, setIframeServerContext, toggleInspector, updateTimelineState } from '@react-devtools/kit'
+import { globalPluginManager } from '@react-devtools-plus/core'
+import { clearNavigationHistory, clearTimeline, createRpcServer, getAllContexts, getAppFiberRoot, getComponentDetails, getComponentHookStates, getContextProviderInfo, getFiberById, getReactVersion, getRouterInfo, getRpcServer, getTimelineState, hideHighlight, highlightNode, installTimelineEventListeners, isEditableProp, navigateTo, onInspectorSelect, onOpenInEditor, onTimelineEvent, onTreeUpdated, openInEditor, rebuildTree, scrollToNode, setComponentProp, setContextValue, setContextValueAtPath, setContextValueFromJson, setHookState, setHookStateFromJson, setIframeServerContext, toggleInspector, updateTimelineState } from '@react-devtools-plus/kit'
 import { useEffect, useRef } from 'react'
 
 /**

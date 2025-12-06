@@ -1,5 +1,5 @@
 {
-  "name": "@react-devtools/overlay",
+  "name": "@react-devtools-plus/overlay",
   "type": "module",
   "version": "0.0.1",
   "private": true,
@@ -19,9 +19,9 @@
     "stub": "vite build --watch"
   },
   "dependencies": {
-    "@react-devtools/core": "workspace:^",
-    "@react-devtools/kit": "workspace:^",
-    "@react-devtools/scan": "workspace:^",
+    "@react-devtools-plus/core": "workspace:^",
+    "@react-devtools-plus/kit": "workspace:^",
+    "@react-devtools-plus/scan": "workspace:^",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

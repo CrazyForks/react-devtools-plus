@@ -22,7 +22,7 @@ This playground demonstrates:
 ✅ Node 14+ runtime compatibility (ES2017 target)
 ✅ Legacy React Router v5 with React 17
 ✅ webpack-dev-server 3.x with HMR
-✅ Theme system from `@react-devtools/ui`
+✅ Theme system from `@react-devtools-plus/ui`
 ✅ React Scan integration
 
 ## Why Webpack 4?

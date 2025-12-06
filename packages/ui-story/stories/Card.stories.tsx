@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Card, ThemeProvider } from '@react-devtools/ui'
+import { Card, ThemeProvider } from '@react-devtools-plus/ui'
 
 const meta = {
   title: 'Components/Card',

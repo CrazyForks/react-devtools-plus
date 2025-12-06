@@ -7,7 +7,7 @@ export default defineConfig({
   format: ['esm', 'cjs'],
   dts: true,
   clean: true,
-  external: ['react-devtools', 'react'],
+  external: ['react-devtools-plus', 'react'],
   shims: true, // Inject shims for __dirname, import.meta.url, etc.
   onSuccess: async () => {
     // Copy plugin source files to dist so they can be loaded by the DevTools server

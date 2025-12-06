@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import type { Meta, StoryObj } from '@storybook/react'
-import { Switch } from '@react-devtools/ui'
+import { Switch } from '@react-devtools-plus/ui'
 import { useState } from 'react'
 
 const meta: Meta<typeof Switch> = {

@@ -1,4 +1,4 @@
-import { Badge, Button, Card, Input, PRESET_COLORS, useTheme } from '@react-devtools/ui'
+import { Badge, Button, Card, Input, PRESET_COLORS, useTheme } from '@react-devtools-plus/ui'
 import React, { useState } from 'react'
 
 export function ThemeDemo() {

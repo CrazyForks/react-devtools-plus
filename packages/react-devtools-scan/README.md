@@ -1,4 +1,4 @@
-# @react-devtools/scan
+# @react-devtools-plus/scan
 
 React Scan integration layer for React DevTools.
 
@@ -17,7 +17,7 @@ This package provides a seamless integration between [react-scan](https://github
 ## Installation
 
 ```bash
-pnpm add @react-devtools/scan
+pnpm add @react-devtools-plus/scan
 ```
 
 ## Quick Start
@@ -25,7 +25,7 @@ pnpm add @react-devtools/scan
 ### Basic Usage
 
 ```typescript
-import { initScan } from '@react-devtools/scan';
+import { initScan } from '@react-devtools-plus/scan';
 
 // Initialize with defaults (development only)
 initScan();
@@ -34,7 +34,7 @@ initScan();
 ### Custom Configuration
 
 ```typescript
-import { initScan } from '@react-devtools/scan';
+import { initScan } from '@react-devtools-plus/scan';
 
 const scanInstance = initScan({
   enabled: true,
@@ -121,7 +121,7 @@ interface ReactDevtoolsScanOptions {
 ### Conditional Enabling
 
 ```typescript
-import { initScan } from '@react-devtools/scan';
+import { initScan } from '@react-devtools-plus/scan';
 
 if (process.env.NODE_ENV === 'development') {
   initScan({
@@ -134,7 +134,7 @@ if (process.env.NODE_ENV === 'development') {
 ### Runtime Control
 
 ```typescript
-import { getScan } from '@react-devtools/scan';
+import { getScan } from '@react-devtools-plus/scan';
 
 // Later in your code...
 const scan = getScan();
@@ -150,7 +150,7 @@ if (scan?.isActive()) {
 ### Custom Animation Speed
 
 ```typescript
-import { initScan } from '@react-devtools/scan';
+import { initScan } from '@react-devtools-plus/scan';
 
 initScan({
   animationSpeed: 'slow', // 'slow' | 'fast' | 'off'

@@ -1,5 +1,5 @@
 {
-  "name": "@react-devtools/core",
+  "name": "@react-devtools-plus/core",
   "type": "module",
   "version": "0.0.1",
   "description": "Core functionality for React DevTools including RPC, client management, and plugin system",
@@ -49,7 +49,7 @@
     }
   },
   "dependencies": {
-    "@react-devtools/shared": "workspace:*",
+    "@react-devtools-plus/shared": "workspace:*",
     "birpc": "^0.2.19"
   },
   "devDependencies": {

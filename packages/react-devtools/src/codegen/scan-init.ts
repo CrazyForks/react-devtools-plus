@@ -36,7 +36,7 @@ export function generateScanInitESMCode(options: ScanConfig): string {
   const normalizedOptions = normalizeScanOptions(options)
 
   return `
-import { initScan, ReactScanInternals, setOptions, getOptions, scan } from 'react-devtools/scan';
+import { initScan, ReactScanInternals, setOptions, getOptions, scan } from 'react-devtools-plus/scan';
 
 if (typeof window !== 'undefined') {
   window.__REACT_SCAN_INTERNALS__ = ReactScanInternals;
@@ -63,7 +63,7 @@ export function generateScanInitCJSCode(options: ScanConfig): string {
   }
 
   // Resolve the actual path to scan.cjs
-  const scanPackagePath = path.dirname(require.resolve('react-devtools/package.json'))
+  const scanPackagePath = path.dirname(require.resolve('react-devtools-plus/package.json'))
   const scanModulePath = path.join(scanPackagePath, 'dist', 'scan.cjs').replace(/\\/g, '/')
 
   return `

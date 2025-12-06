@@ -136,7 +136,7 @@ You can programmatically add events to the Timeline using the Timeline API:
 ### Adding Component Events
 
 ```typescript
-import { addComponentEvent } from '@react-devtools/kit'
+import { addComponentEvent } from '@react-devtools-plus/kit'
 
 // In your component
 const handleSubmit = (data: FormData) => {
@@ -148,7 +148,7 @@ const handleSubmit = (data: FormData) => {
 ### Adding Performance Events
 
 ```typescript
-import { addPerformanceEvent } from '@react-devtools/kit'
+import { addPerformanceEvent } from '@react-devtools-plus/kit'
 
 // Track custom performance metrics
 const startTime = performance.now()
@@ -162,7 +162,7 @@ addPerformanceEvent('render', 'MyComponent', 'end', duration, 'my-render-group')
 ### Tracking Fiber Performance
 
 ```typescript
-import { trackFiberPerformanceStart, trackFiberPerformanceEnd } from '@react-devtools/kit'
+import { trackFiberPerformanceStart, trackFiberPerformanceEnd } from '@react-devtools-plus/kit'
 
 // In your component or hook
 useEffect(() => {
@@ -246,7 +246,7 @@ Timeline events are communicated between the overlay and client via RPC:
 Timeline state can be managed programmatically:
 
 ```typescript
-import { getTimelineState, updateTimelineState, clearTimeline } from '@react-devtools/kit'
+import { getTimelineState, updateTimelineState, clearTimeline } from '@react-devtools-plus/kit'
 
 // Get current state
 const state = getTimelineState()
@@ -286,7 +286,7 @@ clearTimeline()
 
 ```typescript
 // In your component
-import { addComponentEvent } from '@react-devtools/kit'
+import { addComponentEvent } from '@react-devtools-plus/kit'
 
 function MyComponent() {
   const handleAction = () => {

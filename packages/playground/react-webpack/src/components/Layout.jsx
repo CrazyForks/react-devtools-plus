@@ -1,4 +1,4 @@
-import { useTheme } from '@react-devtools/ui'
+import { useTheme } from '@react-devtools-plus/ui'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 
 export default function Layout() {

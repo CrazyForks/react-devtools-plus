@@ -122,7 +122,7 @@ export function getWebpackContext(compiler: Compiler): string {
  * Create cache directory for DevTools initialization files
  */
 function ensureCacheDir(projectRoot: string): string {
-  const cacheDir = path.join(projectRoot, 'node_modules', '.cache', 'react-devtools')
+  const cacheDir = path.join(projectRoot, 'node_modules', '.cache', 'react-devtools-plus')
   if (!fs.existsSync(cacheDir)) {
     fs.mkdirSync(cacheDir, { recursive: true })
   }

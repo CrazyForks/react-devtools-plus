@@ -1,5 +1,5 @@
-import type { ComponentDetails, HookInfo, PropValue, RenderedByInfo } from '@react-devtools/kit'
-import { getRpcClient, REACT_TAGS } from '@react-devtools/kit'
+import type { ComponentDetails, HookInfo, PropValue, RenderedByInfo } from '@react-devtools-plus/kit'
+import { getRpcClient, REACT_TAGS } from '@react-devtools-plus/kit'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface ServerRpcFunctions {

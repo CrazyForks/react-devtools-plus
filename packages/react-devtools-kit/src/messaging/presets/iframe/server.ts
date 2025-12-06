@@ -1,4 +1,4 @@
-import { isBrowser } from '@react-devtools/shared'
+import { isBrowser } from '@react-devtools-plus/shared'
 import SuperJSON from 'superjson'
 import { MergeableChannelOptions } from '../../types/channel'
 import { __REACT_DEVTOOLS_KIT_IFRAME_MESSAGING_EVENT_KEY, getIframeServerContext } from './context'

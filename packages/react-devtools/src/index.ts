@@ -16,7 +16,7 @@
  * @example
  * ```ts
  * // Vite
- * import ReactDevTools from 'react-devtools'
+ * import ReactDevTools from 'react-devtools-plus'
  * export default defineConfig({
  *   plugins: [
  *     ReactDevTools(),

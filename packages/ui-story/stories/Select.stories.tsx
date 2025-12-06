@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Select } from '@react-devtools/ui'
+import { Select } from '@react-devtools-plus/ui'
 import { useState } from 'react'
 
 const meta: Meta<typeof Select> = {

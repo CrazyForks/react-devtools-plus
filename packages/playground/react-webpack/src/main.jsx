@@ -1,9 +1,9 @@
-import { ThemeProvider } from '@react-devtools/ui'
+import { ThemeProvider } from '@react-devtools-plus/ui'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
-import '@react-devtools/ui/style.css'
+import '@react-devtools-plus/ui/style.css'
 import './style.css'
 
 // Note: React Scan is now auto-injected via webpack.config.js

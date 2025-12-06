@@ -1,5 +1,5 @@
 {
-  "name": "@react-devtools/ui-story",
+  "name": "@react-devtools-plus/ui-story",
   "type": "module",
   "version": "0.0.1",
   "private": true,
@@ -11,7 +11,7 @@
     "prepare:type": "echo 'Skipping type generation for ui-story'"
   },
   "dependencies": {
-    "@react-devtools/ui": "workspace:*",
+    "@react-devtools-plus/ui": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

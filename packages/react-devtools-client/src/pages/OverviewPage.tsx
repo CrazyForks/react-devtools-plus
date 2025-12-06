@@ -1,5 +1,5 @@
-import type { ComponentTreeNode } from '@react-devtools/kit'
-import { getRpcClient } from '@react-devtools/kit'
+import type { ComponentTreeNode } from '@react-devtools-plus/kit'
+import { getRpcClient } from '@react-devtools-plus/kit'
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ReactLogo from '~/components/assets/ReactLogo'

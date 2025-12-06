@@ -8,7 +8,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "paths": {
-      "react-devtools": ["../../react-devtools/src/index.ts"]
+      "react-devtools-plus": ["../../react-devtools/src/index.ts"]
     },
     "resolveJsonModule": true,
     "types": ["node"],

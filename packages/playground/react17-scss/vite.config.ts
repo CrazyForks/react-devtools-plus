@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react'
-import ReactDevTools from 'react-devtools'
+import ReactDevTools from 'react-devtools-plus'
 import { defineConfig } from 'vite'
 
 export default defineConfig({

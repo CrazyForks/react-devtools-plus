@@ -1,5 +1,5 @@
 {
-  "name": "@react-devtools/ui",
+  "name": "@react-devtools-plus/ui",
   "type": "module",
   "version": "0.0.1",
   "description": "UI components library for React DevTools",
@@ -36,7 +36,7 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
-    "@react-devtools/shared": "workspace:*",
+    "@react-devtools-plus/shared": "workspace:*",
     "colord": "^2.9.3"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 {
-  "name": "@react-devtools/playground-react",
+  "name": "@react-devtools-plus/playground-react",
   "type": "module",
   "version": "0.0.0",
   "private": true,
@@ -9,7 +9,7 @@
     "preview": "NODE_ENV=test vite preview --mode test"
   },
   "dependencies": {
-    "@react-devtools/ui": "workspace:*",
+    "@react-devtools-plus/ui": "workspace:*",
     "@types/react-router-dom": "^5.3.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -19,7 +19,7 @@
     "@types/react": "^18.2.72",
     "@types/react-dom": "^18.2.23",
     "@vitejs/plugin-react": "^4.3.2",
-    "react-devtools": "workspace:*",
+    "react-devtools-plus": "workspace:*",
     "typescript": "^5.9.3",
     "vite": "^7.1.10"
   }

@@ -1,5 +1,5 @@
 {
-  "name": "react-devtools",
+  "name": "react-devtools-plus",
   "type": "module",
   "version": "0.0.1",
   "exports": {
@@ -61,7 +61,7 @@
     "unplugin": "^2.3.10"
   },
   "devDependencies": {
-    "@react-devtools/scan": "workspace:*",
+    "@react-devtools-plus/scan": "workspace:*",
     "tsup": "^8.3.5",
     "typescript": "^5.5.0"
   }

@@ -1,1 +1,1 @@
-export * from '@react-devtools/scan'
+export * from '@react-devtools-plus/scan'

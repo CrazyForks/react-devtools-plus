@@ -1,5 +1,5 @@
-import { getRpcClient } from '@react-devtools/kit'
-import { Checkbox, Select, Switch } from '@react-devtools/ui'
+import { getRpcClient } from '@react-devtools-plus/kit'
+import { Checkbox, Select, Switch } from '@react-devtools-plus/ui'
 import { useEffect, useRef, useState } from 'react'
 import { ComponentTreePanel } from '../components/ComponentTreePanel'
 import { RenderReasonPanel } from '../components/RenderReasonPanel'

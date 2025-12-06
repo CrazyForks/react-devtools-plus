@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Input, ThemeProvider } from '@react-devtools/ui'
+import { Input, ThemeProvider } from '@react-devtools-plus/ui'
 import { useState } from 'react'
 
 const meta = {

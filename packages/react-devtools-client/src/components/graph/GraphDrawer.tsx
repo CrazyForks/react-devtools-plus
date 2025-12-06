@@ -4,7 +4,7 @@
  */
 
 import type { DrawerData } from '~/types/graph'
-import { openInEditor } from '@react-devtools/kit'
+import { openInEditor } from '@react-devtools-plus/kit'
 import { useState } from 'react'
 
 interface GraphDrawerProps {

@@ -1,5 +1,5 @@
-import { getRpcClient } from '@react-devtools/kit'
-import { Button, Checkbox, PRESET_COLORS, Select, useTheme } from '@react-devtools/ui'
+import { getRpcClient } from '@react-devtools-plus/kit'
+import { Button, Checkbox, PRESET_COLORS, Select, useTheme } from '@react-devtools-plus/ui'
 import { useEffect, useState } from 'react'
 
 interface ServerRpcFunctions {

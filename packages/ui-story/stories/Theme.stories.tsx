@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Button, Card, PRESET_COLORS, ThemeProvider, useTheme } from '@react-devtools/ui'
+import { Button, Card, PRESET_COLORS, ThemeProvider, useTheme } from '@react-devtools-plus/ui'
 
 function ThemeDemo() {
   const { theme, setTheme, mode, setMode } = useTheme()

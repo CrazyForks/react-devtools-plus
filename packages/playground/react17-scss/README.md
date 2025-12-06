@@ -19,7 +19,7 @@ This playground demonstrates:
 ✅ SCSS preprocessing and features (variables, mixins, nesting)
 ✅ Node 14+ runtime compatibility (ES2017 target)
 ✅ Legacy React Router v5 with React 17
-✅ Theme system from `@react-devtools/ui`
+✅ Theme system from `@react-devtools-plus/ui`
 ✅ React Scan integration
 
 ## Getting Started

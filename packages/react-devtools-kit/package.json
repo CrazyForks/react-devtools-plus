@@ -1,5 +1,5 @@
 {
-  "name": "@react-devtools/kit",
+  "name": "@react-devtools-plus/kit",
   "type": "module",
   "version": "0.0.1",
   "author": "wzc520pyfm",
@@ -27,7 +27,7 @@
     "stub": "tsdown --watch --onSuccess 'tsdown --dts-only'"
   },
   "dependencies": {
-    "@react-devtools/shared": "workspace:^",
+    "@react-devtools-plus/shared": "workspace:^",
     "birpc": "^2.6.1",
     "hookable": "^5.5.3",
     "mitt": "catalog:",

@@ -9,9 +9,9 @@
  */
 
 import type { ReactRootRef } from './utils/react-render'
-import { globalPluginManager } from '@react-devtools/core'
-import { installReactHook } from '@react-devtools/kit'
-import { createScanPlugin } from '@react-devtools/scan'
+import { globalPluginManager } from '@react-devtools-plus/core'
+import { installReactHook } from '@react-devtools-plus/kit'
+import { createScanPlugin } from '@react-devtools-plus/scan'
 import { createElement, StrictMode } from 'react'
 import { App } from './App'
 import { renderToContainer, unmountRoot } from './utils/react-render'

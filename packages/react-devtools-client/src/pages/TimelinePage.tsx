@@ -1,5 +1,5 @@
-import type { TimelineEvent, TimelineLayersState } from '@react-devtools/kit'
-import { getRpcClient } from '@react-devtools/kit'
+import type { TimelineEvent, TimelineLayersState } from '@react-devtools-plus/kit'
+import { getRpcClient } from '@react-devtools-plus/kit'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { pluginEvents } from '../events'
 

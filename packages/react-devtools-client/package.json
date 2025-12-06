@@ -1,5 +1,5 @@
 {
-  "name": "@react-devtools/client",
+  "name": "@react-devtools-plus/client",
   "type": "module",
   "version": "0.0.1",
   "private": true,
@@ -19,8 +19,8 @@
     "stub": "vite build --watch"
   },
   "dependencies": {
-    "@react-devtools/kit": "workspace:^",
-    "@react-devtools/ui": "workspace:^",
+    "@react-devtools-plus/kit": "workspace:^",
+    "@react-devtools-plus/ui": "workspace:^",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router-dom": "^6.26.0",

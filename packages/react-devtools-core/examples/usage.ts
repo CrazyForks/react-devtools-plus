@@ -100,7 +100,7 @@ const clientFunctions: ClientFunctions = {
 }
 
 // Create RPC channel
-const channel = createBroadcastChannel('react-devtools')
+const channel = createBroadcastChannel('react-devtools-plus')
 
 // Create client RPC instance
 const clientRPC = createClientRPC(clientFunctions, channel, {

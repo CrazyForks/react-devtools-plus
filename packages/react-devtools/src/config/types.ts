@@ -3,7 +3,7 @@
  * 插件配置类型定义
  */
 
-import type { ReactDevtoolsScanOptions } from '@react-devtools/scan'
+import type { ReactDevtoolsScanOptions } from '@react-devtools-plus/scan'
 
 /**
  * Source path mode for code location injection

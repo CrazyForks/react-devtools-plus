@@ -1,5 +1,5 @@
-import type { ReactDevToolsPluginOptions } from 'react-devtools'
-import ReactDevTools from 'react-devtools'
+import type { ReactDevToolsPluginOptions } from 'react-devtools-plus'
+import ReactDevTools from 'react-devtools-plus'
 import { getBuiltinPlugins } from './plugins'
 
 // Merge user options with our defaults

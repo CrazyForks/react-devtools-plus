@@ -16,7 +16,7 @@ import { getScanInstance, resetScanInstance } from './adapter'
  *
  * @example
  * ```typescript
- * import { initScan } from '@react-devtools/scan';
+ * import { initScan } from '@react-devtools-plus/scan';
  *
  * // Initialize with default options
  * const scanInstance = initScan();
@@ -80,7 +80,7 @@ export function initScan(options: ReactDevtoolsScanOptions = {}): ScanInstance {
  *
  * @example
  * ```typescript
- * import { getScan } from '@react-devtools/scan';
+ * import { getScan } from '@react-devtools-plus/scan';
  *
  * const scanInstance = getScan();
  * if (scanInstance) {
@@ -103,7 +103,7 @@ export function getScan(): ScanInstance | null {
  *
  * @example
  * ```typescript
- * import { resetScan } from '@react-devtools/scan';
+ * import { resetScan } from '@react-devtools-plus/scan';
  *
  * // Reset for testing
  * resetScan();

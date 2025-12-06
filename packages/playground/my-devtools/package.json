@@ -17,7 +17,7 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "react-devtools": "workspace:*"
+    "react-devtools-plus": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",

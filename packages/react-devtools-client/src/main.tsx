@@ -1,12 +1,12 @@
 import type { Root } from 'react-dom/client'
-import { ThemeProvider } from '@react-devtools/ui'
+import { ThemeProvider } from '@react-devtools-plus/ui'
 import React, { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import { App } from './App'
 import '@unocss/reset/tailwind.css'
 import 'virtual:uno.css'
-import '@react-devtools/ui/style.css'
+import '@react-devtools-plus/ui/style.css'
 
 // Hack: Hack to suppress "can't detect preamble" error when loading plugins from Vite server
 // in the built DevTools client.

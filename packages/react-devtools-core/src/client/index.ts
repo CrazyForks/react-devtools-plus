@@ -3,7 +3,7 @@
  * React DevTools 客户端连接管理
  */
 
-import { isBrowser, target } from '@react-devtools/shared'
+import { isBrowser, target } from '@react-devtools-plus/shared'
 
 /**
  * Set DevTools client URL
@@ -49,7 +49,7 @@ export function setDevToolsEnabled(enabled: boolean): void {
  * 获取 DevTools 广播通道名称
  */
 export function getDevToolsChannelName(): string {
-  return target.__REACT_DEVTOOLS_BROADCAST_CHANNEL__ || 'react-devtools'
+  return target.__REACT_DEVTOOLS_BROADCAST_CHANNEL__ || 'react-devtools-plus'
 }
 
 /**

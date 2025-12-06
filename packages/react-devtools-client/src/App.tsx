@@ -1,6 +1,6 @@
 import type { LoadedPlugin, UserPlugin } from '~/types/plugin'
-import { createRpcClient, getRpcClient, openInEditor } from '@react-devtools/kit'
-import { useTheme } from '@react-devtools/ui'
+import { createRpcClient, getRpcClient, openInEditor } from '@react-devtools-plus/kit'
+import { useTheme } from '@react-devtools-plus/ui'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar } from '~/components/Sidebar'

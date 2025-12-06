@@ -1,4 +1,4 @@
-# @react-devtools/ui-story
+# @react-devtools-plus/ui-story
 
 Storybook for React DevTools UI components.
 
@@ -17,7 +17,7 @@ pnpm preview
 
 ## 📚 What's Included
 
-This package contains Storybook documentation for all `@react-devtools/ui` components:
+This package contains Storybook documentation for all `@react-devtools-plus/ui` components:
 
 - **Button** - Various button styles and states
 - **Card** - Card component with different configurations
@@ -50,7 +50,7 @@ Create a new `.stories.tsx` file in the `stories/` directory:
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react'
-import { YourComponent, ThemeProvider } from '@react-devtools/ui'
+import { YourComponent, ThemeProvider } from '@react-devtools-plus/ui'
 
 const meta = {
   title: 'Components/YourComponent',
@@ -100,8 +100,8 @@ Then serve the `storybook-static` directory.
 
 ## 📦 Related Packages
 
-- [`@react-devtools/ui`](../react-devtools-ui) - The UI component library
-- [`@react-devtools/core`](../react-devtools-core) - Core DevTools functionality
+- [`@react-devtools-plus/ui`](../react-devtools-ui) - The UI component library
+- [`@react-devtools-plus/core`](../react-devtools-core) - Core DevTools functionality
 
 ---
 

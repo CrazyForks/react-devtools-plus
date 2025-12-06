@@ -1,4 +1,4 @@
-import { getRpcClient } from '@react-devtools/kit'
+import { getRpcClient } from '@react-devtools-plus/kit'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 interface RouteInfo {
