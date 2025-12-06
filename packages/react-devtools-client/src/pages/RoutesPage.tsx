@@ -697,113 +697,115 @@ export function RoutesPage() {
 
       {/* Content */}
       <div className="flex-1 overflow-auto p-4">
-        {activeTab === 'routes' ? (
-          <div className="border border-gray-200 rounded-xl bg-white dark:border-gray-800 dark:bg-[#121212]">
-            {/* Section Header */}
-            <button
-              className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-900/50"
-              onClick={() => setIsRoutesCollapsed(!isRoutesCollapsed)}
-            >
-              <div className="flex items-center gap-2">
-                <RouteIcon className="h-5 w-5 text-gray-400" />
-                <span className="text-gray-900 font-medium dark:text-white">Route Tree</span>
-              </div>
-              <ChevronDownIcon
-                className={`h-5 w-5 text-gray-400 transition-transform ${isRoutesCollapsed ? '-rotate-90' : ''}`}
-              />
-            </button>
+        {activeTab === 'routes'
+          ? (
+              <div className="border border-gray-200 rounded-xl bg-white dark:border-gray-800 dark:bg-[#121212]">
+                {/* Section Header */}
+                <button
+                  className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-900/50"
+                  onClick={() => setIsRoutesCollapsed(!isRoutesCollapsed)}
+                >
+                  <div className="flex items-center gap-2">
+                    <RouteIcon className="h-5 w-5 text-gray-400" />
+                    <span className="text-gray-900 font-medium dark:text-white">Route Tree</span>
+                  </div>
+                  <ChevronDownIcon
+                    className={`h-5 w-5 text-gray-400 transition-transform ${isRoutesCollapsed ? '-rotate-90' : ''}`}
+                  />
+                </button>
 
-            {/* Routes Tree */}
-            {!isRoutesCollapsed && (
-              <div className="border-t border-gray-200 dark:border-gray-800">
-                {/* Table Header */}
-                <div className="flex border-b border-gray-100 bg-gray-50/50 px-4 py-2 text-xs text-gray-500 font-semibold tracking-wide uppercase dark:border-gray-800 dark:bg-gray-900/50 dark:text-gray-400">
-                  <div className="flex-1">Route Path</div>
-                  <div className="w-24 text-right">Component</div>
+                {/* Routes Tree */}
+                {!isRoutesCollapsed && (
+                  <div className="border-t border-gray-200 dark:border-gray-800">
+                    {/* Table Header */}
+                    <div className="flex border-b border-gray-100 bg-gray-50/50 px-4 py-2 text-xs text-gray-500 font-semibold tracking-wide uppercase dark:border-gray-800 dark:bg-gray-900/50 dark:text-gray-400">
+                      <div className="flex-1">Route Path</div>
+                      <div className="w-24 text-right">Component</div>
+                    </div>
+
+                    {/* Route Tree */}
+                    <div className="py-2">
+                      {routerState?.routes.length === 0
+                        ? (
+                            <div className="px-4 py-8 text-center text-gray-400">
+                              <RouteIcon className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                              <p>No routes detected</p>
+                              <p className="mt-1 text-xs">Make sure your app uses React Router</p>
+                            </div>
+                          )
+                        : (
+                            routerState?.routes.map((route, index) => (
+                              <RouteTreeItem
+                                key={`${route.path}-${index}`}
+                                route={route}
+                                currentPath={routerState.currentPath}
+                                searchQuery={searchQuery}
+                                onNavigate={handleNavigate}
+                                onCopy={handleCopy}
+                              />
+                            ))
+                          )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          : (
+        /* History Tab */
+              <div className="border border-gray-200 rounded-xl bg-white dark:border-gray-800 dark:bg-[#121212]">
+                <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-800">
+                  <div className="flex items-center gap-2">
+                    <ClockIcon className="h-5 w-5 text-gray-400" />
+                    <span className="text-gray-900 font-medium dark:text-white">Navigation History</span>
+                  </div>
+                  <button
+                    className="flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                    onClick={handleClearHistory}
+                  >
+                    <TrashIcon className="h-3.5 w-3.5" />
+                    Clear
+                  </button>
                 </div>
 
-                {/* Route Tree */}
-                <div className="py-2">
-                  {routerState?.routes.length === 0
+                <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {routerState?.history?.length === 0
                     ? (
                         <div className="px-4 py-8 text-center text-gray-400">
-                          <RouteIcon className="mx-auto mb-2 h-8 w-8 opacity-50" />
-                          <p>No routes detected</p>
-                          <p className="mt-1 text-xs">Make sure your app uses React Router</p>
+                          <ClockIcon className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                          <p>No navigation history</p>
                         </div>
                       )
                     : (
-                        routerState?.routes.map((route, index) => (
-                          <RouteTreeItem
-                            key={`${route.path}-${index}`}
-                            route={route}
-                            currentPath={routerState.currentPath}
-                            searchQuery={searchQuery}
-                            onNavigate={handleNavigate}
-                            onCopy={handleCopy}
-                          />
+                        routerState?.history?.map((entry, index) => (
+                          <div
+                            key={`${entry.timestamp}-${index}`}
+                            className="flex cursor-pointer items-center gap-3 px-4 py-2.5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-900/50"
+                            onClick={() => handleNavigate(entry.path + entry.search + entry.hash)}
+                          >
+                            <span className="w-16 shrink-0 text-xs text-gray-400">
+                              {formatTime(entry.timestamp)}
+                            </span>
+                            <span className="min-w-0 flex-1 truncate text-sm text-gray-700 font-mono dark:text-gray-300">
+                              {entry.path}
+                              {entry.search && <span className="text-blue-500">{entry.search}</span>}
+                              {entry.hash && <span className="text-purple-500">{entry.hash}</span>}
+                            </span>
+                            {entry.duration !== undefined && (
+                              <span className="shrink-0 text-xs text-gray-400">
+                                {formatDuration(entry.duration)}
+                              </span>
+                            )}
+                            {index === 0 && (
+                              <span className="shrink-0 rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-600 font-medium dark:bg-green-900/50 dark:text-green-400">
+                                current
+                              </span>
+                            )}
+                          </div>
                         ))
                       )}
                 </div>
               </div>
             )}
-          </div>
-        ) : (
-          /* History Tab */
-          <div className="border border-gray-200 rounded-xl bg-white dark:border-gray-800 dark:bg-[#121212]">
-            <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-800">
-              <div className="flex items-center gap-2">
-                <ClockIcon className="h-5 w-5 text-gray-400" />
-                <span className="text-gray-900 font-medium dark:text-white">Navigation History</span>
-              </div>
-              <button
-                className="flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-                onClick={handleClearHistory}
-              >
-                <TrashIcon className="h-3.5 w-3.5" />
-                Clear
-              </button>
-            </div>
-
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
-              {routerState?.history?.length === 0
-                ? (
-                    <div className="px-4 py-8 text-center text-gray-400">
-                      <ClockIcon className="mx-auto mb-2 h-8 w-8 opacity-50" />
-                      <p>No navigation history</p>
-                    </div>
-                  )
-                : (
-                    routerState?.history?.map((entry, index) => (
-                      <div
-                        key={`${entry.timestamp}-${index}`}
-                        className="flex cursor-pointer items-center gap-3 px-4 py-2.5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-900/50"
-                        onClick={() => handleNavigate(entry.path + entry.search + entry.hash)}
-                      >
-                        <span className="w-16 shrink-0 text-xs text-gray-400">
-                          {formatTime(entry.timestamp)}
-                        </span>
-                        <span className="min-w-0 flex-1 truncate text-sm text-gray-700 font-mono dark:text-gray-300">
-                          {entry.path}
-                          {entry.search && <span className="text-blue-500">{entry.search}</span>}
-                          {entry.hash && <span className="text-purple-500">{entry.hash}</span>}
-                        </span>
-                        {entry.duration !== undefined && (
-                          <span className="shrink-0 text-xs text-gray-400">
-                            {formatDuration(entry.duration)}
-                          </span>
-                        )}
-                        {index === 0 && (
-                          <span className="shrink-0 rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-600 font-medium dark:bg-green-900/50 dark:text-green-400">
-                            current
-                          </span>
-                        )}
-                      </div>
-                    ))
-                  )}
-            </div>
-          </div>
-        )}
 
         {/* Legend */}
         {activeTab === 'routes' && (

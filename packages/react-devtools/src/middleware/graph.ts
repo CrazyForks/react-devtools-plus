@@ -60,7 +60,7 @@ export function setupWebpackModuleGraph(compiler: any, root: string): void {
   compiler.hooks.done.tap('react-devtools-graph', (stats: any) => {
     try {
       const modules: ModuleInfo[] = []
-      const fileExtPattern = /\.(tsx?|jsx?|vue|json|css|scss|less|html)($|\?)/
+      const fileExtPattern = /\.(?:tsx?|jsx?|vue|json|css|scss|less|html)(?:$|\?)/
       const statsData = stats.toJson({
         modules: true,
         reasons: true,
@@ -226,7 +226,7 @@ export function getViteModuleGraph(
     }
 
     const modules: ModuleInfo[] = []
-    const fileExtPattern = /\.(tsx?|jsx?|vue|json|css|scss|less|html)($|\?)/
+    const fileExtPattern = /\.(?:tsx?|jsx?|vue|json|css|scss|less|html)(?:$|\?)/
 
     // Iterate through all modules in the graph
     for (const [, mod] of moduleGraph.idToModuleMap) {
@@ -261,4 +261,3 @@ export function getViteModuleGraph(
     return { modules, root }
   }
 }
-

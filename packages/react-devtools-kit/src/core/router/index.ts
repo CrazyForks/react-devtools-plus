@@ -89,9 +89,10 @@ export function getFiberRoot(): FiberRoot | null {
 function extractParamsFromPath(path: string): string[] {
   const params: string[] = []
   const regex = /:([^/]+)/g
-  let match
-  while ((match = regex.exec(path)) !== null) {
+  let match = regex.exec(path)
+  while (match !== null) {
     params.push(match[1])
+    match = regex.exec(path)
   }
   return params
 }

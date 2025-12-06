@@ -31,8 +31,7 @@ export function useFileTypes() {
       key,
       color: value.color,
       capitalize: capitalizeKeys.includes(key),
-    })), [],
-  )
+    })), [])
 
   const toggleFileType = useCallback(() => {
     setFileTypeShow(prev => !prev)
@@ -263,7 +262,7 @@ export function useGraph() {
     const matchedSearchNodes: SearcherNode[] = []
     const matchedEdges: Edge[] = []
 
-    const EXTRACT_LAST_THREE_MOD_ID_RE = /(?:.*\/){3}([^/]+$)/
+    const EXTRACT_LAST_THREE_MOD_ID_RE = /(?:[^/]*\/){3}([^/]+$)/
     const filterDataset = getGraphFilterDataset()
     const nodeData = filterDataset ? filterDataset.slice() : graphNodesTotalRef.current.slice()
 
@@ -539,4 +538,3 @@ export function useGraph() {
     cleanup,
   }
 }
-
