@@ -47,6 +47,171 @@ export function createGraphMiddleware(
 }
 
 /**
+ * State holder for Webpack module graph
+ * 用于保存 Webpack 模块依赖图的状态
+ */
+let webpackModuleGraph: { modules: ModuleInfo[], root: string } = { modules: [], root: '' }
+
+/**
+ * Setup Webpack compiler hooks to collect module graph
+ * 设置 Webpack 编译器钩子来收集模块依赖图
+ */
+export function setupWebpackModuleGraph(compiler: any, root: string): void {
+  compiler.hooks.done.tap('react-devtools-graph', (stats: any) => {
+    try {
+      const modules: ModuleInfo[] = []
+      const fileExtPattern = /\.(tsx?|jsx?|vue|json|css|scss|less|html)($|\?)/
+      const statsData = stats.toJson({
+        modules: true,
+        reasons: true,
+        source: false,
+        chunks: false,
+        assets: false,
+        cached: false,
+        entrypoints: false,
+      })
+
+      if (!statsData.modules) {
+        return
+      }
+
+      // Create a map for quick lookup of module by identifier
+      const moduleMap = new Map<string, { id: string, deps: string[], virtual: boolean }>()
+
+      statsData.modules.forEach((mod: any) => {
+        // Get the module identifier (resource path)
+        const id = mod.name || mod.identifier || ''
+        if (!id)
+          return
+
+        // Filter to only include relevant file types
+        if (!fileExtPattern.test(id))
+          return
+
+        // Skip webpack internal modules
+        if (id.startsWith('webpack/') || id.startsWith('(webpack)'))
+          return
+
+        // Normalize the path (remove loader prefixes)
+        const normalizedId = normalizeWebpackModulePath(id)
+        if (!normalizedId)
+          return
+
+        // Check if virtual module
+        const isVirtual = !mod.resource || id.includes('\0') || id.includes('virtual:')
+
+        if (!moduleMap.has(normalizedId)) {
+          moduleMap.set(normalizedId, {
+            id: normalizedId,
+            deps: [],
+            virtual: isVirtual,
+          })
+        }
+
+        // Collect dependencies from reasons
+        if (mod.reasons && Array.isArray(mod.reasons)) {
+          mod.reasons.forEach((reason: any) => {
+            const depId = reason.moduleName || reason.moduleIdentifier || ''
+            if (!depId)
+              return
+            if (!fileExtPattern.test(depId))
+              return
+            if (depId.startsWith('webpack/') || depId.startsWith('(webpack)'))
+              return
+
+            const normalizedDepId = normalizeWebpackModulePath(depId)
+            if (normalizedDepId && normalizedDepId !== normalizedId) {
+              // Add this module as a dependency of the reason module
+              if (!moduleMap.has(normalizedDepId)) {
+                moduleMap.set(normalizedDepId, {
+                  id: normalizedDepId,
+                  deps: [],
+                  virtual: false,
+                })
+              }
+              const depModule = moduleMap.get(normalizedDepId)!
+              if (!depModule.deps.includes(normalizedId)) {
+                depModule.deps.push(normalizedId)
+              }
+            }
+          })
+        }
+
+        // Also collect from issuer (direct import relationship)
+        if (mod.issuer) {
+          const issuerId = normalizeWebpackModulePath(mod.issuer)
+          if (issuerId && issuerId !== normalizedId && fileExtPattern.test(mod.issuer)) {
+            if (!moduleMap.has(issuerId)) {
+              moduleMap.set(issuerId, {
+                id: issuerId,
+                deps: [],
+                virtual: false,
+              })
+            }
+            const issuerModule = moduleMap.get(issuerId)!
+            if (!issuerModule.deps.includes(normalizedId)) {
+              issuerModule.deps.push(normalizedId)
+            }
+          }
+        }
+      })
+
+      // Convert map to array
+      moduleMap.forEach((mod) => {
+        modules.push(mod)
+      })
+
+      webpackModuleGraph = { modules, root }
+    }
+    catch (error) {
+      console.error('[React DevTools] Failed to collect module graph:', error)
+    }
+  })
+}
+
+/**
+ * Normalize webpack module path (remove loader prefixes, query strings, etc.)
+ * 标准化 webpack 模块路径（移除 loader 前缀、查询字符串等）
+ */
+function normalizeWebpackModulePath(modulePath: string): string | null {
+  if (!modulePath)
+    return null
+
+  // Remove loader prefix (e.g., "babel-loader!/path/to/file.js")
+  let path = modulePath
+  const loaderIndex = path.lastIndexOf('!')
+  if (loaderIndex !== -1) {
+    path = path.substring(loaderIndex + 1)
+  }
+
+  // Remove query string
+  const queryIndex = path.indexOf('?')
+  if (queryIndex !== -1) {
+    path = path.substring(0, queryIndex)
+  }
+
+  // Remove leading "./", "!"
+  path = path.replace(/^\.\//, '')
+  path = path.replace(/^!+/, '')
+
+  // Skip if path is empty or just a loader name
+  if (!path || !path.includes('/'))
+    return null
+
+  return path
+}
+
+/**
+ * Get Webpack module graph data
+ * 获取 Webpack 模块依赖图数据
+ */
+export function getWebpackModuleGraph(): () => Promise<{ modules: ModuleInfo[], root: string }> {
+  return async () => {
+    return webpackModuleGraph
+  }
+}
+
+/**
  * Get Vite module graph data
  * 获取 Vite 模块依赖图数据
  */

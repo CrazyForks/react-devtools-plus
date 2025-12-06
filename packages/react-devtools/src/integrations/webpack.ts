@@ -14,7 +14,7 @@ import {
   isDevServerV3,
   isWebpack4,
 } from '../compat'
-import { createAssetsMiddleware, createOpenInEditorMiddleware, createPluginFileMiddleware, createPluginsMiddleware, serveClient } from '../middleware'
+import { createAssetsMiddleware, createGraphMiddleware, createOpenInEditorMiddleware, createPluginFileMiddleware, createPluginsMiddleware, getWebpackModuleGraph, serveClient, setupWebpackModuleGraph } from '../middleware'
 import { createSourceAttributePlugin } from '../utils/babel-transform'
 
 type Compiler = any
@@ -36,6 +36,9 @@ export function setupWebpackDevServerMiddlewares(
 
   const devServerOptions = compiler.options.devServer as any
 
+  // Setup webpack module graph collection
+  setupWebpackModuleGraph(compiler, config.projectRoot)
+
   // Define middlewares to be applied
   // ORDER MATTERS! Specific API routes must come before the client static file serving
   // because the client middleware (sirv) handles SPA fallback (returns index.html for 404s)
@@ -55,6 +58,14 @@ export function setupWebpackDevServerMiddlewares(
       // Mount globally to debug why path matching fails.
       // The middleware itself handles path checking.
       middleware: createPluginFileMiddleware(),
+    },
+    {
+      name: 'react-devtools-graph',
+      // Graph middleware for module dependency visualization (must be before client serving)
+      middleware: createGraphMiddleware(
+        getWebpackModuleGraph(),
+        '/',
+      ),
     },
     {
       name: 'react-devtools-open-in-editor',
