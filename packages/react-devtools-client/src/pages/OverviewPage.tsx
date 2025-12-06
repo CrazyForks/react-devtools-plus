@@ -150,9 +150,9 @@ export function OverviewPage({ tree }: OverviewPageProps) {
   useComponentTreeHook(tree)
 
   return (
-    <div className="h-full w-full overflow-auto bg-gray-50/50 p-8 panel-grids dark:bg-neutral-950">
+    <div className="h-full w-full overflow-auto bg-gray-50/50 p-6 panel-grids dark:bg-neutral-950">
       <div className="min-h-full flex flex-col items-center justify-center">
-        <div className="mb-12 flex flex-col items-center gap-3">
+        <div className="mb-8 flex flex-col items-center gap-2.5">
           <div className="relative flex items-center justify-center">
             <div className="absolute inset-0 bg-primary-500 opacity-20 blur-[80px] dark:opacity-30" />
             <div className="relative flex items-center gap-3">
@@ -172,7 +172,7 @@ export function OverviewPage({ tree }: OverviewPageProps) {
 
         <div
           ref={gridRef}
-          className="grid grid-cols-1 mb-12 max-w-5xl w-full gap-6 md:grid-cols-3 sm:grid-cols-2"
+          className="grid grid-cols-1 mb-8 max-w-5xl w-full gap-5 md:grid-cols-3 sm:grid-cols-2"
         >
           <SpotlightCard className="spotlight-card group min-h-[160px]">
             <div className="rounded-full bg-primary-500/10 p-4 transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary-500/20">
