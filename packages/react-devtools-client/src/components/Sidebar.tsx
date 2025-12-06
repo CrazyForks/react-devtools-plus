@@ -72,6 +72,16 @@ function TimelineIcon({ className }: { className?: string }) {
   )
 }
 
+function AssetsIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+      <circle cx="9" cy="9" r="2" />
+      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+    </svg>
+  )
+}
+
 function SettingsIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -140,6 +150,7 @@ export function Sidebar({ plugins = [] }: { plugins?: LoadedPlugin[] }) {
         <NavItem to="/routes" icon={RoutesIcon} label="Routes" />
         <NavItem to="/context" icon={ContextIcon} label="Context" />
         <NavItem to="/timeline" icon={TimelineIcon} label="Timeline" />
+        <NavItem to="/assets" icon={AssetsIcon} label="Assets" />
         <NavItem to="/graph" icon={GraphIcon} label="Graph" />
         <NavItem to="/scan" icon={ScanIcon} label="React Scan" />
         {plugins.map(plugin => (

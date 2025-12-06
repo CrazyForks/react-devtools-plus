@@ -360,6 +360,7 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           clientUrl: pluginConfig.clientUrl,
           rootSelector: pluginConfig.rootSelector,
           theme: pluginConfig.theme,
+          assets: pluginConfig.assets,
         })
         if (configTag) {
           tags.push(configTag)
@@ -471,6 +472,7 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           pluginConfig.clientUrl,
           pluginConfig.rootSelector,
           pluginConfig.theme,
+          pluginConfig.assets,
         )
 
         // Inject Babel plugin (for data-source-path)

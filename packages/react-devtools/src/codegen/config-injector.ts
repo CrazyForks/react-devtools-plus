@@ -16,13 +16,17 @@ export interface DevToolsRuntimeConfig {
     mode?: 'auto' | 'light' | 'dark'
     primaryColor?: string
   }
+  /** Assets panel configuration */
+  assets?: {
+    files?: string[]
+  }
 }
 
 /**
  * Generate code to inject DevTools runtime configuration
  */
 export function generateConfigInjectionCode(config: DevToolsRuntimeConfig): string {
-  if (!config.clientUrl && !config.rootSelector && !config.theme) {
+  if (!config.clientUrl && !config.rootSelector && !config.theme && !config.assets) {
     return ''
   }
 
@@ -35,6 +39,9 @@ export function generateConfigInjectionCode(config: DevToolsRuntimeConfig): stri
   }
   if (config.theme) {
     configParts.push(`window.__REACT_DEVTOOLS_CONFIG__.theme = ${JSON.stringify(config.theme)};`)
+  }
+  if (config.assets) {
+    configParts.push(`window.__REACT_DEVTOOLS_CONFIG__.assets = ${JSON.stringify(config.assets)};`)
   }
 
   return `

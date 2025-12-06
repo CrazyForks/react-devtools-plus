@@ -7,7 +7,7 @@ import type { PreviewServer, ResolvedConfig, ViteDevServer } from 'vite'
 import type { ResolvedPluginConfig } from '../config/types'
 import fs from 'node:fs'
 import path from 'node:path'
-import { createGraphMiddleware, createOpenInEditorMiddleware, getViteModuleGraph, serveClient } from '../middleware'
+import { createAssetsMiddleware, createGraphMiddleware, createOpenInEditorMiddleware, getViteModuleGraph, serveClient } from '../middleware'
 import { OVERLAY_CHUNK_NAME } from '../utils/paths'
 
 /**
@@ -118,6 +118,13 @@ export function setupDevServerMiddlewares(
     getViteModuleGraph(server, config.projectRoot),
     base,
   ))
+
+  // Assets middleware for project files browsing
+  server.middlewares.use(createAssetsMiddleware({
+    root: config.projectRoot,
+    publicDir: server.config.publicDir || 'public',
+    baseUrl: base,
+  }))
 
   // Client serving middleware
   server.middlewares.use(`${base}__react_devtools__`, serveClient(clientPath))

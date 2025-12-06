@@ -14,7 +14,7 @@ import {
   isDevServerV3,
   isWebpack4,
 } from '../compat'
-import { createOpenInEditorMiddleware, createPluginFileMiddleware, createPluginsMiddleware, serveClient } from '../middleware'
+import { createAssetsMiddleware, createOpenInEditorMiddleware, createPluginFileMiddleware, createPluginsMiddleware, serveClient } from '../middleware'
 import { createSourceAttributePlugin } from '../utils/babel-transform'
 
 type Compiler = any
@@ -63,6 +63,15 @@ export function setupWebpackDevServerMiddlewares(
         config.projectRoot,
         config.sourcePathMode,
       ),
+    },
+    {
+      name: 'react-devtools-assets',
+      // Mount globally for assets API
+      middleware: createAssetsMiddleware({
+        root: config.projectRoot,
+        publicDir: 'public',
+        baseUrl: '/',
+      }),
     },
     {
       name: 'react-devtools-client',
@@ -136,12 +145,13 @@ export function injectDevToolsEntries(
   clientUrl?: string,
   rootSelector?: string,
   theme?: { mode?: 'auto' | 'light' | 'dark', primaryColor?: string },
+  assets?: { files?: string[] },
 ) {
   const cacheDir = ensureCacheDir(projectRoot)
   const filesToInject: string[] = []
 
   // 1. Config injection (for singleSpa/micro-frontend scenarios)
-  const configCode = generateConfigInjectionCode({ clientUrl, rootSelector, theme })
+  const configCode = generateConfigInjectionCode({ clientUrl, rootSelector, theme, assets })
   if (configCode) {
     const configPath = writeInitFile(cacheDir, 'devtools-config.js', configCode)
     filesToInject.push(configPath)

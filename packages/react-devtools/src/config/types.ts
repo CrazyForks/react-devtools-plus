@@ -227,6 +227,26 @@ export interface ReactDevToolsPluginOptions {
      */
     primaryColor?: string
   }
+
+  /**
+   * Assets panel configuration
+   * Assets 面板配置
+   */
+  assets?: {
+    /**
+     * File extensions to show in the assets panel
+     * When not provided, shows common static assets (images, fonts, etc.)
+     * 在 assets 面板中显示的文件扩展名
+     *
+     * @example
+     * // Only show images and videos
+     * assets: { files: ['png', 'jpg', 'svg', 'mp4'] }
+     *
+     * // Show all supported types
+     * assets: { files: ['png', 'jpg', 'svg', 'ico', 'gif', 'webp', 'mp4', 'mp3', 'woff2', 'json', 'md'] }
+     */
+    files?: string[]
+  }
 }
 
 /**
@@ -249,6 +269,9 @@ export interface ResolvedPluginConfig {
   theme?: {
     mode?: 'auto' | 'light' | 'dark'
     primaryColor?: string
+  }
+  assets?: {
+    files?: string[]
   }
 }
 

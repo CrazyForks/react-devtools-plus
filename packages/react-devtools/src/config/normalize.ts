@@ -158,6 +158,7 @@ export function resolvePluginConfig(
     clientUrl: options.clientUrl,
     rootSelector: options.rootSelector,
     theme: options.theme,
+    assets: options.assets,
   }
 }
 
