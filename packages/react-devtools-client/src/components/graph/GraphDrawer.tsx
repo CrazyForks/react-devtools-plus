@@ -47,12 +47,7 @@ export function GraphDrawer({
 
   return (
     <div
-      className={`
-        absolute right-0 top-0 z-20 h-full w-[300px] border-l border-base
-        bg-white/95 shadow-lg backdrop-blur transition-transform duration-300
-        dark:bg-neutral-900/95
-        ${show ? 'translate-x-0' : 'translate-x-full'}
-      `}
+      className={` absolute right-0 top-0 z-20 h-full w-[300px] border-l border-base bg-white/95 shadow-lg backdrop-blur transition-transform duration-300 dark:bg-neutral-900/95 ${show ? 'translate-x-0' : 'translate-x-full'}  `}
     >
       {/* Close button */}
       <button
@@ -66,7 +61,7 @@ export function GraphDrawer({
       </button>
 
       {/* Header */}
-      <div className="flex h-20 flex-col gap-1 border-b border-base p-3">
+      <div className="h-20 flex flex-col gap-1 border-b border-base p-3">
         <span className="flex items-center gap-2 text-lg font-medium">
           {data?.name}
           {copied
@@ -109,7 +104,7 @@ export function GraphDrawer({
               <button
                 key={item.path}
                 onClick={() => handleOpenInEditor(item.path)}
-                className="truncate whitespace-nowrap pr-3 text-gray-800 hover:underline dark:text-gray-200"
+                className="truncate whitespace-nowrap pr-3 text-gray-800 dark:text-gray-200 hover:underline"
               >
                 {item.displayPath}
               </button>
@@ -125,7 +120,7 @@ export function GraphDrawer({
       <div className="p-3">
         <button
           onClick={() => data?.path && onFilterModule(data.path)}
-          className="w-full rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+          className="w-full rounded-md bg-primary-500 px-4 py-2 text-sm text-white font-medium transition-colors hover:bg-primary-600"
         >
           Filter to this module
         </button>
@@ -133,4 +128,3 @@ export function GraphDrawer({
     </div>
   )
 }
-

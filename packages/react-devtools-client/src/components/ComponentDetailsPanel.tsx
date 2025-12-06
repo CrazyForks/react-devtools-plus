@@ -248,7 +248,7 @@ function InlineEditor({ value, type, onSave, onCancel }: InlineEditorProps) {
       <button
         type="button"
         onClick={handleCancelClick}
-        className="flex h-6 w-6 items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+        className="h-6 w-6 flex items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
         title="Cancel (Esc)"
       >
         <CancelIcon />
@@ -258,7 +258,7 @@ function InlineEditor({ value, type, onSave, onCancel }: InlineEditorProps) {
       <button
         type="button"
         onClick={handleSaveClick}
-        className="flex h-6 w-6 items-center justify-center rounded text-primary-500 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/30"
+        className="h-6 w-6 flex items-center justify-center rounded text-primary-500 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/30"
         title="Save (Enter)"
       >
         <SaveIcon />
@@ -362,7 +362,7 @@ function PropValueDisplay({ value, name, depth = 0, fiberId, propPath, onPropCha
         {name !== undefined && (
           <>
             <span className="text-pink-600 dark:text-pink-400">{name}</span>
-            <span className="text-gray-400 mr-1">:</span>
+            <span className="mr-1 text-gray-400">:</span>
           </>
         )}
 
@@ -390,7 +390,7 @@ function PropValueDisplay({ value, name, depth = 0, fiberId, propPath, onPropCha
                   <button
                     type="button"
                     onClick={handleEditClick}
-                    className="ml-1 flex h-5 w-5 items-center justify-center rounded text-gray-300 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                    className="ml-1 h-5 w-5 flex items-center justify-center rounded text-gray-300 opacity-0 transition-all hover:bg-gray-100 dark:text-gray-600 hover:text-gray-600 group-hover:opacity-100 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                     title="Edit value"
                   >
                     <PencilIcon className="h-3.5 w-3.5" />

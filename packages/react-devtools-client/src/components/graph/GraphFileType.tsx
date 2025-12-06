@@ -10,21 +10,11 @@ export function GraphFileType() {
 
   return (
     <div
-      className={`
-        absolute bottom-0 left-0 z-10 grid w-[260px] grid-cols-3 gap-2 rounded-tr-lg border border-l-0 border-base
-        bg-white/80 px-4 py-2 text-sm backdrop-blur transition-transform duration-300
-        dark:bg-neutral-900/80
-        ${!fileTypeShow ? 'translate-x-[calc(-100%+30px)] translate-y-[calc(100%-30px)]' : ''}
-        group
-      `}
+      className={` absolute bottom-0 left-0 z-10 grid grid-cols-3 w-[260px] gap-2 border border-l-0 border-base rounded-tr-lg bg-white/80 px-4 py-2 text-sm backdrop-blur transition-transform duration-300 dark:bg-neutral-900/80 ${!fileTypeShow ? 'translate-x-[calc(-100%+30px)] translate-y-[calc(100%-30px)]' : ''} group `}
     >
       {/* Toggle button */}
       <div
-        className={`
-          absolute right-0 top-0 flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded-tr-lg
-          bg-primary-500 text-white transition-opacity
-          ${fileTypeShow ? 'rounded-bl-lg opacity-0 group-hover:opacity-100' : ''}
-        `}
+        className={` absolute right-0 top-0 h-[30px] w-[30px] flex cursor-pointer items-center justify-center rounded-tr-lg bg-primary-500 text-white transition-opacity ${fileTypeShow ? 'rounded-bl-lg opacity-0 group-hover:opacity-100' : ''}  `}
         onClick={() => toggleFileType()}
       >
         {fileTypeShow
@@ -39,7 +29,7 @@ export function GraphFileType() {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="rotate-45 transition-transform hover:-translate-x-[10%] hover:translate-y-[10%]"
+                className="rotate-45 transition-transform hover:translate-y-[10%] hover:-translate-x-[10%]"
               >
                 <path d="M12 5v14" />
                 <path d="m19 12-7 7-7-7" />
@@ -64,7 +54,7 @@ export function GraphFileType() {
       </div>
 
       {/* Legend title */}
-      <div className="col-span-3 mb-1 font-medium text-gray-600 dark:text-gray-400">
+      <div className="col-span-3 mb-1 text-gray-600 font-medium dark:text-gray-400">
         Graph
       </div>
 
@@ -83,4 +73,3 @@ export function GraphFileType() {
     </div>
   )
 }
-

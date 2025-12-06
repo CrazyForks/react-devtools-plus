@@ -66,9 +66,9 @@ When you click on an asset, a details panel shows:
 
 ## Supported Environments
 
-| Environment | Support |
-|-------------|---------|
-| **Vite** | ✅ Full support |
+| Environment   | Support         |
+| ------------- | --------------- |
+| **Vite**      | ✅ Full support |
 | **Webpack 4** | ✅ Full support |
 | **Webpack 5** | ✅ Full support |
 
@@ -242,16 +242,16 @@ The assets middleware is added in `setupWebpackDevServerMiddlewares`:
 
 ## Differences from Vue DevTools
 
-| Feature | Vue DevTools | React DevTools |
-|---------|--------------|----------------|
-| Vite Support | ✅ | ✅ |
-| Webpack Support | ❌ | ✅ |
-| Image Preview | ✅ | ✅ |
-| Video Preview | ✅ | ✅ |
-| Audio Preview | ✅ | ✅ |
-| Text Preview | ✅ | ✅ |
-| Font Preview | ✅ | ✅ (basic) |
-| File Upload | ✅ | ❌ (not implemented) |
+| Feature          | Vue DevTools   | React DevTools       |
+| ---------------- | -------------- | -------------------- |
+| Vite Support     | ✅             | ✅                   |
+| Webpack Support  | ❌             | ✅                   |
+| Image Preview    | ✅             | ✅                   |
+| Video Preview    | ✅             | ✅                   |
+| Audio Preview    | ✅             | ✅                   |
+| Text Preview     | ✅             | ✅                   |
+| Font Preview     | ✅             | ✅ (basic)           |
+| File Upload      | ✅             | ❌ (not implemented) |
 | Module Importers | ✅ (Vite only) | ❌ (not implemented) |
 
 ## Future Enhancements
@@ -264,4 +264,3 @@ Potential future improvements:
 - Drag and drop support
 - Asset renaming/deleting
 - Multiple selection for batch operations
-

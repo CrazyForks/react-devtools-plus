@@ -417,4 +417,3 @@ export function getContextProviderInfo(root: FiberRoot, fiberId: string): Contex
 export function getAllContexts(root: FiberRoot): ContextTree {
   return getContextTree(root)
 }
-

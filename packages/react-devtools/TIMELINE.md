@@ -14,12 +14,12 @@ Timeline provides a chronological view of events happening in your application, 
 
 Timeline organizes events into four distinct layers:
 
-| Layer | Description | Events Recorded |
-|-------|-------------|-----------------|
-| **Mouse** | Mouse interaction events | `mousedown`, `mouseup`, `click`, `dblclick` |
-| **Keyboard** | Keyboard input events | `keydown`, `keyup`, `keypress` |
-| **Component events** | Custom component events | Events emitted by your components |
-| **Performance** | Component lifecycle events | `render`, `mount`, `update`, `unmount`, `patch`, `init` |
+| Layer                | Description                | Events Recorded                                         |
+| -------------------- | -------------------------- | ------------------------------------------------------- |
+| **Mouse**            | Mouse interaction events   | `mousedown`, `mouseup`, `click`, `dblclick`             |
+| **Keyboard**         | Keyboard input events      | `keydown`, `keyup`, `keypress`                          |
+| **Component events** | Custom component events    | Events emitted by your components                       |
+| **Performance**      | Component lifecycle events | `render`, `mount`, `update`, `unmount`, `patch`, `init` |
 
 Each layer can be individually enabled or disabled to reduce performance overhead.
 
@@ -63,10 +63,12 @@ Each layer can be individually enabled or disabled to reduce performance overhea
 ### Mouse Events
 
 Mouse events include:
+
 - Event type (mousedown, mouseup, click, dblclick)
 - Mouse coordinates (x, y)
 
 **Example:**
+
 ```json
 {
   "type": "click",
@@ -78,11 +80,13 @@ Mouse events include:
 ### Keyboard Events
 
 Keyboard events include:
+
 - Event type (keydown, keyup, keypress)
 - Key pressed
 - Modifier keys (Ctrl, Shift, Alt, Meta)
 
 **Example:**
+
 ```json
 {
   "type": "keydown",
@@ -97,11 +101,13 @@ Keyboard events include:
 ### Component Events
 
 Component events are custom events emitted by your components:
+
 - Component name
 - Event name
 - Event parameters
 
 **Example:**
+
 ```json
 {
   "component": "MyComponent",
@@ -113,12 +119,14 @@ Component events are custom events emitted by your components:
 ### Performance Events
 
 Performance events track component lifecycle:
+
 - Component name
 - Event type (render, mount, update, etc.)
 - Measure (start or end)
 - Duration (for end events)
 
 **Example:**
+
 ```json
 {
   "component": "MyComponent",
@@ -291,16 +299,17 @@ import { addComponentEvent } from '@react-devtools-plus/kit'
 function MyComponent() {
   const handleAction = () => {
     // Your logic
-    addComponentEvent('MyComponent', 'actionTriggered', { 
-      actionType: 'buttonClick' 
+    addComponentEvent('MyComponent', 'actionTriggered', {
+      actionType: 'buttonClick'
     })
   }
-  
+
   return <button onClick={handleAction}>Click me</button>
 }
 ```
 
 Then in Timeline:
+
 1. Select "Component events" layer
 2. Start recording
 3. Click the button
@@ -321,4 +330,3 @@ Potential future improvements:
 - Search events by keyword
 - Screenshot capture at event points
 - Event replay functionality
-

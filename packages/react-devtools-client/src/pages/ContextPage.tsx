@@ -235,7 +235,7 @@ function InlineEditor({ value, type, onSave, onCancel }: InlineEditorProps) {
       <button
         type="button"
         onClick={handleCancelClick}
-        className="flex h-6 w-6 items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+        className="h-6 w-6 flex items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
         title="Cancel (Esc)"
       >
         <CancelIcon />
@@ -245,7 +245,7 @@ function InlineEditor({ value, type, onSave, onCancel }: InlineEditorProps) {
       <button
         type="button"
         onClick={handleSaveClick}
-        className="flex h-6 w-6 items-center justify-center rounded text-primary-500 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/30"
+        className="h-6 w-6 flex items-center justify-center rounded text-primary-500 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/30"
         title="Save (Enter)"
       >
         <SaveIcon />
@@ -342,7 +342,7 @@ function JsonEditor({ value, onSave, onCancel }: JsonEditorProps) {
         value={jsonText}
         onChange={e => setJsonText(e.target.value)}
         onKeyDown={handleKeyDown}
-        className={`w-full h-48 border rounded bg-white p-2 text-xs font-mono dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 ${error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+        className={`h-48 w-full border rounded bg-white p-2 text-xs font-mono dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 ${error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
         spellCheck={false}
       />
       {error && (
@@ -356,7 +356,7 @@ function JsonEditor({ value, onSave, onCancel }: JsonEditorProps) {
           <button
             type="button"
             onClick={onCancel}
-            className="rounded bg-gray-100 px-3 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+            className="rounded bg-gray-100 px-3 py-1 text-xs text-gray-600 transition-colors dark:bg-gray-800 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700"
           >
             Cancel
           </button>
@@ -539,7 +539,7 @@ function EditableContextValue({
                 {(isSimpleEditable || isComplexEditable) && (
                   <button
                     type="button"
-                    className="ml-1 flex h-5 w-5 items-center justify-center rounded text-gray-300 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                    className="ml-1 h-5 w-5 flex items-center justify-center rounded text-gray-300 opacity-0 transition-all hover:bg-gray-100 dark:text-gray-600 hover:text-gray-600 group-hover:opacity-100 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                     onClick={handleEditClick}
                     title={isComplexEditable ? 'Edit as JSON' : 'Edit value'}
                   >
@@ -750,7 +750,7 @@ function ProviderCard({ provider, level = 0, onSelectConsumer, onValueChange }: 
         <div className="p-4">
           {/* Value section */}
           <div className="mb-3">
-            <div className="mb-1 flex items-center gap-2 text-xs text-gray-500 font-medium uppercase tracking-wide dark:text-gray-400">
+            <div className="mb-1 flex items-center gap-2 text-xs text-gray-500 font-medium tracking-wide uppercase dark:text-gray-400">
               Value
               <span className="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] text-primary-600 font-normal normal-case dark:bg-primary-900/50 dark:text-primary-400">
                 editable
@@ -768,10 +768,12 @@ function ProviderCard({ provider, level = 0, onSelectConsumer, onValueChange }: 
           {/* Consumers list */}
           {showConsumers && provider.consumers.length > 0 && (
             <div className="mb-3">
-              <div className="mb-1 text-xs text-gray-500 font-medium uppercase tracking-wide dark:text-gray-400">
-                Consumers ({provider.consumers.length})
+              <div className="mb-1 text-xs text-gray-500 font-medium tracking-wide uppercase dark:text-gray-400">
+                Consumers (
+                {provider.consumers.length}
+                )
               </div>
-              <div className="max-h-40 space-y-1 overflow-y-auto rounded bg-gray-50 p-2 dark:bg-gray-800/50">
+              <div className="max-h-40 overflow-y-auto rounded bg-gray-50 p-2 space-y-1 dark:bg-gray-800/50">
                 {provider.consumers.map(consumer => (
                   <button
                     key={consumer.id}
@@ -804,8 +806,10 @@ function ProviderCard({ provider, level = 0, onSelectConsumer, onValueChange }: 
           {/* Nested providers */}
           {provider.children.length > 0 && (
             <div className="mt-3">
-              <div className="mb-1 text-xs text-gray-500 font-medium uppercase tracking-wide dark:text-gray-400">
-                Nested Providers ({provider.children.length})
+              <div className="mb-1 text-xs text-gray-500 font-medium tracking-wide uppercase dark:text-gray-400">
+                Nested Providers (
+                {provider.children.length}
+                )
               </div>
               {provider.children.map(child => (
                 <ProviderCard
@@ -892,10 +896,14 @@ export function ContextPage() {
             <h1 className="text-lg text-gray-900 font-semibold dark:text-white">Context</h1>
             <div className="flex items-center gap-2">
               <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-600 font-medium dark:bg-purple-900/50 dark:text-purple-400">
-                {contextTree?.totalProviders || 0} providers
+                {contextTree?.totalProviders || 0}
+                {' '}
+                providers
               </span>
               <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                {contextTree?.totalConsumers || 0} consumers
+                {contextTree?.totalConsumers || 0}
+                {' '}
+                consumers
               </span>
             </div>
           </div>
@@ -984,4 +992,3 @@ export function ContextPage() {
     </div>
   )
 }
-

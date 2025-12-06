@@ -3,7 +3,6 @@
  * 直接编辑组件的 useState/useReducer 状态（这是最可靠的调试方式）
  */
 
-import type { FiberNode } from '../../types'
 import { REACT_TAGS } from '../../types'
 import { getFiberById } from './tree'
 
@@ -209,4 +208,3 @@ function serializeForDisplay(value: any): any {
   // For objects and arrays, return as-is (will be serialized later)
   return value
 }
-

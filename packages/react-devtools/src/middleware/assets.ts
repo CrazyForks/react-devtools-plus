@@ -4,7 +4,6 @@
  */
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import fsp from 'node:fs/promises'
-import { existsSync } from 'node:fs'
 import path from 'node:path'
 
 // Asset types
@@ -283,4 +282,3 @@ export function createAssetsMiddleware(config: AssetsConfig) {
     next()
   }
 }
-

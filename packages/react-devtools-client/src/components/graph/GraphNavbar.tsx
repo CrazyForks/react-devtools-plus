@@ -36,7 +36,7 @@ export function GraphNavbar({
   }
 
   return (
-    <div className="absolute left-0 top-0 z-10 flex w-full flex-nowrap items-center gap-4 border-b border-base bg-white/80 px-4 py-2 text-sm backdrop-blur dark:bg-neutral-900/80">
+    <div className="absolute left-0 top-0 z-10 w-full flex flex-nowrap items-center gap-4 border-b border-base bg-white/80 px-4 py-2 text-sm backdrop-blur dark:bg-neutral-900/80">
       {/* Search input */}
       <div className="relative flex-shrink-0">
         <input
@@ -44,12 +44,12 @@ export function GraphNavbar({
           value={searchText}
           onChange={e => onSearchChange(e.target.value)}
           placeholder="Search modules..."
-          className="h-8 w-48 rounded-md border border-gray-200 bg-white px-3 py-1 text-sm outline-none transition-colors placeholder:text-gray-400 focus:border-primary-500 dark:border-neutral-700 dark:bg-neutral-800 dark:placeholder:text-neutral-500"
+          className="h-8 w-48 border border-gray-200 rounded-md bg-white px-3 py-1 text-sm outline-none transition-colors dark:border-neutral-700 focus:border-primary-500 dark:bg-neutral-800 placeholder:text-gray-400 dark:placeholder:text-neutral-500"
         />
         {searchText && (
           <button
             onClick={() => onSearchChange('')}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="absolute right-2 top-1/2 text-gray-400 -translate-y-1/2 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6 6 18" />
@@ -66,7 +66,7 @@ export function GraphNavbar({
             type="checkbox"
             checked={settings[key]}
             onChange={() => handleSettingChange(key)}
-            className="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-neutral-600"
+            className="h-4 w-4 cursor-pointer border-gray-300 rounded text-primary-600 dark:border-neutral-600 focus:ring-primary-500"
           />
           <span className={settings[key] ? 'text-base' : 'text-gray-400 dark:text-gray-600'}>
             Show
@@ -83,7 +83,7 @@ export function GraphNavbar({
       {filterNodeId && (
         <button
           onClick={onClearFilter}
-          className="flex flex-shrink-0 items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 opacity-50 transition-opacity hover:opacity-100 dark:bg-neutral-800 dark:text-gray-400"
+          className="flex flex-shrink-0 items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 opacity-50 transition-opacity dark:bg-neutral-800 dark:text-gray-400 hover:opacity-100"
         >
           Clear filter
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -95,4 +95,3 @@ export function GraphNavbar({
     </div>
   )
 }
-

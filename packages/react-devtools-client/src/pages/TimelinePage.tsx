@@ -42,7 +42,10 @@ function EventInfo({ event }: { event: TimelineEvent | null }) {
       <div className="space-y-2">
         {entries.map(([key, value]) => (
           <div key={key} className="flex items-start gap-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">{key}:</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {key}
+              :
+            </span>
             <span className="text-sm text-primary-600 font-mono dark:text-primary-400">
               {typeof value === 'object' && value !== null
                 ? (value as any).display || JSON.stringify(value)
@@ -84,7 +87,8 @@ function GroupInfo({ events, selectedEvent }: { events: TimelineEvent[], selecte
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500 dark:text-gray-400">duration:</span>
             <span className="text-sm text-primary-600 font-mono dark:text-primary-400">
-              {duration}ms
+              {duration}
+              ms
             </span>
           </div>
         )}
@@ -123,9 +127,11 @@ function TimelineEventItem({
         <span className="absolute left-[5px] top-4.5 h-10 w-0 border-l-2 border-gray-300 border-solid dark:border-gray-600" />
       )}
       {/* Content */}
-      <div className="flex h-full items-center truncate pl-5">
+      <div className="h-full flex items-center truncate pl-5">
         <span className="absolute top-5 pr-2 text-xs text-gray-400 dark:text-gray-500">
-          [{formatTime(event.time)}]
+          [
+          {formatTime(event.time)}
+          ]
         </span>
         <span className={isSelected ? 'font-medium' : ''}>{event.title}</span>
         {event.subtitle && (
@@ -271,7 +277,7 @@ export function TimelinePage() {
       {/* Left Panel - Layer Selector */}
       <div className="w-64 flex flex-col border-r border-base">
         {/* Recording Controls */}
-        <div className="relative flex items-center justify-end border-b border-dashed border-base px-3 py-2">
+        <div className="relative flex items-center justify-end border-b border-base border-dashed px-3 py-2">
           {!isRecording && (
             <span className="absolute left-3 text-xs text-gray-400 dark:text-gray-500">
               Not recording
@@ -286,7 +292,7 @@ export function TimelinePage() {
               className="flex items-center"
             >
               <span
-                className={`inline-flex h-3.5 w-3.5 cursor-pointer rounded-full transition-all ${
+                className={`h-3.5 w-3.5 inline-flex cursor-pointer rounded-full transition-all ${
                   isRecording
                     ? 'animate-pulse bg-red-500 shadow-[0_0_8px_#ef4444]'
                     : 'bg-gray-900 opacity-70 hover:opacity-100 dark:bg-white'
@@ -299,7 +305,7 @@ export function TimelinePage() {
               type="button"
               onClick={clearEvents}
               title="Clear all timelines"
-              className="text-gray-600 opacity-70 hover:opacity-100 dark:text-gray-400"
+              className="text-gray-600 opacity-70 dark:text-gray-400 hover:opacity-100"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 6h18" />
@@ -312,7 +318,7 @@ export function TimelinePage() {
             <button
               type="button"
               title="Timeline events can cause significant performance overhead in large applications, so we recommend enabling it only when needed and on-demand."
-              className="text-gray-600 opacity-70 hover:opacity-100 dark:text-gray-400"
+              className="text-gray-600 opacity-70 dark:text-gray-400 hover:opacity-100"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
@@ -340,7 +346,7 @@ export function TimelinePage() {
               >
                 {layer.label}
                 <span
-                  className={`absolute right-2 top-1/2 hidden -translate-y-1/2 rounded bg-primary-500 px-1 text-xs text-white opacity-0 transition-opacity group-hover:block group-hover:opacity-80 hover:opacity-100 ${
+                  className={`absolute right-2 top-1/2 hidden rounded bg-primary-500 px-1 text-xs text-white opacity-0 transition-opacity group-hover:block -translate-y-1/2 group-hover:opacity-80 hover:opacity-100 ${
                     layer.id === selectedLayer ? 'bg-primary-400 dark:bg-gray-600' : ''
                   }`}
                   onClick={(e) => {
@@ -406,4 +412,3 @@ export function TimelinePage() {
     </div>
   )
 }
-

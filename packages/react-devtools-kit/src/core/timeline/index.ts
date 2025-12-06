@@ -1,4 +1,4 @@
-import type { FiberNode, FiberRoot } from '../../types'
+import type { FiberNode } from '../../types'
 
 // Timeline event types
 export interface TimelineEvent<TData = any> {
@@ -265,4 +265,3 @@ export function installTimelineEventListeners() {
     }, { capture: true, passive: true })
   })
 }
-

@@ -24,17 +24,42 @@ interface ImageMeta {
 // Default static asset extensions (excluding source code files)
 const DEFAULT_ASSET_EXTENSIONS = [
   // Images
-  'png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'avif', 'ico', 'bmp', 'tiff',
+  'png',
+  'jpg',
+  'jpeg',
+  'gif',
+  'svg',
+  'webp',
+  'avif',
+  'ico',
+  'bmp',
+  'tiff',
   // Videos
-  'mp4', 'webm', 'ogv', 'mov', 'avi',
+  'mp4',
+  'webm',
+  'ogv',
+  'mov',
+  'avi',
   // Audio
-  'mp3', 'wav', 'ogg', 'flac', 'aac',
+  'mp3',
+  'wav',
+  'ogg',
+  'flac',
+  'aac',
   // Fonts
-  'woff', 'woff2', 'eot', 'ttf', 'otf',
+  'woff',
+  'woff2',
+  'eot',
+  'ttf',
+  'otf',
   // Documents
-  'pdf', 'md',
+  'pdf',
+  'md',
   // Data
-  'json', 'yaml', 'yml', 'toml',
+  'json',
+  'yaml',
+  'yml',
+  'toml',
 ]
 
 // Get assets config from DevTools runtime config
@@ -131,7 +156,7 @@ function AssetPreview({ asset, textContent, detail = false }: { asset: AssetInfo
 
   if (asset.type === 'text' && textContent) {
     return (
-      <pre className="max-h-48 w-full overflow-auto whitespace-pre-wrap break-all p-2 text-xs font-mono text-gray-600 dark:text-gray-400">
+      <pre className="max-h-48 w-full overflow-auto whitespace-pre-wrap break-all p-2 text-xs text-gray-600 font-mono dark:text-gray-400">
         {textContent}
       </pre>
     )
@@ -155,7 +180,7 @@ function AssetGridItem({ asset, onClick }: { asset: AssetInfo, onClick: () => vo
       onClick={onClick}
       className="flex flex-col items-center gap-1 overflow-hidden rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
     >
-      <div className="h-24 w-24 flex items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-50 p-1 dark:border-gray-700 dark:bg-gray-900">
+      <div className="h-24 w-24 flex items-center justify-center overflow-hidden border border-gray-200 rounded bg-gray-50 p-1 dark:border-gray-700 dark:bg-gray-900">
         <AssetPreview asset={asset} />
       </div>
       <div className="w-full truncate text-center text-xs text-gray-600 dark:text-gray-400">
@@ -209,7 +234,7 @@ function AssetDetails({ asset, onClose }: { asset: AssetInfo, onClose: () => voi
         <button
           type="button"
           onClick={onClose}
-          className="text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          className="text-gray-500 transition-colors dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -227,7 +252,7 @@ function AssetDetails({ asset, onClose }: { asset: AssetInfo, onClose: () => voi
               <span>Preview</span>
               <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
             </div>
-            <div className="mb-4 max-h-72 overflow-auto rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900">
+            <div className="mb-4 max-h-72 overflow-auto border border-gray-200 rounded-lg bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900">
               <div className="flex items-center justify-center">
                 <AssetPreview asset={asset} textContent={textContent} detail />
               </div>
@@ -247,14 +272,14 @@ function AssetDetails({ asset, onClose }: { asset: AssetInfo, onClose: () => voi
             <tr>
               <td className="w-24 flex-shrink-0 whitespace-nowrap py-1.5 pr-4 text-right align-top text-gray-500">Filepath</td>
               <td className="py-1.5">
-                <div className="break-all text-gray-900 font-mono text-xs dark:text-gray-100">{asset.filePath}</div>
+                <div className="break-all text-xs text-gray-900 font-mono dark:text-gray-100">{asset.filePath}</div>
               </td>
             </tr>
             <tr>
               <td className="w-24 flex-shrink-0 whitespace-nowrap py-1.5 pr-4 text-right align-top text-gray-500">Public Path</td>
               <td className="py-1.5">
                 <div className="flex flex-wrap items-start gap-1">
-                  <span className="break-all text-gray-900 font-mono text-xs dark:text-gray-100">{asset.publicPath}</span>
+                  <span className="break-all text-xs text-gray-900 font-mono dark:text-gray-100">{asset.publicPath}</span>
                   <div className="flex flex-shrink-0 gap-1">
                     <button
                       type="button"
@@ -283,12 +308,18 @@ function AssetDetails({ asset, onClose }: { asset: AssetInfo, onClose: () => voi
             </tr>
             <tr>
               <td className="w-24 flex-shrink-0 whitespace-nowrap py-1.5 pr-4 text-right align-top text-gray-500">Type</td>
-              <td className="py-1.5 capitalize text-gray-900 dark:text-gray-100">{asset.type}</td>
+              <td className="py-1.5 text-gray-900 capitalize dark:text-gray-100">{asset.type}</td>
             </tr>
             {imageMeta?.width && imageMeta?.height && (
               <tr>
                 <td className="w-24 flex-shrink-0 whitespace-nowrap py-1.5 pr-4 text-right align-top text-gray-500">Image Size</td>
-                <td className="py-1.5 text-gray-900 dark:text-gray-100">{imageMeta.width} x {imageMeta.height}</td>
+                <td className="py-1.5 text-gray-900 dark:text-gray-100">
+                  {imageMeta.width}
+                  {' '}
+                  x
+                  {' '}
+                  {imageMeta.height}
+                </td>
               </tr>
             )}
             {aspectRatio && (
@@ -303,17 +334,21 @@ function AssetDetails({ asset, onClose }: { asset: AssetInfo, onClose: () => voi
             </tr>
             <tr>
               <td className="w-24 flex-shrink-0 whitespace-nowrap py-1.5 pr-4 text-right align-top text-gray-500">Last modified</td>
-              <td className="py-1.5 text-gray-900 break-words dark:text-gray-100">
+              <td className="break-words py-1.5 text-gray-900 dark:text-gray-100">
                 {new Date(asset.mtime).toLocaleString()}
                 {' '}
-                <span className="text-gray-500">({formatTimeAgo(asset.mtime)})</span>
+                <span className="text-gray-500">
+                  (
+                  {formatTimeAgo(asset.mtime)}
+                  )
+                </span>
               </td>
             </tr>
           </tbody>
         </table>
 
         {/* Actions */}
-        <div className="mt-4 mb-2 flex items-center gap-2 text-xs text-gray-500">
+        <div className="mb-2 mt-4 flex items-center gap-2 text-xs text-gray-500">
           <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
           <span>Actions</span>
           <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
@@ -337,14 +372,14 @@ function AssetDetails({ asset, onClose }: { asset: AssetInfo, onClose: () => voi
         {/* Code Snippets for images */}
         {asset.type === 'image' && (
           <>
-            <div className="mt-4 mb-2 flex items-center gap-2 text-xs text-gray-500">
+            <div className="mb-2 mt-4 flex items-center gap-2 text-xs text-gray-500">
               <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
               <span>Code Snippet</span>
               <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
             </div>
             <div className="rounded-md bg-gray-100 p-3 dark:bg-gray-800">
               <div className="mb-2 text-xs text-gray-500">Plain Image</div>
-              <pre className="overflow-auto whitespace-pre-wrap break-all text-xs font-mono text-gray-700 dark:text-gray-300">
+              <pre className="overflow-auto whitespace-pre-wrap break-all text-xs text-gray-700 font-mono dark:text-gray-300">
                 {imageMeta?.width
                   ? `<img\n  width="${imageMeta.width}"\n  height="${imageMeta.height}"\n  src="${asset.publicPath}"\n/>`
                   : `<img src="${asset.publicPath}" />`}
@@ -489,8 +524,8 @@ export function AssetsPage() {
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2 dark:border-gray-700">
           <div className="flex flex-1 items-center gap-3">
             {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="relative max-w-md flex-1">
+              <svg className="absolute left-3 top-1/2 h-4 w-4 text-gray-400 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -498,14 +533,25 @@ export function AssetsPage() {
                 placeholder="Search..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full rounded-md border border-gray-300 bg-white py-1.5 pr-4 pl-10 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                className="w-full border border-gray-300 rounded-md bg-white py-1.5 pl-10 pr-4 text-sm outline-none dark:border-gray-600 focus:border-primary-500 dark:bg-gray-800 dark:text-gray-100 focus:ring-1 focus:ring-primary-500"
               />
             </div>
 
             {/* Stats */}
             <div className="text-sm text-gray-500">
-              {search && <span>{filteredAssets.length} matched · </span>}
-              <span>{assets.length} assets in total</span>
+              {search && (
+                <span>
+                  {filteredAssets.length}
+                  {' '}
+                  matched ·
+                  {' '}
+                </span>
+              )}
+              <span>
+                {assets.length}
+                {' '}
+                assets in total
+              </span>
             </div>
           </div>
 
@@ -521,14 +567,14 @@ export function AssetsPage() {
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
-                <span className="absolute right-0 bottom-0 flex h-4 w-4 items-center justify-center rounded-full bg-primary-500 text-[10px] text-white">
+                <span className="absolute bottom-0 right-0 h-4 w-4 flex items-center justify-center rounded-full bg-primary-500 text-[10px] text-white">
                   {filteredExtensions.length}
                 </span>
               </button>
 
               {/* Filter dropdown */}
               {showFilterMenu && (
-                <div className="absolute right-0 z-10 mt-1 w-48 rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                <div className="absolute right-0 z-10 mt-1 w-48 border border-gray-200 rounded-md bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                   {uniqueExtensions.map(ext => (
                     <label
                       key={ext}
@@ -538,7 +584,7 @@ export function AssetsPage() {
                         type="checkbox"
                         checked={filteredExtensions.includes(ext)}
                         onChange={() => toggleExtension(ext)}
-                        className="h-4 w-4 rounded border-gray-300 text-primary-500"
+                        className="h-4 w-4 border-gray-300 rounded text-primary-500"
                       />
                       <span className="text-gray-700 dark:text-gray-300">{ext}</span>
                     </label>
@@ -606,7 +652,11 @@ export function AssetsPage() {
                         <div key={folder}>
                           <div className="mb-2 flex items-center justify-between">
                             <h3 className="text-sm text-gray-900 font-medium dark:text-gray-100">{folder}</h3>
-                            <span className="text-xs text-gray-500">{items.length} items</span>
+                            <span className="text-xs text-gray-500">
+                              {items.length}
+                              {' '}
+                              items
+                            </span>
                           </div>
                           <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-2">
                             {items.map(asset => (
@@ -630,7 +680,7 @@ export function AssetsPage() {
                           onClick={() => setSelectedAsset(asset)}
                           className="w-full flex items-center gap-3 px-2 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
                         >
-                          <div className="h-10 w-10 flex flex-shrink-0 items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
+                          <div className="h-10 w-10 flex flex-shrink-0 items-center justify-center overflow-hidden border border-gray-200 rounded bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
                             <AssetPreview asset={asset} />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -653,4 +703,3 @@ export function AssetsPage() {
     </div>
   )
 }
-
