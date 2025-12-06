@@ -574,9 +574,7 @@ export function AssetsPage() {
                 </svg>
                 {filteredExtensions.length > 0 && (
                   <span className="absolute -bottom-1 -right-2">
-                    <Badge color="primary" size="sm">
-                      {filteredExtensions.length}
-                    </Badge>
+                    <Badge color="primary" size="sm" count={filteredExtensions.length} />
                   </span>
                 )}
               </button>
