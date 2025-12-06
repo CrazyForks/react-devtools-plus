@@ -52,17 +52,20 @@ export function useIframe(
   panelVisible: boolean,
   setPanelVisible: (visible: boolean) => void,
   setDragResizeEnabled?: (enabled: boolean) => void,
+  onThemeChange?: (theme: { mode: 'light' | 'dark', primaryColor: string }) => void,
 ) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const rpcServerReadyRef = useRef(false)
   const pendingTreeRef = useRef<any>(null)
   const setPanelVisibleRef = useRef(setPanelVisible)
   const panelVisibleRef = useRef(panelVisible)
+  const onThemeChangeRef = useRef(onThemeChange)
 
   useEffect(() => {
     setPanelVisibleRef.current = setPanelVisible
     panelVisibleRef.current = panelVisible
-  }, [setPanelVisible, panelVisible])
+    onThemeChangeRef.current = onThemeChange
+  }, [setPanelVisible, panelVisible, onThemeChange])
 
   useEffect(() => {
     const dispose = onTreeUpdated((tree: any) => {
@@ -141,6 +144,11 @@ export function useIframe(
 
       createRpcServer({
         syncTheme(data: { mode: 'light' | 'dark', primaryColor: string }) {
+          // Update React state if callback is provided
+          if (onThemeChangeRef.current) {
+            onThemeChangeRef.current(data)
+          }
+
           const overlayContainer = document.getElementById('react-devtools-overlay')
           if (overlayContainer) {
             const anchor = overlayContainer.querySelector('.react-devtools-anchor') as HTMLElement

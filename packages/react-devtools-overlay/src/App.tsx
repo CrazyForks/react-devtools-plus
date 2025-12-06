@@ -1,6 +1,6 @@
 import type { MouseEvent } from 'react'
 import { toggleInspector } from '@react-devtools/kit'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { FloatingButton } from './components/FloatingButton'
 import { IframeContainer } from './components/IframeContainer'
 import { useIframe } from './composables/useIframe'
@@ -81,15 +81,21 @@ function useInitialTheme() {
     // Optional: Listen for theme changes if config object is mutable or if we want to support HMR updates to config
   }, [])
 
-  return isDark
+  return [isDark, setIsDark] as const
 }
 
 export function App() {
   const anchorRef = useRef<HTMLDivElement | null>(null)
   const { panelVisible, setPanelVisible, togglePanel } = usePanelVisible()
-  const isDark = useInitialTheme()
+  const [isDark, setIsDark] = useInitialTheme()
   const [isDragResizeEnabled, setIsDragResizeEnabled] = useState(false)
-  const { iframeRef } = useIframe(panelVisible, setPanelVisible, setIsDragResizeEnabled)
+
+  const handleThemeChange = useCallback((data: { mode: 'light' | 'dark', primaryColor: string }) => {
+    const shouldBeDark = data.mode === 'dark'
+    setIsDark(shouldBeDark)
+  }, [])
+
+  const { iframeRef } = useIframe(panelVisible, setPanelVisible, setIsDragResizeEnabled, handleThemeChange)
 
   const {
     position,
