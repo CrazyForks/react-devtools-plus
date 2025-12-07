@@ -23,8 +23,8 @@ const resources = {
       },
       hero: {
         badge: 'Open-source · MIT · Dev-only overlay',
-        titleLead: 'Debug like',
-        titleHighlight: 'your workflow depends on it.',
+        titleLead: 'React debugging',
+        titleHighlight: 'made simple.',
         subtitle:
           'React DevTools Plus is an open-source overlay and Vite plugin that mirrors your React Fiber tree, profiles renders, and keeps production builds untouched.',
         primaryCta: 'Start Debugging',
@@ -833,8 +833,8 @@ const resources = {
       },
       hero: {
         badge: '开源 · MIT · 仅开发环境覆盖层',
-        titleLead: '像工作流依赖它一样调试',
-        titleHighlight: '把效率拉满。',
+        titleLead: '让 React 调试',
+        titleHighlight: '变得简单。',
         subtitle:
           'React DevTools Plus 是开源的覆盖层与 Vite 插件，镜像 React Fiber 树、分析渲染，并保持生产构建零侵入。',
         primaryCta: '开始调试',
