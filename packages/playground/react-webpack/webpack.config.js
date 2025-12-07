@@ -1,6 +1,6 @@
 const path = require('node:path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const ReactDevToolsPlugin = require('react-devtools-plus/webpack').webpack
+const { reactDevToolsPlus } = require('react-devtools-plus/webpack')
 const webpack = require('webpack')
 
 module.exports = {
@@ -50,7 +50,7 @@ module.exports = {
     new webpack.ProvidePlugin({
       React: 'react',
     }),
-    ReactDevToolsPlugin({
+    reactDevToolsPlus({
       enabledEnvironments: ['development', 'test'],
       plugins: [
         {

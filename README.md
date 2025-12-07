@@ -74,11 +74,11 @@ export default defineConfig({
 
 ```js
 // webpack.config.js
-const ReactDevToolsPlugin = require('react-devtools-plus/webpack').webpack
+const { reactDevToolsPlus } = require('react-devtools-plus/webpack')
 
 module.exports = {
   plugins: [
-    ReactDevToolsPlugin(),
+    reactDevToolsPlus(),
   ],
 }
 ```

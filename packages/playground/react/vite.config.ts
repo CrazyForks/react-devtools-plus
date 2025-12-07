@@ -1,14 +1,14 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import react from '@vitejs/plugin-react'
-import ReactDevTools from 'react-devtools-plus'
+import { reactDevToolsPlus } from 'react-devtools-plus/vite'
 import { defineConfig } from 'vite'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [
-    ReactDevTools.vite({
+    reactDevToolsPlus({
       enabledEnvironments: ['development', 'test'],
       plugins: [
         {

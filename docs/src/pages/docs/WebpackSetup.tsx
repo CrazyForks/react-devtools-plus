@@ -9,7 +9,7 @@ export const WebpackSetup: React.FC = () => {
 
   const basicConfig = `const path = require('node:path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const { ReactDevToolsWebpackPlugin } = require('react-devtools-plus/webpack')
+const { reactDevToolsPlus } = require('react-devtools-plus/webpack')
 
 module.exports = {
   mode: 'development',
@@ -22,9 +22,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
-    new ReactDevToolsWebpackPlugin({
-      enabledEnvironments: ['development'],
-    }),
+    reactDevToolsPlus(),
   ],
   devServer: {
     port: 3000,
@@ -34,7 +32,7 @@ module.exports = {
 
   const advancedConfig = `const path = require('node:path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const { ReactDevToolsWebpackPlugin } = require('react-devtools-plus/webpack')
+const { reactDevToolsPlus } = require('react-devtools-plus/webpack')
 
 module.exports = {
   mode: 'development',
@@ -47,7 +45,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
-    new ReactDevToolsWebpackPlugin({
+    reactDevToolsPlus({
       // Enable in development and test environments
       enabledEnvironments: ['development', 'test'],
       
@@ -71,14 +69,12 @@ module.exports = {
 
   const esmConfig = `// For ESM projects, use dynamic import
 export default async () => {
-  const { ReactDevToolsWebpackPlugin } = await import('react-devtools-plus/webpack')
+  const { reactDevToolsPlus } = await import('react-devtools-plus/webpack')
   
   return {
     // ... other config
     plugins: [
-      new ReactDevToolsWebpackPlugin({
-        enabledEnvironments: ['development'],
-      }),
+      reactDevToolsPlus(),
     ],
   }
 }`

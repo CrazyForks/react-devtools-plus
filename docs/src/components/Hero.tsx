@@ -27,12 +27,12 @@ export default defineConfig({
     name: 'webpack.config.js',
     icon: 'webpack',
     language: 'js',
-    code: `const ReactDevToolsPlugin =
-  require('react-devtools-plus/webpack').webpack
+    code: `const { reactDevToolsPlus } = 
+  require('react-devtools-plus/webpack')
 
 module.exports = {
   plugins: [
-    ReactDevToolsPlugin(),
+    reactDevToolsPlus(),
   ],
 }`,
   },
