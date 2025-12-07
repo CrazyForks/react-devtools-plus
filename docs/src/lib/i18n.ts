@@ -255,8 +255,7 @@ const resources = {
       integration: {
         badge: '零阻力接入',
         title: '一次集成，立即看见问题。',
-        subtitle:
-          '为现代 React 技术栈打造。实时信号不拖慢你的构建。',
+        subtitle: '为现代 React 技术栈打造。实时信号不拖慢你的构建。',
         highlights: [
           '仅开发覆盖层；生产构建零污染',
           '键盘快捷，无需浏览器扩展',
@@ -284,7 +283,7 @@ const resources = {
       },
       testimonials: {
         title: '从 0 开始共建 DevTools+',
-        subtitle: '我们还在早期，期待“首批使用者”一起决定路线图。',
+        subtitle: '我们还在早期，期待"首批使用者"一起决定路线图。',
         actions: [
           {
             title: '加星 & 关注',
