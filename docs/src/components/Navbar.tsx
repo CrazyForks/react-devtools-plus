@@ -39,7 +39,8 @@ export const Navbar: React.FC = () => {
             <Zap className="h-5 w-5 fill-white text-white" />
           </div>
           <span className="from-white to-slate-400 bg-gradient-to-r bg-clip-text text-xl text-transparent font-bold">
-            DevTools+
+            DevTools
+            <sup className="text-brand-400 relative text-sm -top-3">+</sup>
           </span>
         </div>
 
