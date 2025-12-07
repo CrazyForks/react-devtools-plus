@@ -29,7 +29,7 @@ export const Integration: React.FC = () => {
 
   return (
     <section id="integration" className="relative overflow-hidden from-slate-950 via-slate-950 to-slate-900 bg-gradient-to-b py-24">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.08),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(139,92,246,0.06),transparent_30%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.08),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(16,185,129,0.06),transparent_30%)]" />
       <div className="container relative mx-auto px-6">
         <div className="flex flex-col gap-12 lg:flex-row lg:items-center">
           <div className="lg:w-1/2 space-y-6">
