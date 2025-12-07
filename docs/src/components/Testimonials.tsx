@@ -1,22 +1,30 @@
 import { GitBranch, MessageSquare, Sparkles, Star } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { getStaggerDelay, useScrollAnimation } from '../hooks/useScrollAnimation'
 import { Button } from './ui/Button'
 
 const icons = [Star, MessageSquare, GitBranch, Sparkles]
 
 export const Testimonials: React.FC = () => {
   const { t } = useTranslation()
+  const { ref, isVisible } = useScrollAnimation({ threshold: 0.15 })
+
   const actions = t('testimonials.actions', { returnObjects: true }) as Array<{
     title: string
     description: string
   }>
 
   return (
-    <section id="testimonials" className="relative bg-slate-950 py-12 sm:py-24">
+    <section ref={ref as React.RefObject<HTMLElement>} id="testimonials" className="relative bg-slate-950 py-12 sm:py-24">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(236,72,153,0.05),_transparent_50%)]" />
       <div className="container relative mx-auto px-4 sm:px-6">
-        <div className="mx-auto mb-8 max-w-3xl text-center sm:mb-10">
+        {/* Header with fade-up animation */}
+        <div
+          className={`mx-auto mb-8 max-w-3xl text-center transition-all duration-700 ease-out sm:mb-10 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           <h2 className="text-2xl text-white font-bold md:text-4xl sm:text-3xl">
             {t('testimonials.title')}
           </h2>
@@ -26,7 +34,13 @@ export const Testimonials: React.FC = () => {
         </div>
 
         <div className="grid items-center gap-4 md:grid-cols-[1.1fr_1fr]">
-          <div className="border border-white/10 rounded-2xl bg-white/[0.02] p-5 backdrop-blur-sm sm:rounded-3xl sm:p-8">
+          {/* Main CTA card - slide from left */}
+          <div
+            className={`border border-white/10 rounded-2xl bg-white/[0.02] p-5 backdrop-blur-sm transition-all duration-700 ease-out sm:rounded-3xl sm:p-8 ${
+              isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'
+            }`}
+            style={{ transitionDelay: isVisible ? '0.15s' : '0s' }}
+          >
             <p className="text-brand-200 mb-2 text-xs tracking-[0.2em] uppercase sm:mb-3 sm:text-sm sm:tracking-[0.25em]">early stage</p>
             <h3 className="mb-2 text-lg text-white font-semibold sm:mb-3 sm:text-2xl">
               Help us prioritize what matters for your stack.
@@ -53,13 +67,17 @@ export const Testimonials: React.FC = () => {
             </div>
           </div>
 
+          {/* Action cards - staggered fade-up */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {actions.map((action, idx) => {
               const Icon = icons[idx % icons.length]
               return (
                 <div
                   key={action.title}
-                  className="relative overflow-hidden border border-white/10 rounded-xl bg-white/[0.02] p-4 backdrop-blur-sm sm:rounded-2xl sm:p-5"
+                  className={`relative overflow-hidden border border-white/10 rounded-xl bg-white/[0.02] p-4 backdrop-blur-sm transition-all duration-600 ease-out sm:rounded-2xl sm:p-5 ${
+                    isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95'
+                  }`}
+                  style={{ transitionDelay: isVisible ? getStaggerDelay(idx + 2, 0.1) : '0s' }}
                 >
                   <div className="absolute inset-0 from-white/0 via-white/5 to-white/0 bg-gradient-to-br opacity-0 transition-opacity duration-500 hover:opacity-100" />
                   <div className="mb-2 flex items-center gap-2.5 sm:mb-3 sm:gap-3">

@@ -3,10 +3,11 @@ import React, { useEffect, useRef, useState } from 'react'
 interface GlowCardProps {
   children: React.ReactNode
   className?: string
+  style?: React.CSSProperties
   mousePosition?: { x: number, y: number } | null
 }
 
-export const GlowCard: React.FC<GlowCardProps> = ({ children, className = '', mousePosition }) => {
+export const GlowCard: React.FC<GlowCardProps> = ({ children, className = '', style, mousePosition }) => {
   const cardRef = useRef<HTMLDivElement>(null)
   const [localPosition, setLocalPosition] = useState({ x: 0, y: 0 })
   const [isNear, setIsNear] = useState(false)
@@ -42,6 +43,7 @@ export const GlowCard: React.FC<GlowCardProps> = ({ children, className = '', mo
     <div
       ref={cardRef}
       className={`group relative ${className}`}
+      style={style}
     >
       {/* Border glow container */}
       <div

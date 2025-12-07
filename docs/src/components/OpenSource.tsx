@@ -1,10 +1,13 @@
 import { Github, HeartHandshake, ShieldCheck, Sparkles } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { getStaggerDelay, useScrollAnimation } from '../hooks/useScrollAnimation'
 import { Button } from './ui/Button'
 
 export const OpenSource: React.FC = () => {
   const { t } = useTranslation()
+  const { ref, isVisible } = useScrollAnimation({ threshold: 0.15 })
+
   const pillars = (t('openSource.pillars', { returnObjects: true }) as Array<{
     title: string
     description: string
@@ -14,10 +17,15 @@ export const OpenSource: React.FC = () => {
   }))
 
   return (
-    <section id="community" className="relative overflow-hidden bg-slate-950 py-12 sm:py-24">
+    <section ref={ref as React.RefObject<HTMLElement>} id="community" className="relative overflow-hidden bg-slate-950 py-12 sm:py-24">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(14,165,233,0.08),transparent_35%),radial-gradient(circle_at_85%_10%,rgba(236,72,153,0.08),transparent_35%)]" />
       <div className="container relative mx-auto px-4 sm:px-6">
-        <div className="max-w-3xl">
+        {/* Header section - slide from left */}
+        <div
+          className={`max-w-3xl transition-all duration-700 ease-out ${
+            isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'
+          }`}
+        >
           <p className="inline-flex items-center gap-2 border border-white/10 rounded-full bg-white/5 px-2.5 py-1 text-[10px] text-slate-300 sm:px-3 sm:text-xs">
             <Github className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             {t('openSource.badge')}
@@ -46,11 +54,15 @@ export const OpenSource: React.FC = () => {
           </div>
         </div>
 
+        {/* Pillar cards - staggered scale-up animation */}
         <div className="grid mt-8 gap-4 md:grid-cols-3 sm:mt-12 sm:gap-6">
-          {pillars.map(pillar => (
+          {pillars.map((pillar, idx) => (
             <div
               key={pillar.title}
-              className="group relative overflow-hidden border border-white/10 rounded-2xl bg-white/[0.02] p-5 backdrop-blur-sm sm:rounded-3xl sm:p-6"
+              className={`group relative overflow-hidden border border-white/10 rounded-2xl bg-white/[0.02] p-5 backdrop-blur-sm transition-all duration-600 ease-out sm:rounded-3xl sm:p-6 ${
+                isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-95'
+              }`}
+              style={{ transitionDelay: isVisible ? getStaggerDelay(idx + 2, 0.12) : '0s' }}
             >
               <div className="absolute inset-0 from-white/0 via-white/5 to-white/0 bg-gradient-to-br opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
               <div className="mb-3 w-fit border border-white/10 rounded-xl bg-white/5 p-2.5 sm:mb-4 sm:rounded-2xl sm:p-3">

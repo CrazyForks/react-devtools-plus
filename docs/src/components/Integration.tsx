@@ -1,10 +1,13 @@
 import { ArrowRight, Code2, Download, Keyboard } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { getStaggerDelay, useScrollAnimation } from '../hooks/useScrollAnimation'
 import { Button } from './ui/Button'
 
 export const Integration: React.FC = () => {
   const { t } = useTranslation()
+  const { ref, isVisible } = useScrollAnimation({ threshold: 0.15 })
+
   const highlights = t('integration.highlights', { returnObjects: true }) as string[]
   const steps = [
     {
@@ -28,11 +31,16 @@ export const Integration: React.FC = () => {
   ]
 
   return (
-    <section id="integration" className="relative overflow-hidden from-slate-950 via-slate-950 to-slate-900 bg-gradient-to-b py-24">
+    <section ref={ref as React.RefObject<HTMLElement>} id="integration" className="relative overflow-hidden from-slate-950 via-slate-950 to-slate-900 bg-gradient-to-b py-24">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.08),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(236,72,153,0.06),transparent_30%)]" />
       <div className="container relative mx-auto px-6">
         <div className="flex flex-col gap-12 lg:flex-row lg:items-center">
-          <div className="lg:w-1/2 space-y-6">
+          {/* Left content - slide from left */}
+          <div
+            className={`transition-all duration-700 ease-out lg:w-1/2 space-y-6 ${
+              isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'
+            }`}
+          >
             <div className="w-fit inline-flex items-center gap-2 border border-white/10 rounded-full bg-white/5 px-3 py-1 text-xs text-slate-300">
               <span className="bg-brand-400 h-2 w-2 flex animate-pulse rounded-full" />
               <span>{t('integration.badge')}</span>
@@ -44,14 +52,25 @@ export const Integration: React.FC = () => {
               {t('integration.subtitle')}
             </p>
             <ul className="grid gap-3">
-              {highlights.map(item => (
-                <li key={item} className="flex items-start gap-3 text-slate-300">
+              {highlights.map((item, idx) => (
+                <li
+                  key={item}
+                  className={`flex items-start gap-3 text-slate-300 transition-all duration-500 ${
+                    isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
+                  }`}
+                  style={{ transitionDelay: isVisible ? getStaggerDelay(idx + 2, 0.1) : '0s' }}
+                >
                   <div className="bg-brand-400 mt-1 h-2.5 w-2.5 rounded-full shadow-[0_0_0_6px_rgba(14,165,233,0.1)]" />
                   <span>{item}</span>
                 </li>
               ))}
             </ul>
-            <div className="flex flex-wrap items-center gap-4 pt-2">
+            <div
+              className={`flex flex-wrap items-center gap-4 pt-2 transition-all duration-600 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
+              style={{ transitionDelay: isVisible ? '0.5s' : '0s' }}
+            >
               <Button withBeam className="w-full sm:w-auto">
                 {t('integration.primaryCta')}
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -62,12 +81,16 @@ export const Integration: React.FC = () => {
             </div>
           </div>
 
+          {/* Right content - step cards with staggered animation */}
           <div className="lg:w-1/2">
             <div className="grid gap-4">
               {steps.map((step, idx) => (
                 <div
                   key={step.title}
-                  className="group relative overflow-hidden border border-white/10 rounded-3xl bg-white/[0.03] px-6 py-5"
+                  className={`group relative overflow-hidden border border-white/10 rounded-3xl bg-white/[0.03] px-6 py-5 transition-all duration-600 ease-out ${
+                    isVisible ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-12 scale-95'
+                  }`}
+                  style={{ transitionDelay: isVisible ? getStaggerDelay(idx + 1, 0.15) : '0s' }}
                 >
                   <div className="from-brand-500/5 to-brand-700/5 absolute inset-0 via-white/0 bg-gradient-to-r opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                   <div className="relative z-10 flex items-start gap-4">
@@ -76,7 +99,14 @@ export const Integration: React.FC = () => {
                         {step.badge}
                       </div>
                       {idx < steps.length - 1 && (
-                        <div className="mt-2 h-full w-px from-white/20 via-white/5 to-transparent bg-gradient-to-b" />
+                        <div
+                          className="mt-2 h-full w-px from-white/20 via-white/5 to-transparent bg-gradient-to-b transition-all duration-500"
+                          style={{
+                            transform: isVisible ? 'scaleY(1)' : 'scaleY(0)',
+                            transformOrigin: 'top',
+                            transitionDelay: isVisible ? getStaggerDelay(idx + 2, 0.2) : '0s',
+                          }}
+                        />
                       )}
                     </div>
                     <div className="flex-1 space-y-2">
