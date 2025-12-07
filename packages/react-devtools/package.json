@@ -2,6 +2,28 @@
   "name": "react-devtools-plus",
   "type": "module",
   "version": "0.2.0",
+  "author": {
+    "name": "wzc520pyfm",
+    "email": "wzc520pyf@163.com",
+    "url": "https://github.com/wzc520pyfm"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git"
+  },
+  "keywords": [
+    "react-devtools-plus",
+    "react-devtools",
+    "dx",
+    "devtools",
+    "react",
+    "react-scan",
+    "scan",
+    "components",
+    "debug",
+    "inspector",
+    "dev"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

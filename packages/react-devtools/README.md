@@ -1,25 +1,25 @@
 # react-devtools
 
-> Experimental in-app component tree inspector for React projects powered by Vite.
+> Experimental in-app component tree inspector for React projects powered by Unplugin to support Vite and Webpack.
 
 ## Installation
 
 ```bash
-pnpm add -D react-devtools
+pnpm add -D react-devtools-plus
 ```
 
 ## Usage
 
 ```ts
 import react from '@vitejs/plugin-react'
-import ReactDevTools from 'react-devtools'
+import { reactDevToolsPlus } from 'react-devtools-plus/vite'
 // vite.config.ts
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
     react(),
-    ReactDevTools(),
+    reactDevToolsPlus(),
   ],
 })
 ```
