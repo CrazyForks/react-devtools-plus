@@ -18,8 +18,8 @@ import { reactDevToolsPlus } from 'react-devtools-plus/vite'
 
 export default defineConfig({
   plugins: [
-    react(),
     reactDevToolsPlus(),
+    react(),
   ],
 })`,
   },
@@ -27,7 +27,7 @@ export default defineConfig({
     name: 'webpack.config.js',
     icon: 'webpack',
     language: 'js',
-    code: `const { reactDevToolsPlus } = 
+    code: `const { reactDevToolsPlus } =
   require('react-devtools-plus/webpack')
 
 module.exports = {
