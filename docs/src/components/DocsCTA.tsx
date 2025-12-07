@@ -1,6 +1,7 @@
 import { ArrowRight, BookOpen } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { useScrollAnimation } from '../hooks/useScrollAnimation'
 import { Button } from './ui/Button'
 
@@ -39,13 +40,21 @@ export const DocsCTA: React.FC = () => {
                 {t('docsCTA.subtitle')}
               </p>
               <div className="mt-5 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-4">
-                <Button withBeam className="w-full sm:w-auto">
-                  {t('docsCTA.primary')}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-                <Button variant="secondary" className="w-full sm:w-auto">
-                  {t('docsCTA.secondary')}
-                </Button>
+                <Link to="/docs">
+                  <Button withBeam className="w-full sm:w-auto">
+                    {t('docsCTA.primary')}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <a
+                  href="https://github.com/wzc520pyfm/react-devtools-plus"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="secondary" className="w-full sm:w-auto">
+                    {t('docsCTA.secondary')}
+                  </Button>
+                </a>
               </div>
             </div>
 

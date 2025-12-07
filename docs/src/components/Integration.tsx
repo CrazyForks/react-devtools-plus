@@ -1,6 +1,7 @@
 import { ArrowRight, Code2, Download, Keyboard } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { getStaggerDelay, useScrollAnimation } from '../hooks/useScrollAnimation'
 import { Button } from './ui/Button'
 
@@ -71,13 +72,17 @@ export const Integration: React.FC = () => {
               }`}
               style={{ transitionDelay: isVisible ? '0.5s' : '0s' }}
             >
-              <Button withBeam className="w-full sm:w-auto">
-                {t('integration.primaryCta')}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-              <Button variant="secondary" className="w-full sm:w-auto">
-                {t('integration.secondaryCta')}
-              </Button>
+              <Link to="/docs/installation">
+                <Button withBeam className="w-full sm:w-auto">
+                  {t('integration.primaryCta')}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link to="/docs/integration/vite">
+                <Button variant="secondary" className="w-full sm:w-auto">
+                  {t('integration.secondaryCta')}
+                </Button>
+              </Link>
             </div>
           </div>
 

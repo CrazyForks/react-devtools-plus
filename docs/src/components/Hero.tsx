@@ -1,6 +1,7 @@
 import { ArrowRight, Check, Copy } from 'lucide-react'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { Button } from './ui/Button'
 import { Spotlight } from './ui/Spotlight'
 import { CodeTab, TabbedCodeBlock } from './ui/TabbedCodeBlock'
@@ -45,7 +46,7 @@ module.exports = {
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "react-devtools-plus": "^0.0.1"
+    "react-devtools-plus": "^1.0.0"
   }
 }`,
   },
@@ -111,10 +112,12 @@ export const Hero: React.FC = () => {
               className="animate-slide-up-fade mt-6 w-full flex flex-col items-center gap-3 sm:mt-10 sm:w-auto sm:flex-row sm:gap-4"
               style={{ animationDelay: '0.6s' }}
             >
-              <Button withBeam className="w-full sm:w-auto">
-                {t('hero.primaryCta')}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Link to="/docs">
+                <Button withBeam className="w-full sm:w-auto">
+                  {t('hero.primaryCta')}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
 
               <div
                 className="group relative w-full flex cursor-pointer items-center justify-between gap-2 border border-white/10 rounded-full bg-slate-900/50 px-4 py-2.5 text-xs text-slate-400 font-mono transition-all sm:w-auto hover:border-white/20 sm:px-6 sm:py-3 sm:text-sm hover:text-white"
