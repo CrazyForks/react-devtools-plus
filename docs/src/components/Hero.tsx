@@ -9,7 +9,7 @@ import { CodeTab, TabbedCodeBlock } from './ui/TabbedCodeBlock'
 const HERO_CODE_TABS: CodeTab[] = [
   {
     name: 'vite.config.ts',
-    icon: 'settings',
+    icon: 'vite',
     language: 'ts',
     code: `import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -24,7 +24,7 @@ export default defineConfig({
   },
   {
     name: 'webpack.config.js',
-    icon: 'settings',
+    icon: 'webpack',
     language: 'js',
     code: `const ReactDevToolsPlugin =
   require('react-devtools-plus/webpack').webpack
@@ -37,7 +37,7 @@ module.exports = {
   },
   {
     name: 'package.json',
-    icon: 'braces',
+    icon: 'npm',
     language: 'json',
     code: `{
   "dependencies": {
@@ -45,7 +45,7 @@ module.exports = {
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "react-devtools-plus": "^0.0.1",
+    "react-devtools-plus": "^0.0.1"
   }
 }`,
   },

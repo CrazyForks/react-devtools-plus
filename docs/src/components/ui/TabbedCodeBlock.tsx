@@ -1,9 +1,12 @@
+import { Icon } from '@iconify/react'
 import { Braces, FileCode, Hash, LucideIcon, Settings } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 
+export type IconType = 'hash' | 'file' | 'braces' | 'settings' | 'vite' | 'webpack' | 'npm' | 'json' | 'ts' | 'js'
+
 export interface CodeTab {
   name: string
-  icon?: 'hash' | 'file' | 'braces' | 'settings'
+  icon?: IconType
   language: string
   code: string
 }
@@ -14,26 +17,56 @@ interface TabbedCodeBlockProps {
   className?: string
 }
 
-const ICON_MAP: Record<string, LucideIcon> = {
+// Lucide icons (returns a component that takes className)
+const LUCIDE_ICON_MAP: Record<string, LucideIcon> = {
   hash: Hash,
   file: FileCode,
   braces: Braces,
   settings: Settings,
 }
 
-const getIconColor = (name: string): string => {
-  if (name.endsWith('.ts') || name.endsWith('.mts') || name.endsWith('.cts')) return 'text-blue-400'
-  if (name.endsWith('.tsx') || name.endsWith('.jsx')) return 'text-yellow-400'
-  if (name.endsWith('.json')) return 'text-green-400'
-  if (name.endsWith('.js') || name.endsWith('.mjs') || name.endsWith('.cjs')) return 'text-yellow-300'
-  return 'text-slate-400'
+// Iconify icon names for brand icons
+const ICONIFY_ICONS: Record<string, string> = {
+  vite: 'logos:vitejs',
+  webpack: 'logos:webpack',
+  npm: 'logos:npm-icon',
+  json: 'vscode-icons:file-type-json',
+  ts: 'logos:typescript-icon',
+  js: 'logos:javascript',
 }
 
-const getDefaultIcon = (name: string): 'hash' | 'file' | 'braces' | 'settings' => {
-  if (name.endsWith('.json')) return 'braces'
-  if (name.includes('config')) return 'settings'
-  if (name.endsWith('.ts') || name.endsWith('.mts')) return 'hash'
+const getDefaultIcon = (name: string): IconType => {
+  if (name.includes('vite.config'))
+    return 'vite'
+  if (name.includes('webpack.config'))
+    return 'webpack'
+  if (name === 'package.json')
+    return 'npm'
+  if (name.endsWith('.json'))
+    return 'json'
+  if (name.endsWith('.ts') || name.endsWith('.mts'))
+    return 'ts'
+  if (name.endsWith('.tsx'))
+    return 'ts'
+  if (name.endsWith('.js') || name.endsWith('.mjs') || name.endsWith('.cjs'))
+    return 'js'
+  if (name.endsWith('.jsx'))
+    return 'js'
+  if (name.includes('config'))
+    return 'settings'
   return 'file'
+}
+
+// Render the appropriate icon based on type
+const renderIcon = (iconType: IconType, className: string) => {
+  // Check if it's an Iconify icon
+  if (iconType in ICONIFY_ICONS) {
+    return <Icon icon={ICONIFY_ICONS[iconType]} className={className} />
+  }
+
+  // Otherwise use Lucide icon
+  const LucideIconComponent = LUCIDE_ICON_MAP[iconType] || FileCode
+  return <LucideIconComponent className={className} />
 }
 
 export const TabbedCodeBlock: React.FC<TabbedCodeBlockProps> = ({
@@ -56,14 +89,15 @@ export const TabbedCodeBlock: React.FC<TabbedCodeBlockProps> = ({
             codeToHtml(tab.code.trim(), {
               lang: tab.language,
               theme: 'material-theme-ocean',
-            })
-          )
+            }),
+          ),
         )
         if (mounted) {
           setHighlightedCodes(results)
           setIsLoading(false)
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Shiki highlighting error:', error)
         if (mounted) {
           setHighlightedCodes(tabs.map(tab => `<pre><code>${tab.code.trim()}</code></pre>`))
@@ -96,8 +130,7 @@ export const TabbedCodeBlock: React.FC<TabbedCodeBlockProps> = ({
           {/* Tabs */}
           <div className="flex">
             {tabs.map((tab, idx) => {
-              const iconKey = tab.icon || getDefaultIcon(tab.name)
-              const IconComponent = ICON_MAP[iconKey] || FileCode
+              const iconType = tab.icon || getDefaultIcon(tab.name)
               return (
                 <button
                   key={tab.name}
@@ -108,33 +141,20 @@ export const TabbedCodeBlock: React.FC<TabbedCodeBlockProps> = ({
                       : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
                   }`}
                 >
-                  <IconComponent className={`h-3.5 w-3.5 ${getIconColor(tab.name)}`} />
+                  {renderIcon(iconType, 'h-4 w-4')}
                   {tab.name}
                 </button>
               )
             })}
           </div>
         </div>
-
-        {/* Status Text */}
-        {/* <div className="hidden text-[10px] text-slate-500 font-mono sm:block">
-          {statusText.includes(':') ? (
-            <>
-              {statusText.split(':')[0]}:
-              {' '}
-              <span className="text-green-400">{statusText.split(':')[1]?.trim()}</span>
-            </>
-          ) : (
-            statusText
-          )}
-        </div> */}
       </div>
 
       {/* Code Area */}
       <div className="min-h-[320px] overflow-x-auto bg-[#0F111A] p-6">
         {isLoading ? (
-          <div className="flex h-[280px] items-center justify-center">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-600 border-t-slate-300" />
+          <div className="h-[280px] flex items-center justify-center">
+            <div className="h-6 w-6 animate-spin border-2 border-slate-600 border-t-slate-300 rounded-full" />
           </div>
         ) : (
           <div className="tabbed-code-content flex text-sm leading-6 font-mono">
@@ -161,11 +181,17 @@ export const TabbedCodeBlock: React.FC<TabbedCodeBlockProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <div className="bg-brand-500 h-1.5 w-1.5 animate-pulse rounded-full"></div>
-          <span>Ln {lines.length}, Col 1</span>
+          <span>
+            Ln
+            {' '}
+            {lines.length}
+            , Col 1
+          </span>
         </div>
       </div>
 
-      <style>{`
+      <style>
+        {`
         .shiki-inline pre {
           background: transparent !important;
           margin: 0;
@@ -177,8 +203,9 @@ export const TabbedCodeBlock: React.FC<TabbedCodeBlockProps> = ({
         .tabbed-code-content {
           font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
         }
-      `}</style>
+      `}
+
+      </style>
     </div>
   )
 }
-

@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@iconify/react": "^6.0.2",
     "i18next": "^23.10.1",
     "lucide-react": "^0.556.0",
     "react": "^19.2.1",
