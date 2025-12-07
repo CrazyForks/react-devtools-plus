@@ -1,4 +1,5 @@
 import type { SelectHTMLAttributes } from 'react'
+import { forwardRef } from 'react'
 import styles from './Select.module.css'
 
 export interface SelectOption {

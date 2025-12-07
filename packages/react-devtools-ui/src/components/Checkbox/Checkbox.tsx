@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes } from 'react'
+import { forwardRef } from 'react'
 import styles from './Checkbox.module.css'
 
 export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
