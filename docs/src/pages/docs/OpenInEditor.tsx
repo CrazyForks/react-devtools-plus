@@ -1,4 +1,4 @@
-import { Check, Info, Keyboard } from 'lucide-react'
+import { Check, Info } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { CodeBlock } from '../../components/ui/CodeBlock'
@@ -37,15 +37,13 @@ localStorage.setItem('react_devtools_editor', 'cursor')
         {t('docs.openInEditor.description')}
       </p>
 
-      {/* Placeholder for screenshot */}
-      <div className="not-prose my-8 h-80 flex items-center justify-center border border-white/20 rounded-2xl border-dashed bg-white/5">
-        <div className="text-center">
-          <div className="mx-auto mb-3 h-12 w-12 flex items-center justify-center rounded-full bg-white/10">
-            <Keyboard className="h-6 w-6 text-slate-400" />
-          </div>
-          <p className="text-sm text-slate-400">{t('docs.common.screenshotPlaceholder')}</p>
-          <p className="mt-1 text-xs text-slate-500">Open in Editor Demo</p>
-        </div>
+      {/* Inspector Panel Screenshot */}
+      <div className="not-prose my-8 overflow-hidden border-white/10 rounded-2xl border-none">
+        <img
+          src="/screenshots/inspector.png"
+          alt="Assets Panel Overview"
+          className="w-full rounded-2xl"
+        />
       </div>
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.openInEditor.howItWorks.title')}</h2>
@@ -76,17 +74,6 @@ localStorage.setItem('react_devtools_editor', 'cursor')
           </li>
         ))}
       </ol>
-
-      {/* Placeholder for screenshot */}
-      <div className="not-prose my-8 h-64 flex items-center justify-center border border-white/20 rounded-2xl border-dashed bg-white/5">
-        <div className="text-center">
-          <div className="mx-auto mb-3 h-12 w-12 flex items-center justify-center rounded-full bg-white/10">
-            <Info className="h-6 w-6 text-slate-400" />
-          </div>
-          <p className="text-sm text-slate-400">{t('docs.common.screenshotPlaceholder')}</p>
-          <p className="mt-1 text-xs text-slate-500">Inspector Mode Selection</p>
-        </div>
-      </div>
 
       <h2 className="mb-4 mt-8 text-2xl text-white font-bold">{t('docs.openInEditor.editorConfig.title')}</h2>
       <p className="text-slate-300">{t('docs.openInEditor.editorConfig.description')}</p>

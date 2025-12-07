@@ -36,11 +36,11 @@ addPerformanceEvent('render', 'MyComponent', 'end', duration)`
       </p>
 
       {/* Timeline Panel Screenshot */}
-      <div className="not-prose my-8 overflow-hidden border border-white/10 rounded-2xl">
+      <div className="not-prose my-8 overflow-hidden border-white/10 rounded-2xl border-none">
         <img
-          src="/screenshots/timeline.png"
+          src="/screenshots/timeline-detail.png"
           alt="Timeline Panel Overview"
-          className="w-full"
+          className="w-full rounded-2xl"
         />
       </div>
 

@@ -14,11 +14,11 @@ export const ComponentTree: React.FC = () => {
       </p>
 
       {/* Component Tree Overview Screenshot */}
-      <div className="not-prose my-8 overflow-hidden border border-white/10 rounded-2xl">
+      <div className="not-prose my-8 overflow-hidden border-white/10 rounded-2xl border-none">
         <img
           src="/screenshots/component-tree.png"
           alt="Component Tree Overview"
-          className="w-full"
+          className="w-full rounded-2xl"
         />
       </div>
 
@@ -45,11 +45,11 @@ export const ComponentTree: React.FC = () => {
       </ol>
 
       {/* Component Selection Screenshot */}
-      <div className="not-prose my-8 overflow-hidden border border-white/10 rounded-2xl">
+      <div className="not-prose my-8 overflow-hidden border-white/10 rounded-2xl border-none">
         <img
           src="/screenshots/component-tree-detail.png"
           alt="Component Selection Demo"
-          className="w-full"
+          className="w-full rounded-2xl"
         />
       </div>
 

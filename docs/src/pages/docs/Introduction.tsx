@@ -15,11 +15,11 @@ export const Introduction: React.FC = () => {
       </p>
 
       {/* DevTools Overview Screenshot */}
-      <div className="not-prose my-8 overflow-hidden border border-white/10 rounded-2xl">
+      <div className="not-prose my-8 overflow-hidden border-white/10 rounded-2xl border-none">
         <img
-          src="/screenshots/overview-full.png"
+          src="/screenshots/overview.png"
           alt="React DevTools Plus Overview"
-          className="w-full"
+          className="w-full rounded-2xl"
         />
       </div>
 
