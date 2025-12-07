@@ -45,7 +45,7 @@ export const GlowCard: React.FC<GlowCardProps> = ({ children, className = '', mo
     >
       {/* Border glow container */}
       <div
-        className="absolute rounded-3xl blur-[2px] transition-opacity duration-300 -inset-[1px]"
+        className="absolute rounded-2xl blur-[2px] transition-opacity duration-300 -inset-[1px] sm:rounded-3xl"
         style={{
           opacity: isNear ? 1 : 0,
           background: `radial-gradient(350px circle at ${localPosition.x}px ${localPosition.y}px, rgba(56, 189, 248, 0.5), transparent 50%)`,
@@ -54,7 +54,7 @@ export const GlowCard: React.FC<GlowCardProps> = ({ children, className = '', mo
 
       {/* Card border */}
       <div
-        className="absolute inset-0 rounded-3xl transition-all duration-300"
+        className="absolute inset-0 rounded-2xl transition-all duration-300 sm:rounded-3xl"
         style={{
           background: isNear
             ? `radial-gradient(350px circle at ${localPosition.x}px ${localPosition.y}px, rgba(56, 189, 248, 0.35), rgba(255, 255, 255, 0.1) 50%)`
@@ -62,11 +62,11 @@ export const GlowCard: React.FC<GlowCardProps> = ({ children, className = '', mo
           padding: '1px',
         }}
       >
-        <div className="h-full w-full rounded-[23px] bg-slate-900/95" />
+        <div className="h-full w-full rounded-[15px] bg-slate-900/95 sm:rounded-[23px]" />
       </div>
 
       {/* Card content */}
-      <div className="relative h-full rounded-3xl p-6">
+      <div className="relative h-full rounded-2xl p-4 sm:rounded-3xl sm:p-6">
         {children}
       </div>
     </div>

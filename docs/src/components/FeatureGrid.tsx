@@ -69,25 +69,25 @@ export const FeatureGrid: React.FC = () => {
   ]
 
   return (
-    <section ref={sectionRef} id="features" className="relative overflow-hidden from-slate-950 via-slate-950 to-[#050712] bg-gradient-to-b py-24">
+    <section ref={sectionRef} id="features" className="relative overflow-hidden from-slate-950 via-slate-950 to-[#050712] bg-gradient-to-b py-12 sm:py-24">
       {/* Glows */}
       <div className="bg-brand-500/10 pointer-events-none absolute right-0 top-0 h-1/2 w-1/2 rounded-full blur-[160px]" />
       <div className="bg-brand-400/10 pointer-events-none absolute bottom-0 left-0 h-1/2 w-1/2 rounded-full blur-[160px]" />
 
-      <div className="container mx-auto px-6">
-        <div className="mx-auto mb-16 max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 border border-white/10 rounded-full bg-white/5 px-4 py-2 text-xs text-slate-300 tracking-[0.25em] uppercase">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="mx-auto mb-8 max-w-3xl text-center sm:mb-16">
+          <div className="inline-flex items-center gap-2 border border-white/10 rounded-full bg-white/5 px-3 py-1.5 text-[10px] text-slate-300 tracking-[0.2em] uppercase sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.25em]">
             {t('features.badge')}
           </div>
-          <h2 className="mb-4 mt-4 text-3xl text-white font-bold md:text-5xl">
+          <h2 className="mb-3 mt-4 text-2xl text-white font-bold sm:mb-4 md:text-5xl sm:text-3xl">
             {t('features.title')}
           </h2>
-          <p className="text-lg text-slate-400">
+          <p className="text-sm text-slate-400 sm:text-lg">
             {t('features.subtitle')}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 sm:gap-6">
           {features.map((feature, idx) => {
             const slideDirection = getSlideDirection(idx)
             const slideClass = isVisible
@@ -99,7 +99,7 @@ export const FeatureGrid: React.FC = () => {
             return (
               <div
                 key={idx}
-                className={`group relative overflow-hidden border border-white/10 rounded-3xl from-white/[0.02] via-white/[0.03] to-white/[0.01] bg-gradient-to-br p-8 ${feature.className} transition-all duration-700 ease-out ${slideClass}`}
+                className={`group relative overflow-hidden border border-white/10 rounded-2xl from-white/[0.02] via-white/[0.03] to-white/[0.01] bg-gradient-to-br p-5 sm:rounded-3xl sm:p-8 ${feature.className} transition-all duration-700 ease-out ${slideClass}`}
                 style={{
                   transitionDelay: `${idx * 0.15}s`,
                 }}
@@ -108,17 +108,17 @@ export const FeatureGrid: React.FC = () => {
                 <div className="absolute inset-x-0 top-0 h-px from-transparent via-white/30 to-transparent bg-gradient-to-r opacity-40" />
 
                 <div className="relative z-10 h-full flex flex-col">
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="w-fit inline-flex border border-white/10 rounded-2xl bg-white/5 p-3 shadow-[0_10px_40px_-20px_rgba(56,189,248,0.5)]">
-                      <feature.icon className="text-brand-300 h-6 w-6" />
+                  <div className="mb-3 flex items-center justify-between sm:mb-4">
+                    <div className="w-fit inline-flex border border-white/10 rounded-xl bg-white/5 p-2.5 shadow-[0_10px_40px_-20px_rgba(56,189,248,0.5)] sm:rounded-2xl sm:p-3">
+                      <feature.icon className="text-brand-300 h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
-                    <span className="text-[10px] text-slate-500 tracking-[0.2em] font-mono uppercase">dx-first</span>
+                    <span className="hidden text-[10px] text-slate-500 tracking-[0.2em] font-mono uppercase sm:block">dx-first</span>
                   </div>
 
-                  <h3 className="mb-3 text-2xl text-white font-bold leading-snug">{feature.title}</h3>
-                  <p className="text-slate-400 leading-relaxed">{feature.description}</p>
+                  <h3 className="mb-2 text-lg text-white font-bold leading-snug sm:mb-3 sm:text-2xl">{feature.title}</h3>
+                  <p className="text-sm text-slate-400 leading-relaxed sm:text-base">{feature.description}</p>
 
-                  <div className="mt-auto pt-8 opacity-70 transition-opacity duration-500 group-hover:opacity-100">
+                  <div className="mt-auto pt-4 opacity-70 transition-opacity duration-500 sm:pt-8 group-hover:opacity-100">
                     <div
                       className="from-brand-500/70 via-brand-400/40 h-1 w-full origin-right rounded-full to-transparent bg-gradient-to-r"
                       style={{

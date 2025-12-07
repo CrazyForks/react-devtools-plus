@@ -62,7 +62,7 @@ export const Hero: React.FC = () => {
   }
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-slate-950 pb-20 pt-24">
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-slate-950 pb-12 pt-20 sm:pb-20 sm:pt-24">
       {/* Background Ambience - Radial Top-Down Light */}
       <div className="absolute inset-0 h-full w-full bg-slate-950">
         <div className="[mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] absolute inset-0 h-full w-full bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
@@ -71,14 +71,14 @@ export const Hero: React.FC = () => {
       {/* Spotlight Beam - Top Right shining Bottom Left */}
       <Spotlight className="right-0 -top-40 md:right-0 md:-top-20" fill="#38bdf8" />
 
-      <div className="container relative z-10 mx-auto px-6">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-8">
+      <div className="container relative z-10 mx-auto max-w-full overflow-hidden px-6 lg:px-16 sm:px-8">
+        <div className="grid items-center gap-8 overflow-hidden lg:grid-cols-[1fr_1.1fr] lg:gap-16 xl:gap-20">
 
           {/* Left Column: Content */}
-          <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+          <div className="flex flex-col items-center text-center lg:items-start lg:pr-4 lg:text-left">
             {/* Badge */}
             <div
-              className="animate-slide-up-fade mb-8 inline-flex items-center gap-2 border border-white/5 rounded-full bg-white/5 px-3 py-1 text-sm text-slate-300 backdrop-blur-xl"
+              className="animate-slide-up-fade mb-6 inline-flex items-center gap-2 border border-white/5 rounded-full bg-white/5 px-3 py-1 text-xs text-slate-300 backdrop-blur-xl sm:mb-8 sm:text-sm"
               style={{ animationDelay: '0.1s' }}
             >
               <span className="bg-brand-400 h-2 w-2 flex animate-pulse rounded-full"></span>
@@ -87,7 +87,7 @@ export const Hero: React.FC = () => {
 
             {/* Heading */}
             <h1
-              className="animate-slide-up-fade text-5xl text-white font-extrabold tracking-tight md:text-7xl"
+              className="animate-slide-up-fade text-3xl text-white font-extrabold tracking-tight md:text-7xl sm:text-5xl"
               style={{ animationDelay: '0.2s' }}
             >
               {t('hero.titleLead')}
@@ -100,7 +100,7 @@ export const Hero: React.FC = () => {
 
             {/* Subtitle */}
             <p
-              className="animate-slide-up-fade mt-6 max-w-2xl text-lg text-slate-400 md:text-xl"
+              className="animate-slide-up-fade mt-4 max-w-2xl text-base text-slate-400 sm:mt-6 md:text-xl sm:text-lg"
               style={{ animationDelay: '0.4s' }}
             >
               {t('hero.subtitle')}
@@ -108,7 +108,7 @@ export const Hero: React.FC = () => {
 
             {/* Buttons */}
             <div
-              className="animate-slide-up-fade mt-10 w-full flex flex-col items-center gap-4 sm:w-auto sm:flex-row"
+              className="animate-slide-up-fade mt-6 w-full flex flex-col items-center gap-3 sm:mt-10 sm:w-auto sm:flex-row sm:gap-4"
               style={{ animationDelay: '0.6s' }}
             >
               <Button withBeam className="w-full sm:w-auto">
@@ -117,11 +117,14 @@ export const Hero: React.FC = () => {
               </Button>
 
               <div
-                className="group relative w-full flex cursor-pointer items-center justify-between gap-2 border border-white/10 rounded-full bg-slate-900/50 px-6 py-3 text-sm text-slate-400 font-mono transition-all sm:w-auto hover:border-white/20 hover:text-white"
+                className="group relative w-full flex cursor-pointer items-center justify-between gap-2 border border-white/10 rounded-full bg-slate-900/50 px-4 py-2.5 text-xs text-slate-400 font-mono transition-all sm:w-auto hover:border-white/20 sm:px-6 sm:py-3 sm:text-sm hover:text-white"
                 onClick={handleCopy}
+                role="button"
+                tabIndex={0}
+                onKeyDown={e => e.key === 'Enter' && handleCopy()}
               >
-                <span>{t('hero.snippet')}</span>
-                {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+                <span className="truncate">{t('hero.snippet')}</span>
+                {copied ? <Check className="h-4 w-4 shrink-0 text-green-400" /> : <Copy className="h-4 w-4 shrink-0" />}
 
                 {/* Subtle glow on hover */}
                 <div className="bg-brand-500/10 absolute inset-0 rounded-full opacity-0 blur-lg transition-opacity -z-10 group-hover:opacity-100" />
@@ -131,7 +134,7 @@ export const Hero: React.FC = () => {
 
           {/* Right Column: Interactive Code Block */}
           <div
-            className="animate-slide-up-fade relative mx-auto max-w-[600px] w-full"
+            className="animate-slide-up-fade relative mx-auto max-w-[600px] min-w-0 w-full overflow-hidden"
             style={{ animationDelay: '0.8s' }}
           >
             {/* Abstract Glow behind the card */}
@@ -143,9 +146,9 @@ export const Hero: React.FC = () => {
               statusText="Debugging Session: Active"
             />
 
-            {/* Decorative Floating Elements behind/around */}
-            <div className="bg-brand-500/20 absolute h-24 w-24 rounded-full blur-3xl -right-12 -top-12"></div>
-            <div className="bg-brand-400/18 absolute h-32 w-32 rounded-full blur-3xl -bottom-12 -left-12"></div>
+            {/* Decorative Floating Elements behind/around - hidden on mobile */}
+            <div className="bg-brand-500/20 absolute hidden h-24 w-24 rounded-full blur-3xl -right-12 -top-12 sm:block"></div>
+            <div className="bg-brand-400/18 absolute hidden h-32 w-32 rounded-full blur-3xl -bottom-12 -left-12 sm:block"></div>
           </div>
         </div>
       </div>
