@@ -34,7 +34,8 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
           setHighlightedCode(html)
           setIsLoading(false)
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Shiki highlighting error:', error)
         if (mounted) {
           // Fallback to plain code
@@ -58,14 +59,15 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 
   // Add line numbers to the highlighted code
   const addLineNumbers = (html: string) => {
-    if (!showLineNumbers) return html
+    if (!showLineNumbers)
+      return html
 
     // Parse the HTML and add line numbers
     const lines = code.trim().split('\n')
     const lineNumbersHtml = lines
       .map(
         (_, idx) =>
-          `<span class="line-number">${idx + 1}</span>`
+          `<span class="line-number">${idx + 1}</span>`,
       )
       .join('')
 
@@ -95,18 +97,21 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
           </button>
         )}
-        {isLoading ? (
-          <div className="flex items-center justify-center p-6">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-600 border-t-slate-300" />
-          </div>
-        ) : (
-          <div
-            className="shiki-code p-4 text-sm leading-6"
-            dangerouslySetInnerHTML={{ __html: showLineNumbers ? addLineNumbers(highlightedCode) : highlightedCode }}
-          />
-        )}
+        {isLoading
+          ? (
+              <div className="flex items-center justify-center p-6">
+                <div className="h-5 w-5 animate-spin border-2 border-slate-600 border-t-slate-300 rounded-full" />
+              </div>
+            )
+          : (
+              <div
+                className="shiki-code p-4 text-sm leading-6"
+                dangerouslySetInnerHTML={{ __html: showLineNumbers ? addLineNumbers(highlightedCode) : highlightedCode }}
+              />
+            )}
       </div>
-      <style>{`
+      <style>
+        {`
         .shiki-code pre {
           background: transparent !important;
           margin: 0;
@@ -139,7 +144,8 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
         .code-content pre {
           margin: 0;
         }
-      `}</style>
+      `}
+      </style>
     </div>
   )
 }
@@ -150,4 +156,3 @@ export const InlineCode: React.FC<{ children: string }> = ({ children }) => (
     {children}
   </code>
 )
-
