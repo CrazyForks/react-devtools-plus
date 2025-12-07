@@ -13,8 +13,6 @@
 /**
  * Root reference that abstracts React 17/18 differences
  */
-import { createRoot } from 'react-dom/client'
-
 export interface ReactRootRef {
   /** Unmount the root */
   unmount: () => void
@@ -83,7 +81,8 @@ function renderWithCreateRoot(element: React.ReactElement, container: HTMLElemen
  */
 function renderWithLegacyRender(element: React.ReactElement, container: HTMLElement): ReactRootRef {
   const ReactDOM = getReactDOM()
-  createRoot(container).render(element)
+  // eslint-disable-next-line react-dom/no-render
+  ReactDOM.render(element, container)
   return {
     unmount: () => {
       if (typeof ReactDOM.unmountComponentAtNode === 'function') {

@@ -270,6 +270,26 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
           return '\0__react-devtools-globals__'
         }
 
+        // Handle react-dom/client import from our globals module
+        // For React 16/17, this module doesn't exist, so provide a fallback
+        if (id === 'react-dom/client' && importer?.includes('__react-devtools-globals__')) {
+          // Check if react-dom/client exists in the project
+          try {
+            const projectRoot = viteConfig?.root || process.cwd()
+            // Try to find react-dom/client in node_modules
+            const reactDomPath = path.join(projectRoot, 'node_modules', 'react-dom', 'client.js')
+            if (fs.existsSync(reactDomPath)) {
+              // Module exists (React 18/19), let Vite handle it
+              return null
+            }
+          }
+          catch {
+            // Ignore errors
+          }
+          // Module doesn't exist (React 16/17), use fallback
+          return '\0__react-devtools-react-dom-client-fallback__'
+        }
+
         const normalizedId = id.startsWith('@id/') ? id.replace('@id/', '') : id
         return resolveOverlayPath(normalizedId, DIR_OVERLAY, reactDevtoolsPath)
       },
@@ -299,6 +319,16 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
             tryReactDOMClient: true,
             dispatchReadyEvent: true,
           })
+        }
+
+        // Fallback for react-dom/client when it doesn't exist (React 16/17)
+        if (id === '\0__react-devtools-react-dom-client-fallback__') {
+          return `
+// Fallback module for react-dom/client (React 16/17)
+// createRoot doesn't exist in React 16/17
+export const createRoot = undefined;
+export const hydrateRoot = undefined;
+`
         }
 
         return null
