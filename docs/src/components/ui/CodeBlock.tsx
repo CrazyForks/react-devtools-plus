@@ -75,7 +75,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
   }
 
   return (
-    <div className={`not-prose overflow-hidden border border-white/10 rounded-xl bg-[#0F111A] ${className}`}>
+    <div className={`not-prose mt-4 overflow-hidden border border-white/10 rounded-xl bg-[#0F111A] ${className}`}>
       {title && (
         <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-2">
           <span className="text-sm text-slate-400">{title}</span>
