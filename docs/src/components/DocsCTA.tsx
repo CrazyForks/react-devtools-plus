@@ -47,7 +47,7 @@ export const DocsCTA: React.FC = () => {
                   </Button>
                 </Link>
                 <a
-                  href="https://github.com/wzc520pyfm/react-devtools-plus"
+                  href="https://stackblitz.com/edit/vitejs-vite-xfyg6rau?file=vite.config.ts"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
