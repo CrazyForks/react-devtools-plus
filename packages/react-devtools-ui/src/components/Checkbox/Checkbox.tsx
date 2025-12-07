@@ -8,7 +8,7 @@ export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement
   label?: string
 }
 
-export const Checkbox = ({ ref, checked, onChange, label, disabled, className = '', ...props }: CheckboxProps & { ref?: React.RefObject<HTMLInputElement | null> }) => {
+export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(({ checked, onChange, label, disabled, className = '', ...props }, ref) => {
   return (
     <label className={`${styles.checkbox}  ${disabled ? styles.disabled : ''}  ${className}`}>
       <input
@@ -28,6 +28,6 @@ export const Checkbox = ({ ref, checked, onChange, label, disabled, className = 
       {label && <span className={styles.label}>{label}</span>}
     </label>
   )
-}
+})
 
 Checkbox.displayName = 'Checkbox'

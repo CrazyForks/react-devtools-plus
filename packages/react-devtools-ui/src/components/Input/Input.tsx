@@ -42,7 +42,7 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   block?: boolean
 }
 
-export const Input = ({ ref, size = 'md', status, prefix, suffix, allowClear = false, onClear, block = false, className = '', disabled, value, ...rest }: InputProps & { ref?: React.RefObject<HTMLInputElement | null> }) => {
+export const Input = forwardRef<HTMLInputElement, InputProps>(({ size = 'md', status, prefix, suffix, allowClear = false, onClear, block = false, className = '', disabled, value, ...rest }, ref) => {
   const wrapperClassNames = [
     styles.wrapper,
     styles[`size-${size}`],
@@ -81,6 +81,6 @@ export const Input = ({ ref, size = 'md', status, prefix, suffix, allowClear = f
       )}
     </div>
   )
-}
+})
 
 Input.displayName = 'Input'

@@ -16,7 +16,7 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
   size?: SelectSize
 }
 
-export const Select = ({ ref, options = [], onChange, className = '', size = 'md', children, ...props }: SelectProps & { ref?: React.RefObject<HTMLSelectElement | null> }) => {
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(({ options = [], onChange, className = '', size = 'md', children, ...props }, ref) => {
   const selectClass = [
     styles.select,
     styles[`size-${size}`],
@@ -47,6 +47,6 @@ export const Select = ({ ref, options = [], onChange, className = '', size = 'md
       </svg>
     </div>
   )
-}
+})
 
 Select.displayName = 'Select'

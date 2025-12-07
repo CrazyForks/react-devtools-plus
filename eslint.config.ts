@@ -28,6 +28,11 @@ export default antfu({
     'ts/no-unsafe-function-type': 'off',
 
     'unicorn/consistent-function-scoping': 'off',
+
+    // Disable React 19 migration rules to support React 18 types
+    '@eslint-react/no-forward-ref': 'off',
+    '@eslint-react/no-context-provider': 'off',
+    '@eslint-react/no-use-context': 'off',
   },
 }, {
   ignores: [
