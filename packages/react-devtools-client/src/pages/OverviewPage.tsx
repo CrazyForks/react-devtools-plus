@@ -238,11 +238,11 @@ export function OverviewPage({ tree }: OverviewPageProps) {
 
         <div className="flex flex-col gap-6 text-center text-gray-500 dark:text-gray-400">
           <div className="flex justify-center gap-8 text-sm">
-            <a href="https://github.com/facebook/react/tree/main/packages/react-devtools" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition-colors hover:text-primary-500">
+            <a href="https://github.com/wzc520pyfm/react-devtools-plus" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition-colors hover:text-primary-500">
               <span className="i-carbon-logo-github text-lg" />
               Star on GitHub
             </a>
-            <a href="https://react.dev" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition-colors hover:text-primary-500">
+            <a href="https://react-devtools-plus.netlify.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition-colors hover:text-primary-500">
               <span className="i-carbon-document text-lg" />
               Documentation
             </a>
@@ -256,7 +256,7 @@ export function OverviewPage({ tree }: OverviewPageProps) {
               <span>+</span>
               <kbd className="min-w-[20px] border border-gray-200 rounded-md bg-gray-50 px-1.5 py-0.5 text-center font-medium font-sans shadow-sm dark:border-gray-700 dark:bg-gray-800">⌥</kbd>
               <span>+</span>
-              <kbd className="min-w-[20px] border border-gray-200 rounded-md bg-gray-50 px-1.5 py-0.5 text-center font-medium font-sans shadow-sm dark:border-gray-700 dark:bg-gray-800">R</kbd>
+              <kbd className="min-w-[20px] border border-gray-200 rounded-md bg-gray-50 px-1.5 py-0.5 text-center font-medium font-sans shadow-sm dark:border-gray-700 dark:bg-gray-800">D</kbd>
             </div>
             <span className="text-gray-400 dark:text-gray-500">to toggle</span>
           </div>
