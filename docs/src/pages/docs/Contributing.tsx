@@ -114,7 +114,7 @@ git push origin feat/your-feature-name
 
       <div className="not-prose mt-10 flex flex-wrap gap-4">
         <a
-          href="https://github.com/nicepkg/react-devtools-plus/fork"
+          href="https://github.com/wzc520pyfm/react-devtools-plus/fork"
           target="_blank"
           rel="noopener noreferrer"
           className="bg-brand-500 hover:bg-brand-600 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm text-white font-medium transition-colors"
@@ -123,7 +123,7 @@ git push origin feat/your-feature-name
           {t('docs.contributing.cta.fork')}
         </a>
         <a
-          href="https://github.com/nicepkg/react-devtools-plus/issues"
+          href="https://github.com/wzc520pyfm/react-devtools-plus/issues"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 border border-white/10 rounded-full bg-white/5 px-6 py-3 text-sm text-white font-medium transition-colors hover:bg-white/10"

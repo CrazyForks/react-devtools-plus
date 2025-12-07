@@ -119,7 +119,7 @@ localStorage.setItem('react_devtools_editor', 'code')
               {t('docs.troubleshooting.stillStuck.description')}
               {' '}
               <a
-                href="https://github.com/nicepkg/react-devtools-plus/issues/new"
+                href="https://github.com/wzc520pyfm/react-devtools-plus/issues/new"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-brand-400 hover:text-brand-300"

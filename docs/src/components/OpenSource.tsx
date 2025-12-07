@@ -32,14 +32,14 @@ export const OpenSource: React.FC = () => {
             <Button
               withBeam
               className="w-full sm:w-auto"
-              onClick={() => window.open('https://github.com/vuejs/devtools', '_blank')}
+              onClick={() => window.open('https://github.com/wzc520pyfm/react-devtools-plus', '_blank')}
             >
               {t('openSource.primary')}
             </Button>
             <Button
               variant="secondary"
               className="w-full sm:w-auto"
-              onClick={() => window.open('https://github.com/vuejs/devtools/issues', '_blank')}
+              onClick={() => window.open('https://github.com/wzc520pyfm/react-devtools-plus/issues', '_blank')}
             >
               {t('openSource.secondary')}
             </Button>

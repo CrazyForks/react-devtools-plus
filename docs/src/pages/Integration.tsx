@@ -138,7 +138,7 @@ module.exports = {
               {i18n.language === 'en' ? '中文' : 'EN'}
             </button>
             <a
-              href="https://github.com/nicepkg/react-devtools-plus"
+              href="https://github.com/wzc520pyfm/react-devtools-plus"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden border border-white/10 rounded-lg bg-white/5 px-4 py-2 text-sm text-white font-medium transition-colors sm:inline-flex hover:bg-white/10"

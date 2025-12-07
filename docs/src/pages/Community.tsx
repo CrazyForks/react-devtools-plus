@@ -31,7 +31,7 @@ export const Community: React.FC = () => {
       icon: Star,
       title: t('communityPage.resources.star.title'),
       description: t('communityPage.resources.star.description'),
-      href: 'https://github.com/nicepkg/react-devtools-plus',
+      href: 'https://github.com/wzc520pyfm/react-devtools-plus',
       color: 'text-yellow-400',
       bgColor: 'bg-yellow-500/20',
     },
@@ -39,7 +39,7 @@ export const Community: React.FC = () => {
       icon: MessageCircle,
       title: t('communityPage.resources.issues.title'),
       description: t('communityPage.resources.issues.description'),
-      href: 'https://github.com/nicepkg/react-devtools-plus/issues',
+      href: 'https://github.com/wzc520pyfm/react-devtools-plus/issues',
       color: 'text-green-400',
       bgColor: 'bg-green-500/20',
     },
@@ -47,7 +47,7 @@ export const Community: React.FC = () => {
       icon: GitPullRequest,
       title: t('communityPage.resources.pr.title'),
       description: t('communityPage.resources.pr.description'),
-      href: 'https://github.com/nicepkg/react-devtools-plus/pulls',
+      href: 'https://github.com/wzc520pyfm/react-devtools-plus/pulls',
       color: 'text-purple-400',
       bgColor: 'bg-purple-500/20',
     },
@@ -109,7 +109,7 @@ export const Community: React.FC = () => {
               {i18n.language === 'en' ? '中文' : 'EN'}
             </button>
             <a
-              href="https://github.com/nicepkg/react-devtools-plus"
+              href="https://github.com/wzc520pyfm/react-devtools-plus"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden border border-white/10 rounded-lg bg-white/5 px-4 py-2 text-sm text-white font-medium transition-colors sm:inline-flex hover:bg-white/10"
@@ -235,7 +235,7 @@ export const Community: React.FC = () => {
             <p className="mb-8 text-slate-400">{t('communityPage.cta.description')}</p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <a
-                href="https://github.com/nicepkg/react-devtools-plus"
+                href="https://github.com/wzc520pyfm/react-devtools-plus"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-brand-500 hover:bg-brand-600 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm text-white font-medium transition-colors"
@@ -244,7 +244,7 @@ export const Community: React.FC = () => {
                 {t('communityPage.cta.star')}
               </a>
               <a
-                href="https://github.com/nicepkg/react-devtools-plus/fork"
+                href="https://github.com/wzc520pyfm/react-devtools-plus/fork"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 border border-white/10 rounded-full bg-white/5 px-6 py-3 text-sm text-white font-medium transition-colors hover:bg-white/10"

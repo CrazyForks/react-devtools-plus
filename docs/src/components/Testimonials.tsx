@@ -39,14 +39,14 @@ export const Testimonials: React.FC = () => {
               <Button
                 withBeam
                 className="w-full sm:w-auto"
-                onClick={() => window.open('https://github.com/vuejs/devtools', '_blank')}
+                onClick={() => window.open('https://github.com/wzc520pyfm/react-devtools-plus', '_blank')}
               >
                 {t('testimonials.ctaPrimary')}
               </Button>
               <Button
                 variant="secondary"
                 className="w-full sm:w-auto"
-                onClick={() => window.open('https://github.com/vuejs/devtools/issues/new', '_blank')}
+                onClick={() => window.open('https://github.com/wzc520pyfm/react-devtools-plus/issues/new', '_blank')}
               >
                 {t('testimonials.ctaSecondary')}
               </Button>

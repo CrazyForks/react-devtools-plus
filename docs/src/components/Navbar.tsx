@@ -77,7 +77,7 @@ export const Navbar: React.FC = () => {
           <Button
             variant="secondary"
             className="text-xs !px-4 !py-2"
-            onClick={() => window.open('https://github.com/nicepkg/react-devtools-plus', '_blank')}
+            onClick={() => window.open('https://github.com/wzc520pyfm/react-devtools-plus', '_blank')}
           >
             {t('common.github.view')}
           </Button>
@@ -124,7 +124,7 @@ export const Navbar: React.FC = () => {
             </Button>
             <Button
               className="mt-4 w-full"
-              onClick={() => window.open('https://github.com/nicepkg/react-devtools-plus', '_blank')}
+              onClick={() => window.open('https://github.com/wzc520pyfm/react-devtools-plus', '_blank')}
             >
               {t('common.github.view')}
             </Button>
