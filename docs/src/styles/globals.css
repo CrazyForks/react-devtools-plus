@@ -34,3 +34,22 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 }
+
+/* Spotlight flashlight animation - like a beam turning on and illuminating */
+@keyframes spotlightFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateX(30%);
+    filter: blur(60px) brightness(2);
+  }
+  40% {
+    opacity: 0.5;
+    transform: scale(0.7) translateX(10%);
+    filter: blur(20px) brightness(1.5);
+  }
+  100% {
+    opacity: 0.9;
+    transform: scale(1) translateX(0);
+    filter: blur(0) brightness(1);
+  }
+}

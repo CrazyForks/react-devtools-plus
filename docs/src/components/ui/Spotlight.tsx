@@ -8,13 +8,14 @@ interface SpotlightProps {
 export const Spotlight: React.FC<SpotlightProps> = ({ className = '', fill = 'white' }) => {
   return (
     <svg
-      className={`animate-slide-up-fade pointer-events-none absolute z-[1] h-[169%] w-[138%] opacity-0 lg:w-[84%] ${className}`}
+      className={`pointer-events-none absolute z-[1] h-[169%] w-[138%] lg:w-[84%] ${className}`}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 3787 2842"
       fill="none"
       style={{
-        animationDelay: '0.2s',
-        animationFillMode: 'forwards',
+        animation: 'spotlightFadeIn 2s cubic-bezier(0.25, 0.1, 0.25, 1) 0.3s forwards',
+        opacity: 0,
+        transformOrigin: 'top right',
       }}
     >
       <g filter="url(#filter)">

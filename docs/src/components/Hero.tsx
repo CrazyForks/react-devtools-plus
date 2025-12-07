@@ -189,7 +189,7 @@ export const Hero: React.FC = () => {
       </div>
 
       {/* Spotlight Beam - Top Right shining Bottom Left */}
-      <Spotlight className="right-0 scale-x-[-1] opacity-80 -top-40 md:right-0 md:-top-20" fill="#38bdf8" />
+      <Spotlight className="right-0 -top-40 md:right-0 md:-top-20" fill="#38bdf8" />
 
       <div className="container relative z-10 mx-auto px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-8">
