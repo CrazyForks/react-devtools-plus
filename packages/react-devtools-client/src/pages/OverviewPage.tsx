@@ -161,7 +161,7 @@ export function OverviewPage({ tree }: OverviewPageProps) {
                 DevTools
               </h1>
               <span
-                className="absolute"
+                className="absolute color-primary-400 dark:color-primary-300"
                 style={{
                   top: -2,
                   right: -24,
@@ -172,8 +172,7 @@ export function OverviewPage({ tree }: OverviewPageProps) {
                   lineHeight: 1,
                   fontSize: '24px',
                   fontWeight: 600,
-                  color: 'var(--color-primary-300)',
-                  filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.35))',
+                  userSelect: 'none',
                 }}
                 aria-label="Plus Edition"
                 title="DevTools Plus"
