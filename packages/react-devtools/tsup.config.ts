@@ -80,8 +80,35 @@ const nextEntryCommon = {
     'react-dom',
     'react-dom/client',
     'next',
+    'next/server',
   ],
   // Enable JSX transformation for React components
+  esbuildOptions(options: any) {
+    options.jsx = 'automatic'
+  },
+}
+
+// Common config for next-api entry
+const nextApiEntryCommon = {
+  entry: { 'next-api-handler': 'src/next-api-handler.ts', 'next-api': 'src/next-api.ts' },
+  dts: true,
+  ...commonConfig,
+  external: [
+    'next',
+    'next/server',
+  ],
+}
+
+// Common config for next-client entry (client components with 'use client')
+const nextClientEntryCommon = {
+  entry: { 'next-client': 'src/next-client.ts' },
+  dts: true,
+  ...commonConfig,
+  external: [
+    'react',
+    'react-dom',
+    'react-dom/client',
+  ],
   esbuildOptions(options: any) {
     options.jsx = 'automatic'
   },
@@ -177,6 +204,45 @@ export default defineConfig([
     shims: false,
     clean: false,
     dts: false,
+  },
+  // Next API entry - ESM
+  {
+    ...nextApiEntryCommon,
+    format: ['esm'],
+    shims: false,
+    clean: false,
+    banner: {
+      js: esmDirnameBanner,
+    },
+  },
+  // Next API entry - CJS
+  {
+    ...nextApiEntryCommon,
+    format: ['cjs'],
+    shims: false,
+    clean: false,
+    dts: false,
+  },
+  // Next Client entry - ESM with 'use client' banner (must be first line!)
+  {
+    ...nextClientEntryCommon,
+    format: ['esm'],
+    shims: false,
+    clean: false,
+    banner: {
+      js: `'use client';`,
+    },
+  },
+  // Next Client entry - CJS with 'use client' banner
+  {
+    ...nextClientEntryCommon,
+    format: ['cjs'],
+    shims: false,
+    clean: false,
+    dts: false,
+    banner: {
+      js: `'use client';`,
+    },
   },
   // Scan entry - bundle @react-devtools-plus/scan without resolving its types
   {

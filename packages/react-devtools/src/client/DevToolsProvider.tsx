@@ -50,10 +50,10 @@ export interface DevToolsProviderProps {
 export function DevToolsProvider({
   children,
   devToolsUrl = '/__react_devtools__',
-  enabled,
+  enabled = true,
 }: DevToolsProviderProps) {
-  // Determine if DevTools should be enabled
-  const isEnabled = enabled ?? process.env.NODE_ENV === 'development'
+  // DevTools is enabled by default (controlled by build-time bundling in production)
+  const isEnabled = enabled
 
   useEffect(() => {
     if (!isEnabled)

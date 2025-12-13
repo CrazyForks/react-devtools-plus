@@ -1,6 +1,20 @@
-import fs from 'node:fs'
-import path from 'node:path'
+/**
+ * Next.js API Route Handler for React DevTools Plus
+ *
+ * This module exports a ready-to-use API route handler that serves
+ * the DevTools client and overlay files. Users just need to create
+ * a catch-all route file with a single line of code.
+ *
+ * @example
+ * ```ts
+ * // app/__react_devtools__/[[...path]]/route.ts
+ * export { GET } from 'react-devtools-plus/next/api'
+ * ```
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
+import fs from 'fs'
+import path from 'path'
 
 // MIME types for common file extensions
 const mimeTypes: Record<string, string> = {
@@ -22,29 +36,41 @@ function getMimeType(filePath: string): string {
 }
 
 function findPackageDir(): string | null {
-  // Try multiple paths to find the package
   const possiblePaths = [
     path.join(process.cwd(), 'node_modules', 'react-devtools-plus'),
   ]
 
-  // Try to resolve from package.json
   try {
     const pkgPath = require.resolve('react-devtools-plus/package.json')
-    possiblePaths.push(path.dirname(pkgPath))
+    possiblePaths.unshift(path.dirname(pkgPath))
   }
   catch {
-    // Ignore resolution errors
+    // Ignore
   }
 
   for (const p of possiblePaths) {
     if (fs.existsSync(p)) {
-      return p
+      const pkgJsonPath = path.join(p, 'package.json')
+      if (fs.existsSync(pkgJsonPath)) {
+        try {
+          const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf-8'))
+          if (pkg.name === 'react-devtools-plus') {
+            return p
+          }
+        }
+        catch {
+          // Continue
+        }
+      }
     }
   }
 
   return null
 }
 
+/**
+ * GET handler for DevTools API routes
+ */
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ path?: string[] }> },
@@ -54,12 +80,20 @@ export async function GET(
     const pathSegments = params.path || []
     const requestPath = pathSegments.join('/')
 
+    // Detect the base path from the request URL
+    const url = new URL(request.url)
+    const fullPath = url.pathname
+    const basePath = requestPath ? fullPath.replace(`/${requestPath}`, '') : fullPath.replace(/\/$/, '')
+
     const packageDir = findPackageDir()
     if (!packageDir) {
-      return new NextResponse('react-devtools-plus package not found', { status: 404 })
+      return new NextResponse('react-devtools-plus package not found', {
+        status: 404,
+        headers: { 'Content-Type': 'text/plain' },
+      })
     }
 
-    // Handle overlay.mjs special case
+    // Handle overlay.mjs
     if (requestPath === 'overlay.mjs') {
       const overlayPaths = [
         path.join(packageDir, 'src', 'overlay', 'react-devtools-overlay.mjs'),
@@ -78,13 +112,10 @@ export async function GET(
         }
       }
 
-      return new NextResponse(`Overlay not found. Searched:\n${overlayPaths.join('\n')}`, {
-        status: 404,
-        headers: { 'Content-Type': 'text/plain' },
-      })
+      return new NextResponse('Overlay not found', { status: 404 })
     }
 
-    // Handle overlay CSS
+    // Handle overlay.css
     if (requestPath === 'overlay.css') {
       const cssPaths = [
         path.join(packageDir, 'src', 'overlay', 'react-devtools-overlay.css'),
@@ -104,16 +135,15 @@ export async function GET(
       }
     }
 
-    // Find the client directory
+    // Serve DevTools client files
     const clientDir = path.join(packageDir, 'client')
     if (!fs.existsSync(clientDir)) {
-      return new NextResponse(`DevTools client not found at ${clientDir}`, { status: 404 })
+      return new NextResponse('DevTools client not found', { status: 404 })
     }
 
-    // Determine the file to serve
     let filePath = path.join(clientDir, requestPath || 'index.html')
 
-    // If path is empty or doesn't exist as file, serve index.html (SPA fallback)
+    // SPA fallback
     if (!requestPath || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
       filePath = path.join(clientDir, 'index.html')
     }
@@ -122,8 +152,26 @@ export async function GET(
       return new NextResponse('File not found', { status: 404 })
     }
 
-    const content = fs.readFileSync(filePath)
     const mimeType = getMimeType(filePath)
+
+    // Fix relative paths in HTML using detected basePath
+    if (filePath.endsWith('.html')) {
+      let htmlContent = fs.readFileSync(filePath, 'utf-8')
+      // Replace both relative paths and hardcoded /__react_devtools__ paths
+      htmlContent = htmlContent.replace(/src="\.\/assets\//g, `src="${basePath}/assets/`)
+      htmlContent = htmlContent.replace(/href="\.\/assets\//g, `href="${basePath}/assets/`)
+      htmlContent = htmlContent.replace(/src="\/__react_devtools__\/assets\//g, `src="${basePath}/assets/`)
+      htmlContent = htmlContent.replace(/href="\/__react_devtools__\/assets\//g, `href="${basePath}/assets/`)
+      return new NextResponse(htmlContent, {
+        headers: {
+          'Content-Type': mimeType,
+          'Cache-Control': 'no-cache',
+        },
+      })
+    }
+
+    // For binary files, use Uint8Array
+    const content = new Uint8Array(fs.readFileSync(filePath))
 
     return new NextResponse(content, {
       headers: {
@@ -133,7 +181,8 @@ export async function GET(
     })
   }
   catch (error) {
-    console.error('[React DevTools] Error serving client:', error)
-    return new NextResponse('Error loading DevTools client', { status: 500 })
+    console.error('[React DevTools] API error:', error)
+    return new NextResponse('Internal error', { status: 500 })
   }
 }
+

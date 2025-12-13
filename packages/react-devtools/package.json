@@ -55,6 +55,16 @@
       "import": "./dist/next.js",
       "require": "./dist/next.cjs"
     },
+    "./next/api": {
+      "types": "./dist/next-api-handler.d.ts",
+      "import": "./dist/next-api-handler.js",
+      "require": "./dist/next-api-handler.cjs"
+    },
+    "./next/client": {
+      "types": "./dist/next-client.d.ts",
+      "import": "./dist/next-client.js",
+      "require": "./dist/next-client.cjs"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",

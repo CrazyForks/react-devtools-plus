@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import DevToolsProvider from '@/components/DevToolsProvider'
+import { DevToolsScript } from 'react-devtools-plus/next/client'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -15,7 +15,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <DevToolsProvider>{children}</DevToolsProvider>
+        {children}
+        <DevToolsScript basePath="/devtools" />
       </body>
     </html>
   )

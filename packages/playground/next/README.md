@@ -1,25 +1,10 @@
-# Next.js Playground
+# React DevTools Plus - Next.js Playground
 
-This playground demonstrates React DevTools Plus integration with Next.js (App Router).
+This is a demo project for testing React DevTools Plus integration with Next.js 15 (App Router).
 
-## Quick Start
+## Integration Steps (Only 3 Steps!)
 
-```bash
-# From the monorepo root
-pnpm install
-
-# Build the plugin first
-pnpm build
-
-# Run this playground
-pnpm --filter @react-devtools-plus/playground-next dev
-```
-
-## Integration Methods
-
-### Method 1: withReactDevTools Wrapper + DevToolsProvider (Recommended)
-
-1. Wrap your Next.js config with `withReactDevTools`:
+### Step 1: Wrap your Next.js config
 
 ```ts
 // next.config.ts
@@ -32,71 +17,52 @@ const nextConfig = {
 export default withReactDevTools(nextConfig)
 ```
 
-2. Add DevToolsProvider to your layout:
+### Step 2: Add DevToolsScript to your layout
 
 ```tsx
 // app/layout.tsx
-'use client'
-
-import { DevToolsProvider } from 'react-devtools-plus/next'
+import { DevToolsScript } from 'react-devtools-plus/next/client'
 
 export default function RootLayout({ children }) {
   return (
     <html>
       <body>
-        <DevToolsProvider>{children}</DevToolsProvider>
+        {children}
+        <DevToolsScript basePath="/devtools" />
       </body>
     </html>
   )
 }
 ```
 
-3. Create API routes to serve DevTools (see `src/app/api/devtools` in this playground for an example)
+### Step 3: Create the API route (one-line!)
 
-### Method 2: DevToolsProvider Only (Minimal Setup)
-
-For a minimal setup, just add DevToolsProvider and an API route:
-
-```tsx
-// app/layout.tsx
-import DevToolsProvider from '@/components/DevToolsProvider'
-
-export default function RootLayout({ children }) {
-  return (
-    <html>
-      <body>
-        <DevToolsProvider>{children}</DevToolsProvider>
-      </body>
-    </html>
-  )
-}
+```ts
+// app/devtools/[[...path]]/route.ts
+export { GET } from 'react-devtools-plus/next/api'
 ```
 
-## Turbopack Support
+**That's it!** No complex configuration needed.
 
-Next.js 15+ uses Turbopack by default. The integration automatically detects Turbopack and uses client-side injection.
+## Usage
 
-To run with Turbopack explicitly:
+- Press `Option(⌥) + Shift(⇧) + D` to toggle DevTools panel
+- Visit `/devtools` to open DevTools in a new tab
+- React Scan automatically detects renders
+
+## Running the Playground
 
 ```bash
-pnpm --filter @react-devtools-plus/playground-next dev:turbo
+pnpm dev
 ```
 
-## Accessing DevTools
-
-1. **Keyboard Shortcut**: Press `Option/Alt + Shift + D` to toggle the DevTools panel (when overlay is visible)
-2. **URL**: Navigate to `http://localhost:3000/api/devtools` to view the DevTools client
+Open http://localhost:3000
 
 ## Features
 
-- Component Tree inspection
-- React Scan integration (render detection)
-- Open in Editor support
-- Timeline profiling
-- Asset inspection
-
-## Notes
-
-- Next.js uses its own dev server (not webpack-dev-server), so DevTools are served via API routes
-- The overlay is loaded dynamically after React hydration
-- SSR/hydration is fully supported with proper "use client" directives
+- ✅ Next.js 15 App Router
+- ✅ React 19
+- ✅ Turbopack support
+- ✅ React Scan integration
+- ✅ DevTools overlay panel
+- ✅ Component tree inspection

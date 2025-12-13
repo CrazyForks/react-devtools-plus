@@ -64,8 +64,8 @@ export default function Home() {
           <p style={{ marginTop: '0.5rem' }}>
             Or visit
             {' '}
-            <a href="/api/devtools" target="_blank" rel="noreferrer">
-              /api/devtools
+            <a href="/devtools" target="_blank" rel="noreferrer">
+              /devtools
             </a>
             {' '}
             to open in a new tab
