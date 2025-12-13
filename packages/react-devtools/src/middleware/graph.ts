@@ -155,10 +155,96 @@ function processModules(
  * 设置 Webpack 编译器钩子来收集模块依赖图
  */
 export function setupWebpackModuleGraph(compiler: any, root: string): void {
+  const fileExtPattern = /\.(?:tsx?|jsx?|vue|json|css|scss|less|html)(?:$|\?)/
+
+  // Use compilation hook to directly access modules (works better with Next.js)
+  compiler.hooks.compilation.tap('react-devtools-graph', (compilation: any) => {
+    // Use afterOptimizeModules hook to get the final module list
+    compilation.hooks.afterOptimizeModules?.tap('react-devtools-graph', (compilationModules: any) => {
+      try {
+        const modules: ModuleInfo[] = []
+        const moduleMap = new Map<string, ModuleInfo>()
+
+        // Iterate through all modules in the compilation
+        for (const mod of compilationModules) {
+          // Get the resource path (actual file path)
+          const resource = mod.resource || mod.userRequest || ''
+          if (!resource)
+            continue
+
+          // Filter to only include relevant file types
+          if (!fileExtPattern.test(resource))
+            continue
+
+          // Skip node_modules by default for performance
+          const normalizedPath = resource.replace(/\\/g, '/')
+
+          // Get module identifier
+          const id = normalizedPath
+
+          if (!moduleMap.has(id)) {
+            moduleMap.set(id, {
+              id,
+              deps: [],
+              virtual: !mod.resource,
+            })
+          }
+
+          // Collect dependencies
+          if (mod.dependencies) {
+            for (const dep of mod.dependencies) {
+              const depModule = compilation.moduleGraph?.getModule?.(dep)
+              if (depModule) {
+                const depResource = depModule.resource || depModule.userRequest || ''
+                if (depResource && fileExtPattern.test(depResource)) {
+                  const depId = depResource.replace(/\\/g, '/')
+                  const currentModule = moduleMap.get(id)!
+                  if (!currentModule.deps.includes(depId)) {
+                    currentModule.deps.push(depId)
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Convert map to array
+        moduleMap.forEach((mod) => {
+          modules.push(mod)
+        })
+
+        if (modules.length > 0) {
+          webpackModuleGraph = { modules, root }
+
+          // Write to file for Next.js API routes
+          try {
+            const graphDir = path.join(root, '.next', 'cache', 'react-devtools')
+            if (!fs.existsSync(graphDir)) {
+              fs.mkdirSync(graphDir, { recursive: true })
+            }
+            const graphPath = path.join(graphDir, 'module-graph.json')
+            fs.writeFileSync(graphPath, JSON.stringify(webpackModuleGraph, null, 2))
+          }
+          catch {
+            // Silently ignore write errors
+          }
+        }
+      }
+      catch (error) {
+        console.error('[React DevTools] Failed to collect module graph from compilation:', error)
+      }
+    })
+  })
+
+  // Also use done hook as fallback for stats-based collection
   compiler.hooks.done.tap('react-devtools-graph', (stats: any) => {
+    // Skip if we already have modules from compilation hook
+    if (webpackModuleGraph.modules.length > 0) {
+      return
+    }
+
     try {
       const modules: ModuleInfo[] = []
-      const fileExtPattern = /\.(?:tsx?|jsx?|vue|json|css|scss|less|html)(?:$|\?)/
 
       // Handle multi-compiler stats (Next.js uses multiple compilers)
       const statsArray = stats.stats || [stats]
@@ -194,19 +280,21 @@ export function setupWebpackModuleGraph(compiler: any, root: string): void {
         }
       }
 
-      webpackModuleGraph = { modules, root }
+      if (modules.length > 0) {
+        webpackModuleGraph = { modules, root }
 
-      // Write module graph to file for Next.js API routes to read
-      try {
-        const graphDir = path.join(root, '.next', 'cache', 'react-devtools')
-        if (!fs.existsSync(graphDir)) {
-          fs.mkdirSync(graphDir, { recursive: true })
+        // Write module graph to file for Next.js API routes to read
+        try {
+          const graphDir = path.join(root, '.next', 'cache', 'react-devtools')
+          if (!fs.existsSync(graphDir)) {
+            fs.mkdirSync(graphDir, { recursive: true })
+          }
+          const graphPath = path.join(graphDir, 'module-graph.json')
+          fs.writeFileSync(graphPath, JSON.stringify(webpackModuleGraph, null, 2))
         }
-        const graphPath = path.join(graphDir, 'module-graph.json')
-        fs.writeFileSync(graphPath, JSON.stringify(webpackModuleGraph, null, 2))
-      }
-      catch (writeError) {
-        // Silently ignore write errors - this is optional for Next.js
+        catch {
+          // Silently ignore write errors
+        }
       }
     }
     catch (error) {
