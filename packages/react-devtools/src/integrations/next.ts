@@ -425,8 +425,8 @@ function createNextDevToolsPlugin(
         // set up the middleware to be used by Next.js custom server
 
         // Store middleware for later use
-        ;(global as any).__REACT_DEVTOOLS_MIDDLEWARE__ = devToolsMiddleware
-        ;(global as any).__REACT_DEVTOOLS_OVERLAY_MIDDLEWARE__ = overlayMiddleware
+        ;(globalThis as any).__REACT_DEVTOOLS_MIDDLEWARE__ = devToolsMiddleware
+        ;(globalThis as any).__REACT_DEVTOOLS_OVERLAY_MIDDLEWARE__ = overlayMiddleware
 
         // Print ready message
         compiler.hooks.afterEnvironment.tap('ReactDevToolsNextPlugin', () => {

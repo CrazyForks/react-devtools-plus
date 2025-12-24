@@ -11,9 +11,9 @@ function Counter() {
         <strong>{count}</strong>
       </p>
       <div className="button-group">
-        <button onClick={() => setCount(c => c - 1)}>Decrease</button>
-        <button onClick={() => setCount(c => c + 1)}>Increase</button>
-        <button onClick={() => setCount(0)}>Reset</button>
+        <button type="button" onClick={() => setCount(c => c - 1)}>Decrease</button>
+        <button type="button" onClick={() => setCount(c => c + 1)}>Increase</button>
+        <button type="button" onClick={() => setCount(0)}>Reset</button>
       </div>
     </div>
   )
@@ -45,13 +45,13 @@ function TodoList() {
           onKeyDown={e => e.key === 'Enter' && addTodo()}
           placeholder="Add a new todo..."
         />
-        <button onClick={addTodo}>Add</button>
+        <button type="button" onClick={addTodo}>Add</button>
       </div>
       <ul>
         {todos.map((todo, index) => (
           <li key={index}>
             <span>{todo}</span>
-            <button onClick={() => removeTodo(index)}>×</button>
+            <button type="button" onClick={() => removeTodo(index)}>×</button>
           </li>
         ))}
       </ul>

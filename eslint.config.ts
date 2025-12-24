@@ -46,6 +46,9 @@ export default antfu({
     'packages/react-devtools-overlay/dist/*',
     'packages/react-devtools-client/dist/*',
     'packages/playground/**/dist/*',
+    // 忽略 umi 框架自动生成的文件
+    '**/.umi/**',
+    '**/.umi-production/**',
     'eslint.config.js',
     // 忽略文档文件中的代码块 lint
     '**/*.md/**',

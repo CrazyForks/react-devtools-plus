@@ -6,7 +6,7 @@
  */
 'use client'
 
-export { DevToolsScript } from './client/DevToolsScript.js'
-export type { DevToolsScriptProps } from './client/DevToolsScript.js'
 export { DevToolsProvider } from './client/DevToolsProvider.js'
 export type { DevToolsProviderProps } from './client/DevToolsProvider.js'
+export { DevToolsScript } from './client/DevToolsScript.js'
+export type { DevToolsScriptProps } from './client/DevToolsScript.js'

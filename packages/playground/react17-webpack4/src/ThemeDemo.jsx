@@ -19,7 +19,7 @@ export function ThemeDemo() {
       <div className="card" style={{ marginBottom: '24px' }}>
         <h2 className="card__title">🎨 Theme Controls</h2>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
-          <button className="button" onClick={toggleMode}>
+          <button type="button" className="button" onClick={toggleMode}>
             {mode === 'dark' ? '☀️ Switch to Light' : '🌙 Switch to Dark'}
           </button>
           <span className="webpack-badge">
@@ -33,9 +33,9 @@ export function ThemeDemo() {
       <div className="card" style={{ marginBottom: '24px' }}>
         <h2 className="card__title">🔘 Button Component</h2>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
-          <button className="button">Default</button>
-          <button className="button">Primary</button>
-          <button className="button button--secondary">Secondary</button>
+          <button type="button" className="button">Default</button>
+          <button type="button" className="button">Primary</button>
+          <button type="button" className="button button--secondary">Secondary</button>
         </div>
       </div>
 

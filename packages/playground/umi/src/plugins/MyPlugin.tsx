@@ -11,144 +11,6 @@ interface PluginState {
   renderCount: number
 }
 
-export default function MyPlugin() {
-  const [state, setState] = useState<PluginState>({
-    routeHistory: [],
-    componentCount: 0,
-    renderCount: 0,
-  })
-
-  const [activeTab, setActiveTab] = useState<'routes' | 'stats' | 'about'>(
-    'routes',
-  )
-
-  useEffect(() => {
-    // Simulate tracking route history
-    const currentPath = window.location.pathname
-    setState(prev => ({
-      ...prev,
-      routeHistory: [...prev.routeHistory.slice(-4), currentPath],
-      renderCount: prev.renderCount + 1,
-    }))
-
-    // Simulate component counting
-    const updateComponentCount = () => {
-      const elements = document.querySelectorAll('[data-reactroot] *')
-      setState(prev => ({
-        ...prev,
-        componentCount: elements.length,
-      }))
-    }
-
-    updateComponentCount()
-    const interval = setInterval(updateComponentCount, 2000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  const routes: RouteInfo[] = [
-    { path: '/', component: 'pages/index' },
-    { path: '/about', component: 'pages/about' },
-    { path: '/theme', component: 'pages/theme' },
-    { path: '/counter', component: 'pages/counter' },
-  ]
-
-  return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={styles.title}>Umi DevTools Plugin</h2>
-        <p style={styles.subtitle}>Custom plugin for Umi integration</p>
-      </div>
-
-      <div style={styles.tabs}>
-        {(['routes', 'stats', 'about'] as const).map(tab => (
-          <button
-            key={tab}
-            style={{
-              ...styles.tab,
-              ...(activeTab === tab ? styles.activeTab : {}),
-            }}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
-        ))}
-      </div>
-
-      <div style={styles.content}>
-        {activeTab === 'routes' && (
-          <div>
-            <h3 style={styles.sectionTitle}>Registered Routes</h3>
-            <ul style={styles.list}>
-              {routes.map(route => (
-                <li
-                  key={route.path}
-                  style={{
-                    ...styles.listItem,
-                    ...(window.location.pathname === route.path
-                      ? styles.activeRoute
-                      : {}),
-                  }}
-                >
-                  <span style={styles.routePath}>{route.path}</span>
-                  <span style={styles.routeComponent}>{route.component}</span>
-                </li>
-              ))}
-            </ul>
-
-            <h3 style={styles.sectionTitle}>Route History</h3>
-            <ul style={styles.list}>
-              {state.routeHistory.map((path, index) => (
-                <li key={index} style={styles.historyItem}>
-                  {path}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {activeTab === 'stats' && (
-          <div>
-            <h3 style={styles.sectionTitle}>Application Stats</h3>
-            <div style={styles.statsGrid}>
-              <div style={styles.statCard}>
-                <span style={styles.statValue}>{routes.length}</span>
-                <span style={styles.statLabel}>Routes</span>
-              </div>
-              <div style={styles.statCard}>
-                <span style={styles.statValue}>{state.componentCount}</span>
-                <span style={styles.statLabel}>DOM Elements</span>
-              </div>
-              <div style={styles.statCard}>
-                <span style={styles.statValue}>{state.renderCount}</span>
-                <span style={styles.statLabel}>Plugin Renders</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'about' && (
-          <div>
-            <h3 style={styles.sectionTitle}>About This Plugin</h3>
-            <p style={styles.paragraph}>
-              This is a custom DevTools plugin for the Umi integration
-              playground. It demonstrates how to create plugins for React
-              DevTools Plus.
-            </p>
-            <h4 style={styles.subTitle}>Features:</h4>
-            <ul style={styles.featureList}>
-              <li>View registered routes</li>
-              <li>Track route history</li>
-              <li>Monitor application stats</li>
-              <li>Custom UI components</li>
-            </ul>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
 const styles: Record<string, React.CSSProperties> = {
   container: {
     padding: '16px',
@@ -277,4 +139,143 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1.8,
     color: '#555',
   },
+}
+
+export default function MyPlugin() {
+  const [state, setState] = useState<PluginState>({
+    routeHistory: [],
+    componentCount: 0,
+    renderCount: 0,
+  })
+
+  const [activeTab, setActiveTab] = useState<'routes' | 'stats' | 'about'>(
+    'routes',
+  )
+
+  useEffect(() => {
+    // Simulate tracking route history
+    const currentPath = window.location.pathname
+    setState(prev => ({
+      ...prev,
+      routeHistory: [...prev.routeHistory.slice(-4), currentPath],
+      renderCount: prev.renderCount + 1,
+    }))
+
+    // Simulate component counting
+    const updateComponentCount = () => {
+      const elements = document.querySelectorAll('[data-reactroot] *')
+      setState(prev => ({
+        ...prev,
+        componentCount: elements.length,
+      }))
+    }
+
+    updateComponentCount()
+    const interval = setInterval(updateComponentCount, 2000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  const routes: RouteInfo[] = [
+    { path: '/', component: 'pages/index' },
+    { path: '/about', component: 'pages/about' },
+    { path: '/theme', component: 'pages/theme' },
+    { path: '/counter', component: 'pages/counter' },
+  ]
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.header}>
+        <h2 style={styles.title}>Umi DevTools Plugin</h2>
+        <p style={styles.subtitle}>Custom plugin for Umi integration</p>
+      </div>
+
+      <div style={styles.tabs}>
+        {(['routes', 'stats', 'about'] as const).map(tab => (
+          <button
+            type="button"
+            key={tab}
+            style={{
+              ...styles.tab,
+              ...(activeTab === tab ? styles.activeTab : {}),
+            }}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      <div style={styles.content}>
+        {activeTab === 'routes' && (
+          <div>
+            <h3 style={styles.sectionTitle}>Registered Routes</h3>
+            <ul style={styles.list}>
+              {routes.map(route => (
+                <li
+                  key={route.path}
+                  style={{
+                    ...styles.listItem,
+                    ...(window.location.pathname === route.path
+                      ? styles.activeRoute
+                      : {}),
+                  }}
+                >
+                  <span style={styles.routePath}>{route.path}</span>
+                  <span style={styles.routeComponent}>{route.component}</span>
+                </li>
+              ))}
+            </ul>
+
+            <h3 style={styles.sectionTitle}>Route History</h3>
+            <ul style={styles.list}>
+              {state.routeHistory.map((path, index) => (
+                <li key={index} style={styles.historyItem}>
+                  {path}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {activeTab === 'stats' && (
+          <div>
+            <h3 style={styles.sectionTitle}>Application Stats</h3>
+            <div style={styles.statsGrid}>
+              <div style={styles.statCard}>
+                <span style={styles.statValue}>{routes.length}</span>
+                <span style={styles.statLabel}>Routes</span>
+              </div>
+              <div style={styles.statCard}>
+                <span style={styles.statValue}>{state.componentCount}</span>
+                <span style={styles.statLabel}>DOM Elements</span>
+              </div>
+              <div style={styles.statCard}>
+                <span style={styles.statValue}>{state.renderCount}</span>
+                <span style={styles.statLabel}>Plugin Renders</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'about' && (
+          <div>
+            <h3 style={styles.sectionTitle}>About This Plugin</h3>
+            <p style={styles.paragraph}>
+              This is a custom DevTools plugin for the Umi integration
+              playground. It demonstrates how to create plugins for React
+              DevTools Plus.
+            </p>
+            <h4 style={styles.subTitle}>Features:</h4>
+            <ul style={styles.featureList}>
+              <li>View registered routes</li>
+              <li>Track route history</li>
+              <li>Monitor application stats</li>
+              <li>Custom UI components</li>
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }

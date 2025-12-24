@@ -7,7 +7,7 @@ function App() {
     <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
       <h1>My DevTools Playground</h1>
       <div className="card">
-        <button onClick={() => setCount(count => count + 1)}>
+        <button type="button" onClick={() => setCount(count => count + 1)}>
           count is
           {' '}
           {count}

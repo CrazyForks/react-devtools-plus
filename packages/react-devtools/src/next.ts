@@ -41,4 +41,3 @@ export type { ReactDevToolsPluginOptions } from './config/types.js'
 
 // Default export
 export default withReactDevTools
-

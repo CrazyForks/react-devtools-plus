@@ -31,6 +31,7 @@ export default function Home() {
           <p>Track button clicks and observe state changes in DevTools.</p>
           <div style={{ marginTop: '1rem' }}>
             <button
+              type="button"
               className="button"
               onClick={() => setClickCount(c => c + 1)}
             >

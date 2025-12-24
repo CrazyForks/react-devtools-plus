@@ -18,15 +18,25 @@ declare global {
 
 export function DevToolsScript({ basePath = '/__react_devtools__', enabled = true }: DevToolsScriptProps = {}) {
   useEffect(() => {
-    if (!enabled || typeof window === 'undefined') return
+    if (!enabled || typeof window === 'undefined')
+      return
 
     // Initialize DevTools hook
     if (!window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
       const renderers = new Map()
       ;(window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
-        __IS_OUR_MOCK__: true, checkDCE() {}, supportsFiber: true, renderers,
-        onScheduleFiberRoot() {}, onCommitFiberRoot() {}, onCommitFiberUnmount() {},
-        inject(renderer: any) { const id = Math.random().toString(36).slice(2); renderers.set(id, renderer); return id },
+        __IS_OUR_MOCK__: true,
+        checkDCE() {},
+        supportsFiber: true,
+        renderers,
+        onScheduleFiberRoot() {},
+        onCommitFiberRoot() {},
+        onCommitFiberUnmount() {},
+        inject(renderer: any) {
+          const id = Math.random().toString(36).slice(2)
+          renderers.set(id, renderer)
+          return id
+        },
       }
     }
 
@@ -39,23 +49,35 @@ export function DevToolsScript({ basePath = '/__react_devtools__', enabled = tru
         try {
           const ReactDOMClient = await import('react-dom/client')
           ;(window as any).ReactDOM = { ...ReactDOM, createRoot: ReactDOMClient.createRoot, hydrateRoot: ReactDOMClient.hydrateRoot }
-        } catch {}
+        }
+        catch {}
         ;(window as any).__REACT_DEVTOOLS_GLOBALS_READY__ = true
         window.dispatchEvent(new CustomEvent('react-devtools-globals-ready'))
-      } catch (err) { console.warn('[React DevTools] Failed to setup globals:', err) }
+      }
+      catch (err) {
+        console.warn('[React DevTools] Failed to setup globals:', err)
+      }
     }
 
     function loadOverlay() {
       // Don't add trailing slash - Next.js handles it better without
       ;(window as any).__REACT_DEVTOOLS_CONFIG__ = { ...(window as any).__REACT_DEVTOOLS_CONFIG__, clientUrl: basePath }
       if (!document.getElementById('react-devtools-overlay-styles')) {
-        const link = document.createElement('link'); link.id = 'react-devtools-overlay-styles'; link.rel = 'stylesheet'; link.href = `${basePath}/overlay.css`; document.head.appendChild(link)
+        const link = document.createElement('link')
+        link.id = 'react-devtools-overlay-styles'
+        link.rel = 'stylesheet'
+        link.href = `${basePath}/overlay.css`
+        document.head.appendChild(link)
       }
-      const script = document.createElement('script'); script.type = 'module'; script.src = `${basePath}/overlay.mjs`; document.body.appendChild(script)
+      const script = document.createElement('script')
+      script.type = 'module'
+      script.src = `${basePath}/overlay.mjs`
+      document.body.appendChild(script)
     }
 
     setupGlobals()
-    if ((window as any).__REACT_DEVTOOLS_GLOBALS_READY__) loadOverlay()
+    if ((window as any).__REACT_DEVTOOLS_GLOBALS_READY__)
+      loadOverlay()
     else window.addEventListener('react-devtools-globals-ready', loadOverlay, { once: true })
   }, [basePath, enabled])
 
