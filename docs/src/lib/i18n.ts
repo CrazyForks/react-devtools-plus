@@ -386,6 +386,55 @@ const resources = {
           },
           getStarted: 'Get Started',
           exploreFeatures: 'Explore Features',
+          playground: {
+            title: 'Try Online',
+            description: 'Explore our integration examples directly in StackBlitz. No installation needed—just open and start experimenting.',
+            tryIt: 'Open',
+            table: {
+              integration: 'Integration',
+              description: 'Description',
+              tags: 'Stack',
+              action: '',
+            },
+            items: [
+              {
+                name: 'React 18 + Vite',
+                description: 'Standard React 18 setup with Vite bundler',
+                url: 'https://stackblitz.com/edit/vitejs-vite-r4b8unpu',
+                tags: ['React 18', 'Vite'],
+              },
+              {
+                name: 'React 19 + Vite',
+                description: 'Latest React 19 with new features',
+                url: 'https://stackblitz.com/edit/vitejs-vite-xfyg6rau',
+                tags: ['React 19', 'Vite'],
+              },
+              {
+                name: 'React + Webpack',
+                description: 'Classic Webpack 5 bundler setup',
+                url: '#',
+                tags: ['React 18', 'Webpack 5'],
+              },
+              {
+                name: 'Next.js',
+                description: 'Full-stack React framework integration',
+                url: '#',
+                tags: ['Next.js', 'React 18'],
+              },
+              {
+                name: 'Umi',
+                description: 'Enterprise React framework by Ant Group',
+                url: 'https://stackblitz.com/~/github.com/wzc520pyfm/react-devtools-plus-umi-example',
+                tags: ['Umi 4', 'React 18'],
+              },
+              {
+                name: 'React 17 + Webpack 4',
+                description: 'Legacy setup for older projects',
+                url: '#',
+                tags: ['React 17', 'Webpack 4'],
+              },
+            ],
+          },
         },
         installation: {
           title: 'Installation',
@@ -1293,6 +1342,55 @@ const resources = {
           },
           getStarted: '开始使用',
           exploreFeatures: '探索功能',
+          playground: {
+            title: '在线试用',
+            description: '在 StackBlitz 中直接体验我们的集成示例。无需安装——打开即可开始探索。',
+            tryIt: '打开',
+            table: {
+              integration: '集成方式',
+              description: '描述',
+              tags: '技术栈',
+              action: '',
+            },
+            items: [
+              {
+                name: 'React 18 + Vite',
+                description: '使用 Vite 构建工具的标准 React 18 配置',
+                url: 'https://stackblitz.com/edit/vitejs-vite-r4b8unpu',
+                tags: ['React 18', 'Vite'],
+              },
+              {
+                name: 'React 19 + Vite',
+                description: '最新 React 19 及其新特性',
+                url: 'https://stackblitz.com/edit/vitejs-vite-xfyg6rau',
+                tags: ['React 19', 'Vite'],
+              },
+              {
+                name: 'React + Webpack',
+                description: '经典 Webpack 5 构建工具配置',
+                url: '#',
+                tags: ['React 18', 'Webpack 5'],
+              },
+              {
+                name: 'Next.js',
+                description: '全栈 React 框架集成',
+                url: '#',
+                tags: ['Next.js', 'React 18'],
+              },
+              {
+                name: 'Umi',
+                description: '蚂蚁集团企业级 React 框架',
+                url: 'https://stackblitz.com/~/github.com/wzc520pyfm/react-devtools-plus-umi-example',
+                tags: ['Umi 4', 'React 18'],
+              },
+              {
+                name: 'React 17 + Webpack 4',
+                description: '适用于旧项目的传统配置',
+                url: '#',
+                tags: ['React 17', 'Webpack 4'],
+              },
+            ],
+          },
         },
         installation: {
           title: '安装',

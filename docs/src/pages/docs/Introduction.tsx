@@ -1,7 +1,14 @@
-import { ArrowRight, CheckCircle, Zap } from 'lucide-react'
+import { ArrowRight, CheckCircle, ExternalLink, Zap } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+
+interface PlaygroundItem {
+  name: string
+  description: string
+  url: string
+  tags: string[]
+}
 
 export const Introduction: React.FC = () => {
   const { t } = useTranslation()
@@ -52,6 +59,58 @@ export const Introduction: React.FC = () => {
             <p className="text-sm text-slate-400">{feature.description}</p>
           </div>
         ))}
+      </div>
+
+      {/* Online Playground Section */}
+      <h2 className="mb-4 mt-10 text-2xl text-white font-bold">{t('docs.introduction.playground.title')}</h2>
+      <p className="mb-6 text-slate-300 leading-relaxed">
+        {t('docs.introduction.playground.description')}
+      </p>
+
+      <div className="not-prose overflow-hidden border border-white/10 rounded-xl">
+        <table className="w-full text-left text-sm">
+          <thead className="border-b border-white/10 bg-white/5">
+            <tr>
+              <th className="px-4 py-3 text-white font-semibold">{t('docs.introduction.playground.table.integration')}</th>
+              <th className="hidden px-4 py-3 text-white font-semibold sm:table-cell">{t('docs.introduction.playground.table.description')}</th>
+              <th className="px-4 py-3 text-white font-semibold">{t('docs.introduction.playground.table.tags')}</th>
+              <th className="px-4 py-3 text-right text-white font-semibold">{t('docs.introduction.playground.table.action')}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {(t('docs.introduction.playground.items', { returnObjects: true }) as PlaygroundItem[]).map((item, idx) => (
+              <tr key={idx} className="transition-colors hover:bg-white/5">
+                <td className="px-4 py-3">
+                  <span className="text-white font-medium">{item.name}</span>
+                </td>
+                <td className="hidden px-4 py-3 text-slate-400 sm:table-cell">{item.description}</td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-wrap gap-1">
+                    {item.tags.map((tag, tagIdx) => (
+                      <span
+                        key={tagIdx}
+                        className="bg-brand-500/20 text-brand-300 inline-block rounded-full px-2 py-0.5 text-xs"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-brand-500 hover:bg-brand-600 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-white font-medium transition-colors"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    {t('docs.introduction.playground.tryIt')}
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <div className="not-prose mt-10 flex flex-wrap gap-4">
