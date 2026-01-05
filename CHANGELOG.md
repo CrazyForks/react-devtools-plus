@@ -1,7 +1,7 @@
 # Changelog
 
 
-## v0.6.0...main
+## v0.6.1...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.6.0...main)
 
