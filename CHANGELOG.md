@@ -1,9 +1,21 @@
 # Changelog
 
 
+## v0.6.3...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.6.3...main)
+
+### 🐛 Bug Fixes
+
+- Update @babel/preset-typescript configuration to allow declare fields in multiple webpack configurations ([#14](https://github.com/wzc520pyfm/react-devtools-plus/pull/14))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.6.2...main
 
-[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.6.1...main)
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.6.3...main)
 
 ### 🐛 Bug Fixes
 
@@ -19,7 +31,7 @@
 
 ## v0.6.1...main
 
-[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.6.0...main)
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.6.1...main)
 
 ### 🚀 Features
 
