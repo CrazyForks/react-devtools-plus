@@ -3,8 +3,35 @@
  * 插件配置类型定义
  */
 
+import type {
+  PluginExtendConfig as ApiPluginExtendConfig,
+  DevToolsPluginInstance as ApiPluginInstance,
+  ResolvedPluginConfig as ApiResolvedConfig,
+} from '@react-devtools-plus/api'
 import type { ReactDevtoolsScanOptions } from '@react-devtools-plus/scan'
 import type { ComponentType } from 'react'
+
+// Local type definitions (to avoid circular dependency during build)
+// These match the types in @react-devtools-plus/api
+type InjectFunction = (html: string, content: string) => string
+type InjectPosition = 'head' | 'head-prepend' | 'body' | 'body-prepend' | 'idle' | InjectFunction
+
+interface NormalizedInjectConfig {
+  target: 'head' | 'body'
+  position: 'before' | 'after' | 'prepend' | 'append'
+  selector?: string
+  selectLast?: boolean
+  idle?: boolean
+  fallback: 'prepend' | 'append'
+  injectFn?: InjectFunction
+}
+
+interface HtmlInjectConfig {
+  tag: string
+  attrs?: Record<string, string | boolean>
+  children?: string
+  inject?: InjectPosition
+}
 
 /**
  * Source path mode for code location injection
@@ -231,10 +258,69 @@ export interface DevToolsPlugin {
 }
 
 /**
- * User Plugin - supports both new and legacy formats
- * 用户插件 - 支持新旧两种格式
+ * Plugin instance from defineDevToolsPlugin (new callable API)
+ * 来自 defineDevToolsPlugin 的插件实例（新的可调用 API）
  */
-export type UserPlugin = DevToolsPlugin | LegacyUserPlugin
+export interface DevToolsPluginInstance {
+  __isDevToolsPlugin: true
+  __pluginName: string
+  (): ResolvedInstanceConfig
+  (options: Record<string, any>): ResolvedInstanceConfig
+}
+
+/**
+ * Resolved config from plugin instance
+ * 从插件实例解析的配置
+ */
+export interface ResolvedInstanceConfig {
+  name: string
+  title: string
+  icon?: string
+  view: {
+    type: 'component' | 'iframe'
+    src: string | {
+      packageName: string
+      exportName: string
+      bundlePath: string
+    }
+  }
+  host?: {
+    src: string
+    inject?: InjectPosition
+    injectConfig?: NormalizedInjectConfig
+  }
+  server?: {
+    middleware?: string
+  }
+  /** HTML content to inject (importmap, link, meta, etc.) */
+  htmlInject?: HtmlInjectConfig[]
+  options?: Record<string, any>
+}
+
+/**
+ * Plugin extend configuration (local alias)
+ * 插件扩展配置（本地别名）
+ */
+export type PluginExtendConfig<TOptions = Record<string, any>> = ApiPluginExtendConfig<TOptions>
+
+/**
+ * User Plugin - supports new callable API, object format, extend format, and legacy formats
+ * 用户插件 - 支持新的可调用 API、对象格式、扩展格式和旧格式
+ *
+ * - ApiPluginInstance / DevToolsPluginInstance: callable plugin factory (e.g., SamplePlugin)
+ * - ApiResolvedConfig / ResolvedInstanceConfig: result of calling plugin factory (e.g., SamplePlugin())
+ * - PluginExtendConfig: extend format with overrides (e.g., { extend: SamplePlugin, name: 'custom' })
+ * - DevToolsPlugin: object format with name, title, view
+ * - LegacyUserPlugin: old format with view.title
+ */
+export type UserPlugin
+  = | ApiPluginInstance
+    | ApiResolvedConfig
+    | DevToolsPluginInstance
+    | ResolvedInstanceConfig
+    | PluginExtendConfig
+    | DevToolsPlugin
+    | LegacyUserPlugin
 
 // ============================================================================
 // Serialized Plugin Types (for transmission to browser)
@@ -276,6 +362,32 @@ export interface SerializedIframeView {
 export type SerializedView = SerializedComponentView | SerializedIframeView
 
 /**
+ * Serialized host config
+ * 序列化的宿主配置
+ */
+export interface SerializedHostConfig {
+  src: string
+  /**
+   * Simple inject position for backward compatibility
+   * 简单注入位置，用于向后兼容
+   */
+  inject: 'head' | 'body' | 'idle'
+  /**
+   * Full injection configuration (computed during normalization)
+   * 完整的注入配置（在规范化期间计算）
+   */
+  injectConfig: NormalizedInjectConfig
+}
+
+/**
+ * Serialized server config
+ * 序列化的服务端配置
+ */
+export interface SerializedServerConfig {
+  middleware?: string
+}
+
+/**
  * Serialized plugin (for JSON transmission)
  * 序列化的插件（用于 JSON 传输）
  */
@@ -284,6 +396,14 @@ export interface SerializedPlugin {
   title: string
   icon?: string
   view: SerializedView
+  /** Host script configuration (for injection into host app) */
+  host?: SerializedHostConfig
+  /** Server middleware configuration (for dev server) */
+  server?: SerializedServerConfig
+  /** HTML content to inject (importmap, link, meta, etc.) */
+  htmlInject?: HtmlInjectConfig[]
+  /** Plugin options (passed by user) */
+  options?: Record<string, any>
 }
 
 /**
@@ -492,6 +612,28 @@ export interface ReactDevToolsPluginOptions {
  */
 export interface ResolvedPluginConfig {
   plugins: SerializedPlugin[]
+  /**
+   * Plugins that have host scripts to inject
+   * 需要注入宿主脚本的插件
+   */
+  hostPlugins: Array<{
+    name: string
+    src: string
+    /** @deprecated Use injectConfig for full control */
+    inject: 'head' | 'body' | 'idle'
+    /** Full injection configuration */
+    injectConfig: NormalizedInjectConfig
+    options?: Record<string, any>
+  }>
+  /**
+   * Plugins that have server middleware
+   * 有服务端中间件的插件
+   */
+  serverPlugins: Array<{
+    name: string
+    middleware: string
+    options?: Record<string, any>
+  }>
   appendTo: string | RegExp | undefined
   enabledEnvironments: EnabledEnvironments
   /**

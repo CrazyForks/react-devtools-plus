@@ -7,7 +7,8 @@
     ".": {
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
-    }
+    },
+    "./src/*": "./src/*"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -22,8 +23,10 @@
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
   },
+  "dependencies": {
+    "@react-devtools-plus/api": "workspace:^"
+  },
   "devDependencies": {
-    "@react-devtools-plus/api": "workspace:^",
     "@types/react": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "react": "catalog:",

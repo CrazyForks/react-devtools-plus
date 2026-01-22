@@ -442,6 +442,9 @@ importers:
       '@babel/preset-typescript':
         specifier: ^7.28.4
         version: 7.28.5(@babel/core@7.28.5)
+      '@react-devtools-plus/sample-plugin':
+        specifier: workspace:*
+        version: link:../sample-plugin
       babel-loader:
         specifier: ^9.2.1
         version: 9.2.1(@babel/core@7.28.5)(webpack@5.103.0)
@@ -606,10 +609,11 @@ importers:
         version: 7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.22.1)(sass@1.94.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/playground/sample-plugin:
-    devDependencies:
+    dependencies:
       '@react-devtools-plus/api':
         specifier: workspace:^
         version: link:../../react-devtools-api
+    devDependencies:
       '@types/react':
         specifier: 'catalog:'
         version: 18.3.27
