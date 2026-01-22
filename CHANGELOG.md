@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.9.0...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.0...main)
+
+### 🚀 Features
+
+- Support rpc for plugin ([#18](https://github.com/wzc520pyfm/react-devtools-plus/pull/18))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.8.0...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.8.0...main)
