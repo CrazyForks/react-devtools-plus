@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.9.1...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.1...main)
+
+### 🚀 Features
+
+- Implement local plugin host script and enhance plugin ([#19](https://github.com/wzc520pyfm/react-devtools-plus/pull/19))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.9.0...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.9.0...main)
