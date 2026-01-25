@@ -49,13 +49,17 @@ export function createPluginFileMiddleware() {
             ['@babel/preset-typescript', { isTSX: isJsx, allExtensions: true, allowDeclareFields: true }],
           ],
           plugins: [
-            // Simple plugin to rewrite "import React from 'react'" to "const React = window.React"
+            // Plugin to rewrite imports for browser compatibility
+            // - "import React from 'react'" -> "const React = window.React"
+            // - "import { ... } from 'react-devtools-plus/api'" -> "const { ... } = window.__REACT_DEVTOOLS_API__"
             function () {
               return {
                 visitor: {
                   ImportDeclaration(path: any) {
+                    const source = path.node.source.value
+
                     // Rewrite React imports
-                    if (path.node.source.value === 'react') {
+                    if (source === 'react') {
                       const defaultSpecifier = path.node.specifiers.find(
                         (s: any) => s.type === 'ImportDefaultSpecifier',
                       )
@@ -102,6 +106,62 @@ export function createPluginFileMiddleware() {
                         else {
                           path.remove()
                         }
+                      }
+                    }
+
+                    // Rewrite react-devtools-plus/api imports
+                    // These are exposed via window.__REACT_DEVTOOLS_API__ by the DevTools client
+                    if (source === 'react-devtools-plus/api' || source === '@react-devtools-plus/api') {
+                      const namedSpecifiers = path.node.specifiers.filter(
+                        (s: any) => s.type === 'ImportSpecifier',
+                      )
+                      const typeOnlySpecifiers = path.node.specifiers.filter(
+                        (s: any) => s.type === 'ImportSpecifier' && s.importKind === 'type',
+                      )
+
+                      // If all specifiers are type-only, just remove the import
+                      if (namedSpecifiers.length === typeOnlySpecifiers.length) {
+                        path.remove()
+                        return
+                      }
+
+                      // Filter out type-only specifiers for value imports
+                      const valueSpecifiers = namedSpecifiers.filter(
+                        (s: any) => s.importKind !== 'type',
+                      )
+
+                      if (valueSpecifiers.length > 0) {
+                        // Create destructuring: const { usePluginRpc, usePluginEvent } = window.__REACT_DEVTOOLS_API__
+                        const properties = valueSpecifiers.map((s: any) => ({
+                          type: 'ObjectProperty',
+                          key: { type: 'Identifier', name: s.imported.name },
+                          value: { type: 'Identifier', name: s.local.name },
+                          shorthand: s.imported.name === s.local.name,
+                          computed: false,
+                        }))
+
+                        path.replaceWith({
+                          type: 'VariableDeclaration',
+                          kind: 'const',
+                          declarations: [
+                            {
+                              type: 'VariableDeclarator',
+                              id: {
+                                type: 'ObjectPattern',
+                                properties,
+                              },
+                              init: {
+                                type: 'MemberExpression',
+                                object: { type: 'Identifier', name: 'window' },
+                                property: { type: 'Identifier', name: '__REACT_DEVTOOLS_API__' },
+                              },
+                            },
+                          ],
+                        })
+                      }
+                      else {
+                        // No value imports, just remove
+                        path.remove()
                       }
                     }
                   },

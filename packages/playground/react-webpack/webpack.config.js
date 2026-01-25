@@ -1,6 +1,6 @@
 const path = require('node:path')
 // 导入独立打包的插件
-const { SamplePlugin } = require('@react-devtools-plus/sample-plugin')
+// const { SamplePlugin } = require('@react-devtools-plus/sample-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { reactDevToolsPlus } = require('react-devtools-plus/webpack')
 const webpack = require('webpack')
@@ -58,7 +58,7 @@ module.exports = {
       plugins: [
         // ✨ 新 API：可调用格式（推荐）
         // 所有配置内置于插件中，用户只需调用即可
-        SamplePlugin(),
+        // SamplePlugin(),
 
         // ✨ 旧 API：对象格式（仍然支持）
         // 本地插件使用字符串路径，由 Webpack 处理热更新
@@ -66,7 +66,16 @@ module.exports = {
           name: 'my-plugin',
           title: 'My Plugin',
           icon: 'lucide:puzzle',
-          view: { src: './src/plugins/MyPlugin.jsx' },
+          view: { src: './src/plugins/MyPlugin.tsx' },
+          // 宿主脚本配置 - 测试不打包模式
+          host: {
+            src: './src/plugins/host.ts',
+            inject: 'body',
+          },
+          // 插件选项
+          options: {
+            showDebug: true,
+          },
         },
 
         // ✨ Iframe 插件
