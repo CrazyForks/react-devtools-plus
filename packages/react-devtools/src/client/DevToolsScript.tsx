@@ -42,15 +42,39 @@ export function DevToolsScript({ basePath = '/__react_devtools__', enabled = tru
 
     async function setupGlobals() {
       try {
-        const React = await import('react')
-        const ReactDOM = await import('react-dom')
-        ;(window as any).React = React
-        ;(window as any).ReactDOM = ReactDOM
-        try {
-          const ReactDOMClient = await import('react-dom/client')
-          ;(window as any).ReactDOM = { ...ReactDOM, createRoot: ReactDOMClient.createRoot, hydrateRoot: ReactDOMClient.hydrateRoot }
+        let React = (window as any).React
+        let ReactDOM = (window as any).ReactDOM
+
+        if (!React) {
+          try {
+            React = await import('react')
+            ;(window as any).React = React
+          }
+          catch {
+            // React not available via import, may be loaded via CDN
+          }
         }
-        catch {}
+
+        if (!ReactDOM) {
+          try {
+            ReactDOM = await import('react-dom')
+            ;(window as any).ReactDOM = ReactDOM
+          }
+          catch {
+            // ReactDOM not available via import, may be loaded via CDN
+          }
+        }
+
+        if (ReactDOM && !ReactDOM.createRoot) {
+          try {
+            const ReactDOMClient = await import('react-dom/client')
+            if (ReactDOMClient.createRoot) {
+              ;(window as any).ReactDOM = { ...ReactDOM, createRoot: ReactDOMClient.createRoot, hydrateRoot: ReactDOMClient.hydrateRoot }
+            }
+          }
+          catch {}
+        }
+
         ;(window as any).__REACT_DEVTOOLS_GLOBALS_READY__ = true
         window.dispatchEvent(new CustomEvent('react-devtools-globals-ready'))
       }
