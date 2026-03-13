@@ -111,16 +111,34 @@ export function OverviewPage({ tree }: OverviewPageProps) {
   const [reactVersion, setReactVersion] = useState<string | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
 
-  // Get React version from the host page
   useEffect(() => {
-    const rpc = getRpcClient<ServerRpcFunctions>()
-    if (rpc) {
+    let cancelled = false
+    let retryTimer: ReturnType<typeof setTimeout>
+
+    function fetchVersion() {
+      const rpc = getRpcClient<ServerRpcFunctions>()
+      if (!rpc) {
+        if (!cancelled) {
+          retryTimer = setTimeout(fetchVersion, 120)
+        }
+        return
+      }
       rpc.getReactVersion().then((version: string | null) => {
-        setReactVersion(version)
+        if (!cancelled) {
+          setReactVersion(version)
+        }
       }).catch(() => {
-        // Fallback if RPC fails
-        setReactVersion(null)
+        if (!cancelled) {
+          setReactVersion(null)
+        }
       })
+    }
+
+    fetchVersion()
+
+    return () => {
+      cancelled = true
+      clearTimeout(retryTimer)
     }
   }, [])
 
