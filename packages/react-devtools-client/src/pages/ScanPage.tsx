@@ -7,7 +7,6 @@ import { pluginEvents } from '../events'
 
 interface ScanConfig {
   enabled?: boolean
-  showToolbar?: boolean
   animationSpeed?: 'slow' | 'fast' | 'off'
   log?: boolean
   clearLog?: boolean
@@ -99,7 +98,6 @@ export function ScanPage() {
   const [isRunning, setIsRunning] = useState(false)
   const [config, setConfig] = useState<ScanConfig>({
     enabled: true,
-    showToolbar: false,
     animationSpeed: 'fast',
     log: false,
     clearLog: false,
@@ -674,22 +672,6 @@ export function ScanPage() {
                 <Checkbox
                   checked={true} // Always true for now
                   disabled
-                />
-              </div>
-
-              {/* Show Toolbar */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm text-gray-900 font-medium dark:text-gray-100">
-                    Show Toolbar
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Display the React Scan toolbar on the page
-                  </div>
-                </div>
-                <Checkbox
-                  checked={config.showToolbar ?? true}
-                  onChange={checked => handleConfigChange('showToolbar', checked)}
                 />
               </div>
 

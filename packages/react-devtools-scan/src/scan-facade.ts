@@ -84,6 +84,26 @@ function ensureOverlayCSS(sr: ShadowRoot): void {
   sr.appendChild(style)
 }
 
+const STORAGE_KEY = 'react-scan-options'
+
+function persistEnabledState(enabled: boolean): void {
+  try {
+    const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...existing, enabled }))
+  }
+  catch {}
+}
+
+export function readPersistedEnabled(): boolean | null {
+  try {
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
+    return typeof stored.enabled === 'boolean' ? stored.enabled : null
+  }
+  catch {
+    return null
+  }
+}
+
 // ─── Serialisation ──────────────────────────────────────────────────────────
 
 function serializeValue(value: unknown): unknown {
@@ -466,6 +486,8 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
       }
       internals.options.value = { ...internals.options.value, enabled: true }
 
+      persistEnabledState(true)
+
       if (!isGlobalInstanceAvailable()) {
         scan(opts)
       }
@@ -480,6 +502,8 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
         internals.instrumentation.isPaused.value = true
       }
       internals.options.value = { ...internals.options.value, enabled: false }
+
+      persistEnabledState(false)
     },
 
     isActive: () => {
