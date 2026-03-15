@@ -1,12 +1,15 @@
 /**
- * React DevTools Scan - Integration layer for react-scan
+ * React DevTools Scan - Native scan engine integration
  *
  * @packageDocumentation
  */
 
+import './polyfills'
+import 'bippy'
+
 import type { IntegrationMode, ReactDevtoolsScanOptions, ScanInstance } from './types'
-import { getOptions, ReactScanInternals, scan, setOptions } from 'react-scan'
-import { getScanInstance, resetScanInstance } from './adapter'
+import { ReactScanInternals, scan } from './core/index'
+import { getScanInstance, resetScanInstance } from './scan-facade'
 
 /**
  * Initialize React Scan with DevTools integration
@@ -42,28 +45,22 @@ export function initScan(options: ReactDevtoolsScanOptions = {}): ScanInstance {
 
   if (typeof window !== 'undefined') {
     // Check if already initialized (Singleton pattern)
-    if ((window as any).__REACT_SCAN_INTERNALS__) {
+    if (window.__REACT_SCAN_INTERNALS__) {
       // Ensure runInAllEnvironments is true on existing instance
-      const existingInternals = (window as any).__REACT_SCAN_INTERNALS__
-      if (existingInternals) {
-        existingInternals.runInAllEnvironments = true
-      }
+      window.__REACT_SCAN_INTERNALS__.runInAllEnvironments = true
 
       // Update options on existing instance
-      const setOpts = (window as any).__REACT_SCAN_SET_OPTIONS__
-      if (setOpts) {
-        setOpts(defaultOptions)
+      window.__REACT_SCAN_INTERNALS__.options.value = {
+        ...window.__REACT_SCAN_INTERNALS__.options.value,
+        ...defaultOptions,
       }
 
-      // Return adapter for existing instance
+      // Return facade for existing instance
       return getScanInstance(defaultOptions)
     }
 
-    // Manually expose internals to window for DevTools integration
+    // Expose internals so kit/hook/index.ts can detect scan presence
     ;(window as any).__REACT_SCAN_INTERNALS__ = ReactScanInternals
-    ;(window as any).__REACT_SCAN_SET_OPTIONS__ = setOptions
-    ;(window as any).__REACT_SCAN_GET_OPTIONS__ = getOptions
-    ;(window as any).__REACT_SCAN_SCAN__ = scan
   }
 
   // Initialize scan with the options
@@ -120,15 +117,15 @@ export type { IntegrationMode, ReactDevtoolsScanOptions, ScanInstance }
 export { createScanPlugin, scanPlugin } from './plugin'
 export type { ScanPluginConfig } from './plugin'
 
-// Re-export react-scan exports for convenience
+// Re-export native engine exports for convenience
 export {
   getOptions,
   onRender,
-  ReactScanInternals, // Export Internals for advanced integration
+  ReactScanInternals,
   scan,
   setOptions,
   useScan,
-} from 'react-scan'
+} from './core/index'
 
-// Re-export react-scan types
-export type { Options } from 'react-scan'
+// Re-export Options type from native engine
+export type { Options } from './core/index'

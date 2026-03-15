@@ -36,20 +36,13 @@ export function generateScanInitESMCode(options: ScanConfig): string {
   const normalizedOptions = normalizeScanOptions(options)
 
   return `
-import { initScan, ReactScanInternals, setOptions, getOptions, scan } from 'react-devtools-plus/scan';
-
-if (typeof window !== 'undefined') {
-  window.__REACT_SCAN_INTERNALS__ = ReactScanInternals;
-  window.__REACT_SCAN_SET_OPTIONS__ = setOptions;
-  window.__REACT_SCAN_GET_OPTIONS__ = getOptions;
-  window.__REACT_SCAN_SCAN__ = scan;
-}
+import { initScan, ReactScanInternals } from 'react-devtools-plus/scan';
 
 if (ReactScanInternals) {
   ReactScanInternals.runInAllEnvironments = true;
 }
 
-scan(${JSON.stringify(normalizedOptions)});
+initScan(${JSON.stringify(normalizedOptions)});
 `.trim()
 }
 
@@ -70,16 +63,6 @@ export function generateScanInitCJSCode(options: ScanConfig): string {
 var scanModule = require('${scanModulePath}');
 var initScan = scanModule.initScan;
 var ReactScanInternals = scanModule.ReactScanInternals;
-var setOptions = scanModule.setOptions;
-var getOptions = scanModule.getOptions;
-var scan = scanModule.scan;
-
-if (typeof window !== 'undefined') {
-  window.__REACT_SCAN_INTERNALS__ = ReactScanInternals;
-  window.__REACT_SCAN_SET_OPTIONS__ = setOptions;
-  window.__REACT_SCAN_GET_OPTIONS__ = getOptions;
-  window.__REACT_SCAN_SCAN__ = scan;
-}
 
 // Ensure we run in all environments
 if (ReactScanInternals) {

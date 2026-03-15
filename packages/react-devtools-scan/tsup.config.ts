@@ -1,4 +1,6 @@
+import path from 'node:path'
 import { defineConfig } from 'tsup'
+import { workerPlugin } from './worker-plugin'
 
 export default defineConfig({
   entry: {
@@ -9,7 +11,7 @@ export default defineConfig({
   // Node 14+ and modern browsers support ES2017
   target: 'es2017',
   dts: {
-    resolve: true,
+    resolve: false,
   },
   outDir: 'dist',
   clean: true,
@@ -17,6 +19,18 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   external: ['react', 'react-dom'],
-  noExternal: ['react-scan'],
   skipNodeModulesBundle: false,
+  loader: {
+    '.css': 'text',
+  },
+  esbuildPlugins: [workerPlugin],
+  esbuildOptions(options) {
+    options.alias = {
+      '~web': path.resolve(__dirname, 'src/web'),
+      '~core': path.resolve(__dirname, 'src/core'),
+      '~web/assets/css/styles.css': path.resolve(__dirname, 'src/web/assets/css/styles.tailwind.css'),
+      'src/core': path.resolve(__dirname, 'src/core'),
+      'src/new-outlines': path.resolve(__dirname, 'src/new-outlines'),
+    }
+  },
 })

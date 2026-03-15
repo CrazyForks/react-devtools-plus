@@ -117,3 +117,7 @@ packages/react-devtools/src/overlay/**/*
 packages/react-devtools/client/**/*
 packages/react-devtools-client/dist/**/*
 packages/react-devtools-overlay/dist/**/*
+
+
+.tmp-react-scan-src
+react-scan.tar.gz

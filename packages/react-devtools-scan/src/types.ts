@@ -2,7 +2,42 @@
  * Type definitions for React DevTools Scan integration
  */
 
-import type { Options as ReactScanOptions } from 'react-scan'
+import type { Fiber, FiberRoot } from 'bippy'
+import type { Options as ReactScanOptions } from './core/index'
+
+export interface ExtendedReactRenderer {
+  findFiberByHostInstance: (instance: Element) => Fiber | null
+  version: string
+  bundleType: number
+  rendererPackageName: string
+  overrideHookState?: (fiber: Fiber, id: string, path: string[], value: unknown) => void
+  overrideProps?: (fiber: Fiber, path: string[], value: unknown) => void
+  overrideContext?: (fiber: Fiber, contextType: unknown, path: string[], value: unknown) => void
+}
+
+declare global {
+  interface Window {
+    __REACT_SCAN_TOOLBAR_CONTAINER__?: HTMLDivElement
+    __REACT_SCAN_VERSION__?: string
+    __REACT_SCAN_EXTENSION__?: boolean
+    reactScanCleanupListeners?: (() => void)
+    __REACT_SCAN_INTERNALS__?: any
+    __REACT_SCAN_STOP__?: () => void
+    __REACT_DEVTOOLS_GLOBAL_HOOK__?: {
+      checkDCE: (fn: unknown) => void
+      supportsFiber: boolean
+      supportsFlight: boolean
+      renderers: Map<number, ExtendedReactRenderer>
+      hasUnsupportedRendererAttached: boolean
+      onCommitFiberRoot: (rendererID: number, root: FiberRoot, priority: void | number) => void
+      onCommitFiberUnmount: (rendererID: number, fiber: Fiber) => void
+      onPostCommitFiberRoot: (rendererID: number, root: FiberRoot) => void
+      inject: (renderer: ExtendedReactRenderer) => number
+      _instrumentationSource?: string
+      _instrumentationIsActive?: boolean
+    }
+  }
+}
 
 /**
  * Integration modes for React Scan

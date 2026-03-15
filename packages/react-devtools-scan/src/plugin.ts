@@ -7,7 +7,7 @@
 
 import type { ReactDevtoolsScanOptions, ScanInstance } from './types'
 import { getDisplayName, getFiberId } from 'bippy'
-import { getScanInstance, resetScanInstance } from './adapter'
+import { getScanInstance, resetScanInstance } from './scan-facade'
 
 /**
  * React Scan plugin configuration
