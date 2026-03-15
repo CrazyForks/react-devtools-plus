@@ -6,26 +6,83 @@
  * direct ES-module imports.
  */
 
-import {
-  type AggregatedChanges,
-  type ChangeInfo,
-  type ComponentPerformanceData,
-  type ComponentTreeNode,
-  type FocusedComponentRenderInfo,
-  type PerformanceSummary,
-  type ReactDevtoolsScanOptions,
-  type ScanInstance,
+import type {
+  AggregatedChanges,
+  ComponentPerformanceData,
+  ComponentTreeNode,
+  FocusedComponentRenderInfo,
+  PerformanceSummary,
+  ReactDevtoolsScanOptions,
+  ScanInstance,
 } from './types'
 import { _fiberRoots, getDisplayName, getFiberId, isCompositeFiber } from 'bippy'
 import {
+  ReactScanInternals as _ReactScanInternals,
+  Store as _Store,
   addOnRenderListener,
-  getOptions as getScanOptions,
   getRenderCount,
-  ReactScanInternals,
   scan,
   setOptions as setScanOptions,
-  Store,
 } from './core/index'
+
+// When the Vite plugin injects a pre-built scan.js bundle AND the overlay loads
+// scan from source, two separate module instances of Store/ReactScanInternals
+// exist. The pre-built bundle sets window.__REACT_SCAN_INTERNALS__ during
+// initScan(). We always prefer that global instance so the facade operates on
+// the same objects the toolbar/ScanOverlay already subscribe to.
+function getInternals(): typeof _ReactScanInternals {
+  if (typeof window !== 'undefined' && (window as any).__REACT_SCAN_INTERNALS__) {
+    return (window as any).__REACT_SCAN_INTERNALS__
+  }
+  return _ReactScanInternals
+}
+
+function getStore(): typeof _Store {
+  return getInternals().Store
+}
+
+// Proxies that always access the runtime-global instances
+const ReactScanInternals = new Proxy({} as typeof _ReactScanInternals, {
+  get(_target, prop, receiver) {
+    return Reflect.get(getInternals(), prop, receiver)
+  },
+  set(_target, prop, value, receiver) {
+    return Reflect.set(getInternals(), prop, value, receiver)
+  },
+})
+
+const Store = new Proxy({} as typeof _Store, {
+  get(_target, prop, receiver) {
+    return Reflect.get(getStore(), prop, receiver)
+  },
+  set(_target, prop, value, receiver) {
+    return Reflect.set(getStore(), prop, value, receiver)
+  },
+})
+
+/**
+ * Inject positioning CSS for ScanOverlay into a shadow root.
+ * The pre-built scan.js CSS may lack compiled Tailwind utilities,
+ * so we ensure the critical layout rules are present.
+ */
+function ensureOverlayCSS(sr: ShadowRoot): void {
+  const id = '__react-scan-overlay-css__'
+  if (sr.querySelector(`#${id}`)) return
+  const style = document.createElement('style')
+  style.id = id
+  style.textContent = `
+    .fixed { position: fixed !important; }
+    .top-0 { top: 0 !important; }
+    .left-0 { left: 0 !important; }
+    .w-screen { width: 100vw !important; }
+    .h-screen { height: 100vh !important; }
+    .pointer-events-none { pointer-events: none !important; }
+    .z-\\[214748365\\] { z-index: 214748365 !important; }
+    .z-\\[214748367\\] { z-index: 214748367 !important; }
+    .inset-0 { inset: 0 !important; }
+  `
+  sr.appendChild(style)
+}
 
 // ─── Serialisation ──────────────────────────────────────────────────────────
 
@@ -330,6 +387,13 @@ function ensureRenderListener(): void {
 let scanInstance: ScanInstance | null = null
 let currentOptions: ReactDevtoolsScanOptions = {}
 
+// Check whether the pre-built scan.js already initialised instrumentation.
+// If so, we must NOT call scan()/start() from the source-code copy because
+// that would create a *second* bippy instrumentation instance.
+function isGlobalInstanceAvailable(): boolean {
+  return typeof window !== 'undefined' && !!(window as any).__REACT_SCAN_INTERNALS__
+}
+
 function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
   currentOptions = options
 
@@ -338,44 +402,60 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
 
     setOptions: (newOptions: Partial<ReactDevtoolsScanOptions>) => {
       currentOptions = { ...currentOptions, ...newOptions }
-      setScanOptions(currentOptions)
+      // Update options on the global internals directly
+      const internals = getInternals()
+      internals.options.value = { ...internals.options.value, ...currentOptions }
     },
 
     start: () => {
-      const options = { ...currentOptions, enabled: true }
-      currentOptions = options
+      const opts = { ...currentOptions, enabled: true }
+      currentOptions = opts
 
-      if (ReactScanInternals.instrumentation?.isPaused) {
-        ReactScanInternals.instrumentation.isPaused.value = false
+      const internals = getInternals()
+      if (internals.instrumentation?.isPaused) {
+        internals.instrumentation.isPaused.value = false
       }
+      internals.options.value = { ...internals.options.value, enabled: true }
 
-      scan(options)
+      if (!isGlobalInstanceAvailable()) {
+        scan(opts)
+      }
       ensureRenderListener()
     },
 
     stop: () => {
       currentOptions = { ...currentOptions, enabled: false }
-      setScanOptions(currentOptions)
+
+      const internals = getInternals()
+      if (internals.instrumentation?.isPaused) {
+        internals.instrumentation.isPaused.value = true
+      }
+      internals.options.value = { ...internals.options.value, enabled: false }
     },
 
     isActive: () => {
-      const opts = getScanOptions()
-      return (opts.value ?? opts).enabled === true
+      const internals = getInternals()
+      if (internals.instrumentation?.isPaused) {
+        return !internals.instrumentation.isPaused.value
+      }
+      return internals.options.value?.enabled === true
     },
 
     hideToolbar: () => {
       currentOptions = { ...currentOptions, showToolbar: false }
+      // Use setScanOptions so the toolbar UI is actually torn down via initToolbar()
       setScanOptions({ showToolbar: false })
+      getInternals().options.value = { ...getInternals().options.value, showToolbar: false }
     },
 
     showToolbar: () => {
       currentOptions = { ...currentOptions, showToolbar: true }
       setScanOptions({ showToolbar: true })
+      getInternals().options.value = { ...getInternals().options.value, showToolbar: true }
     },
 
     getToolbarVisibility: () => {
-      const opts = getScanOptions()
-      return (opts.value ?? opts).showToolbar !== false
+      return getInternals().options.value?.showToolbar !== false
     },
 
     getPerformanceData: () => extractPerformanceData(),
@@ -388,11 +468,35 @@ function createScanInstance(options: ReactDevtoolsScanOptions): ScanInstance {
     },
 
     startInspecting: () => {
+      const internals = getInternals()
+      // ScanOverlay (which handles inspect highlights and click-to-select) is
+      // only rendered when the toolbar is visible.  Force-initialise the toolbar
+      // if it hasn't been created yet, then hide the widget UI so only the
+      // overlay remains active.
+      if (typeof window !== 'undefined' && !window.__REACT_SCAN_TOOLBAR_CONTAINER__) {
+        internals.initToolbar?.(true)
+        const scanRoot = document.getElementById('react-scan-root')
+        const sr = scanRoot?.shadowRoot
+        if (sr) {
+          // Hide the toolbar widget while keeping ScanOverlay rendered
+          const toolbarEl = sr.querySelector('#react-scan-toolbar') as HTMLElement | null
+          if (toolbarEl) toolbarEl.style.display = 'none'
+          // Inject critical positioning CSS for ScanOverlay since Tailwind
+          // utilities may not be compiled in the shadow root stylesheet.
+          ensureOverlayCSS(sr)
+        }
+      }
       Store.inspectState.value = { kind: 'inspecting', hoveredDomElement: null }
     },
 
     stopInspecting: () => {
       Store.inspectState.value = { kind: 'inspect-off' }
+      // If the toolbar was force-initialised for inspection and the user's
+      // original setting was showToolbar: false, tear it down.
+      if (!currentOptions.showToolbar && typeof window !== 'undefined' && window.__REACT_SCAN_TOOLBAR_CONTAINER__) {
+        const internals = getInternals()
+        internals.initToolbar?.(false)
+      }
     },
 
     isInspecting: () => Store.inspectState.value.kind === 'inspecting',

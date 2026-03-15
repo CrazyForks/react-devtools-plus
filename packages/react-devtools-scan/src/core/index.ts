@@ -164,6 +164,7 @@ export interface Internals {
   Store: StoreType;
   version: string;
   runInAllEnvironments: boolean;
+  initToolbar?: (showToolbar: boolean) => void;
 }
 
 export type FunctionalComponentStateChange = {
@@ -364,22 +365,25 @@ export const setOptions = (userOptions: Partial<Options>) => {
 
     ReactScanInternals.options.value = newOptions;
 
-    // temp hack since defaults override stored local storage values
-    // we actually don't care about any other local storage option other than enabled, we should not be syncing those to local storage
+    // Restore persisted `enabled` from localStorage only when the caller did
+    // NOT explicitly set it. This prevents programmatic start()/stop() from
+    // being silently overridden by a stale localStorage value.
     try {
-      const existing = readLocalStorage<undefined | Record<string, unknown>>(
-        'react-scan-options',
-      )?.enabled;
+      if (!('enabled' in validOptions)) {
+        const existing = readLocalStorage<undefined | Record<string, unknown>>(
+          'react-scan-options',
+        )?.enabled;
 
-      if (typeof existing === 'boolean') {
-        newOptions.enabled = existing;
+        if (typeof existing === 'boolean') {
+          newOptions.enabled = existing;
+        }
       }
     } catch (e) {
       if (ReactScanInternals.options.value._debug === 'verbose') {
         // oxlint-disable-next-line no-console
         console.error(
           '[React Scan Internal Error]',
-          'Failed to create notifications outline canvas',
+          'Failed to read localStorage options',
           e,
         );
       }
@@ -505,6 +509,10 @@ const initToolbar = (showToolbar: boolean) => {
   const { shadowRoot } = initRootContainer();
   createToolbar(shadowRoot);
 };
+
+// Expose initToolbar so the DevTools facade can force-initialize the
+// toolbar (and thus ScanOverlay) even when showToolbar was originally false.
+ReactScanInternals.initToolbar = initToolbar;
 
 const createNotificationsOutlineCanvas = () => {
   try {

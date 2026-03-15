@@ -25,6 +25,8 @@ export default defineConfig({
   },
   esbuildPlugins: [workerPlugin],
   esbuildOptions(options) {
+    options.jsx = 'automatic'
+    options.jsxImportSource = 'preact'
     options.alias = {
       '~web': path.resolve(__dirname, 'src/web'),
       '~core': path.resolve(__dirname, 'src/core'),

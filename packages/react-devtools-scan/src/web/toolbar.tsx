@@ -1,7 +1,7 @@
 import { Component, render } from 'preact';
 import { Icon } from './components/icon';
-import { Widget } from './widget';
 import { SvgSprite } from './components/svg-sprite';
+import { Widget } from './widget';
 
 
 class ToolbarErrorBoundary extends Component {
