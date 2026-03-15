@@ -180,13 +180,44 @@ function buildTreeNode(fiber: any, depth = 0, maxDepth = 50): ComponentTreeNode 
   }
 }
 
+function findFiberRootsFromDOM(): any[] {
+  const roots: any[] = []
+  if (typeof document === 'undefined') return roots
+  const candidates = [
+    document.getElementById('root'),
+    document.getElementById('app'),
+    document.getElementById('__next'),
+  ]
+  for (const el of candidates) {
+    if (!el) continue
+    // React 18+ container key
+    const fiberKey = Object.keys(el).find(k => k.startsWith('__reactContainer$'))
+    if (fiberKey) {
+      let fiber = (el as any)[fiberKey]
+      while (fiber) {
+        if (fiber.stateNode?.current) {
+          roots.push(fiber.stateNode)
+          break
+        }
+        fiber = fiber.return
+      }
+    }
+    // React 16-17
+    const legacy = (el as any)._reactRootContainer?._internalRoot
+    if (legacy) roots.push(legacy)
+  }
+  return roots
+}
+
 function extractComponentTree(): ComponentTreeNode[] {
   const trees: ComponentTreeNode[] = []
   try {
-    // _fiberRoots from bippy is actually a Set (iterable) at runtime
-    const roots = _fiberRoots as unknown as Set<any>
-    if (typeof (roots as any).forEach === 'function') {
-      roots.forEach((root: any) => {
+    // Try bippy _fiberRoots first (global > local), fall back to DOM walking
+    const bippyRoots = (getInternals().fiberRootsSet ?? _fiberRoots) as unknown as Set<any>
+    let hasRoots = false
+    if (typeof (bippyRoots as any).forEach === 'function' && (bippyRoots as any).size > 0) {
+      hasRoots = true
+      bippyRoots.forEach((root: any) => {
         const rootFiber = root.current || root
         if (!rootFiber) return
         let child = rootFiber.child
@@ -196,6 +227,20 @@ function extractComponentTree(): ComponentTreeNode[] {
           child = child.sibling
         }
       })
+    }
+
+    if (!hasRoots) {
+      const domRoots = findFiberRootsFromDOM()
+      for (const root of domRoots) {
+        const rootFiber = root.current || root
+        if (!rootFiber) continue
+        let child = rootFiber.child
+        while (child) {
+          const node = buildTreeNode(child, 0)
+          if (node) trees.push(node)
+          child = child.sibling
+        }
+      }
     }
   } catch {
     // ignore
@@ -313,7 +358,11 @@ let renderListenerCleanup: (() => void) | null = null
 
 function ensureRenderListener(): void {
   if (renderListenerCleanup) return
-  renderListenerCleanup = addOnRenderListener((fiber, _renders) => {
+  // When the pre-built scan.js bundle is active, its instrumentation calls
+  // notifyRenderListeners on its own Set.  We must register on that Set
+  // (via the global internals) rather than the source-bundle's local Set.
+  const registerListener = getInternals().addOnRenderListener ?? addOnRenderListener
+  renderListenerCleanup = registerListener((fiber, _renders) => {
     if (!focusedComponentTracker) return
     const fiberName = getDisplayName(fiber.type) || 'Unknown'
     if (fiberName !== focusedComponentTracker.componentName) return

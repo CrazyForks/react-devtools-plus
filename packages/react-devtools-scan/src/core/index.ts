@@ -1,6 +1,7 @@
 import { type Signal, signal } from '@preact/signals';
 import {
   type Fiber,
+  _fiberRoots,
   detectReactBuildType,
   getRDTHook,
   getType,
@@ -165,6 +166,8 @@ export interface Internals {
   version: string;
   runInAllEnvironments: boolean;
   initToolbar?: (showToolbar: boolean) => void;
+  addOnRenderListener?: (cb: (fiber: Fiber, renders: Array<Render>) => void) => (() => void);
+  fiberRootsSet?: Set<any>;
 }
 
 export type FunctionalComponentStateChange = {
@@ -576,6 +579,14 @@ export const addOnRenderListener = (
   renderListeners.add(cb);
   return () => renderListeners.delete(cb);
 };
+
+// Expose addOnRenderListener so the DevTools facade can register listeners on
+// the same Set that the active instrumentation notifies.
+ReactScanInternals.addOnRenderListener = addOnRenderListener;
+
+// Expose bippy's _fiberRoots Set so the facade can access fiber roots from the
+// same bippy instance that intercepted React's DevTools hook.
+ReactScanInternals.fiberRootsSet = _fiberRoots as unknown as Set<any>;
 
 export const removeOnRenderListener = (
   cb: (fiber: Fiber, renders: Array<Render>) => void,
