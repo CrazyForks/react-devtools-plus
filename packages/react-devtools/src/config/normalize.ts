@@ -325,12 +325,22 @@ export function normalizeScanConfig(
   }
 
   // If scan is an object, merge with defaults.
-  // For serve mode, omit `enabled` so core restores it from localStorage.
+  // For serve mode, omit `enabled: true` so core restores it from localStorage.
+  // Keep `enabled: false` so users can still force scan off entirely.
+  const { enabled: _enabled, ...scanWithoutEnabled } = scan
   const hasExplicitEnabled = typeof scan.enabled === 'boolean'
+  const enabledOption =
+    command === 'serve' && scan.enabled === true
+      ? {}
+      : hasExplicitEnabled
+        ? { enabled: scan.enabled }
+        : {}
+
   return {
     ...(command === 'build' && !hasExplicitEnabled ? { enabled: false } : {}),
     showToolbar: scan.showToolbar ?? true,
-    ...scan,
+    ...scanWithoutEnabled,
+    ...enabledOption,
   }
 }
 

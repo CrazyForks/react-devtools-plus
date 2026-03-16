@@ -379,6 +379,9 @@ export const setOptions = (userOptions: Partial<Options>) => {
 
         if (typeof existing === 'boolean') {
           newOptions.enabled = existing;
+          if (instrumentation) {
+            instrumentation.isPaused.value = existing === false;
+          }
         }
       }
     } catch (e) {
