@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.10.1...main
+
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.10.1...main)
+
+### 🏡 Chore
+
+- Update asset references and enhance CSS transitions in React DevTools overlay ([14b30eb](https://github.com/wzc520pyfm/react-devtools-plus/commit/14b30eb))
+
+### ❤️ Contributors
+
+- Wzc520pyfm ([@wzc520pyfm](https://github.com/wzc520pyfm))
+
 ## v0.10.0...main
 
 [compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.10.0...main)
