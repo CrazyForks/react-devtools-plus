@@ -1,0 +1,112 @@
+{
+  "name": "react-tracer",
+  "type": "module",
+  "version": "0.10.1",
+  "description": "Tracer for the source code of React components. Click elements to find their source. Use as a standalone inspector or headless APIs.",
+  "author": "wzc520pyfm",
+  "license": "MIT",
+  "repository": {
+    "directory": "packages/react-tracer",
+    "type": "git",
+    "url": "git+https://github.com/wzc520pyfm/react-devtools-plus.git"
+  },
+  "keywords": [
+    "react",
+    "tracer",
+    "inspector",
+    "devtools",
+    "source-code",
+    "click-to-source"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js",
+      "require": "./dist/vite.cjs"
+    },
+    "./webpack": {
+      "types": "./dist/webpack.d.ts",
+      "import": "./dist/webpack.js",
+      "require": "./dist/webpack.cjs"
+    },
+    "./rspack": {
+      "types": "./dist/rspack.d.ts",
+      "import": "./dist/rspack.js",
+      "require": "./dist/rspack.cjs"
+    },
+    "./client/record": {
+      "types": "./dist/client/record.d.ts",
+      "import": "./dist/client/record.js",
+      "require": "./dist/client/record.cjs"
+    },
+    "./client/listeners": {
+      "types": "./dist/client/listeners.d.ts",
+      "import": "./dist/client/listeners.js",
+      "require": "./dist/client/listeners.cjs"
+    },
+    "./client/overlay": {
+      "types": "./dist/client/overlay.d.ts",
+      "import": "./dist/client/overlay.js",
+      "require": "./dist/client/overlay.cjs"
+    },
+    "./client/open-in-editor": {
+      "types": "./dist/client/open-in-editor.d.ts",
+      "import": "./dist/client/open-in-editor.js",
+      "require": "./dist/client/open-in-editor.cjs"
+    },
+    "./transform": {
+      "types": "./dist/transform.d.ts",
+      "import": "./dist/transform.js",
+      "require": "./dist/transform.cjs"
+    },
+    "./middleware": {
+      "types": "./dist/middleware.d.ts",
+      "import": "./dist/middleware.js",
+      "require": "./dist/middleware.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown --clean",
+    "prepare:type": "tsdown --dts-only",
+    "stub": "tsdown --watch --onSuccess 'tsdown --dts-only'"
+  },
+  "peerDependencies": {
+    "vite": "^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0",
+    "webpack": "^4.0.0 || ^5.0.0",
+    "@rspack/core": ">=0.7.0 || ^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    },
+    "webpack": {
+      "optional": true
+    },
+    "@rspack/core": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-react": "^7.26.3",
+    "@babel/preset-typescript": "^7.26.4",
+    "@babel/types": "^7.26.0",
+    "mitt": "catalog:",
+    "unplugin": "^2.3.10"
+  },
+  "devDependencies": {
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  }
+}

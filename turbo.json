@@ -6,11 +6,17 @@
       "persistent": true,
       "dependsOn": []
     },
+    "react-tracer#stub": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": []
+    },
     "@react-devtools-plus/kit#stub": {
       "cache": false,
       "persistent": true,
       "dependsOn": [
-        "@react-devtools-plus/shared#prepare:type"
+        "@react-devtools-plus/shared#prepare:type",
+        "react-tracer#prepare:type"
       ]
     },
     "@react-devtools-plus/core#stub": {
@@ -69,7 +75,8 @@
       "dependsOn": [
         "@react-devtools-plus/scan#prepare:type",
         "@react-devtools-plus/overlay#build",
-        "@react-devtools-plus/client#build"
+        "@react-devtools-plus/client#build",
+        "react-tracer#prepare:type"
       ]
     },
     "@react-devtools-plus/scan#stub": {

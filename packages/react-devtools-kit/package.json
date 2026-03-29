@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@react-devtools-plus/shared": "workspace:^",
+    "react-tracer": "workspace:^",
     "birpc": "^2.6.1",
     "hookable": "^5.5.3",
     "mitt": "catalog:",

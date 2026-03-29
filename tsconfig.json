@@ -10,7 +10,14 @@
       "@react-devtools-plus/kit": ["./packages/react-devtools-kit/src/index.ts"],
       "@react-devtools-plus/client": ["./packages/react-devtools-client/src/index.ts"],
       "@react-devtools-plus/overlay": ["./packages/react-devtools-overlay/src/index.ts"],
-      "react-devtools-plus": ["./packages/react-devtools/src/index.ts"]
+      "react-devtools-plus": ["./packages/react-devtools/src/index.ts"],
+      "react-tracer": ["./packages/react-tracer/src/index.ts"],
+      "react-tracer/client/record": ["./packages/react-tracer/src/client/record.ts"],
+      "react-tracer/client/listeners": ["./packages/react-tracer/src/client/listeners.ts"],
+      "react-tracer/client/overlay": ["./packages/react-tracer/src/client/overlay.ts"],
+      "react-tracer/client/open-in-editor": ["./packages/react-tracer/src/client/open-in-editor.ts"],
+      "react-tracer/transform": ["./packages/react-tracer/src/transform.ts"],
+      "react-tracer/middleware": ["./packages/react-tracer/src/middleware.ts"]
     },
     "resolveJsonModule": true,
     "types": [
