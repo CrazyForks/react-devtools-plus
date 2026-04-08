@@ -18,6 +18,12 @@ export function normalizePath(id: string): string {
 // Constants
 export const OVERLAY_ENTRY_ID = '\0react-devtools-overlay-entry'
 export const OVERLAY_CHUNK_NAME = 'react-devtools-overlay'
+/** Vite build: dedicated chunk for window.React / ReactDOM bootstrap */
+export const GLOBALS_CHUNK_NAME = 'react-devtools-globals'
+/** Vite build: dedicated chunk for React Scan init */
+export const SCAN_CHUNK_NAME = 'react-devtools-scan'
+export const VITE_GLOBALS_CACHE_FILE = 'vite-react-globals.mjs'
+export const VITE_SCAN_CACHE_FILE = 'vite-scan-init.mjs'
 export const VIRTUAL_PATH_PREFIX = 'virtual:react-devtools-path:'
 export const DEVTOOLS_OPTIONS_ID = 'virtual:react-devtools-options'
 export const RESOLVED_OPTIONS_ID = `\0${DEVTOOLS_OPTIONS_ID}`

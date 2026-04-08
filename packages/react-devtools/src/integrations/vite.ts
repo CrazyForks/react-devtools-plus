@@ -8,7 +8,14 @@ import type { ResolvedPluginConfig } from '../config/types'
 import fs from 'node:fs'
 import path from 'node:path'
 import { createAssetsMiddleware, createGraphMiddleware, createOpenInEditorMiddleware, getViteModuleGraph, serveClient } from '../middleware'
-import { OVERLAY_CHUNK_NAME } from '../utils/paths'
+import {
+  GLOBALS_CHUNK_NAME,
+  OVERLAY_CHUNK_NAME,
+  SCAN_CHUNK_NAME,
+  VIRTUAL_PATH_PREFIX,
+  VITE_GLOBALS_CACHE_FILE,
+  VITE_SCAN_CACHE_FILE,
+} from '../utils/paths'
 
 /**
  * Create Vite output configuration
@@ -18,7 +25,11 @@ export function createOutputConfig(baseConfig: any) {
   return {
     ...baseConfig,
     manualChunks: (id: string, options: any, getModuleInfo: any) => {
-      if (id.includes(OVERLAY_CHUNK_NAME) || id.includes('overlay')) {
+      if (id.includes(VITE_GLOBALS_CACHE_FILE))
+        return GLOBALS_CHUNK_NAME
+      if (id.includes(VITE_SCAN_CACHE_FILE))
+        return SCAN_CHUNK_NAME
+      if (id.includes(OVERLAY_CHUNK_NAME) || id.includes('react-devtools-overlay.mjs')) {
         return OVERLAY_CHUNK_NAME
       }
       if (typeof baseConfig?.manualChunks === 'function') {
@@ -30,32 +41,44 @@ export function createOutputConfig(baseConfig: any) {
 }
 
 /**
- * Create Vite Rollup input configuration
- * 创建 Vite Rollup 输入配置
+ * Merge extra Rollup inputs (globals / scan bootstrap files) into the config
  */
 export function createRollupInput(
   existingInput: any,
   overlayInput: string,
   root: string,
+  extraEntries?: Record<string, string>,
 ): any {
+  const appendExtrasToArray = (arr: string[]) => {
+    const extras = extraEntries ? Object.values(extraEntries) : []
+    return [...arr, overlayInput, ...extras]
+  }
+
+  const mergeObject = (obj: Record<string, any>) => ({
+    ...obj,
+    [OVERLAY_CHUNK_NAME]: overlayInput,
+    ...(extraEntries || {}),
+  })
+
   if (existingInput) {
     if (Array.isArray(existingInput)) {
-      return [...existingInput, overlayInput]
+      return appendExtrasToArray(existingInput)
     }
     if (typeof existingInput === 'object') {
-      return {
-        ...existingInput,
-        [OVERLAY_CHUNK_NAME]: overlayInput,
-      }
+      return mergeObject(existingInput)
     }
   }
 
   // When input is not set, Vite uses index.html as default
   const indexHtmlPath = path.resolve(root, 'index.html')
   if (fs.existsSync(indexHtmlPath)) {
+    return mergeObject({ main: indexHtmlPath })
+  }
+
+  if (extraEntries && Object.keys(extraEntries).length > 0) {
     return {
-      main: indexHtmlPath,
       [OVERLAY_CHUNK_NAME]: overlayInput,
+      ...extraEntries,
     }
   }
 
@@ -63,16 +86,112 @@ export function createRollupInput(
 }
 
 /**
- * Find overlay bundle in Vite output
- * 在 Vite 输出中查找 overlay bundle
+ * Find emitted chunk fileName by logical chunk name (manualChunks) or path hint
  */
-export function findOverlayBundle(bundle: Record<string, any>): string | null {
-  for (const [key, chunk] of Object.entries(bundle)) {
-    if (chunk?.type === 'chunk' && (key === OVERLAY_CHUNK_NAME || chunk.name === OVERLAY_CHUNK_NAME)) {
-      return chunk.fileName
-    }
+export function findRollupChunkFileName(bundle: Record<string, any>, chunkName: string): string | null {
+  for (const [, chunk] of Object.entries(bundle)) {
+    if (chunk?.type !== 'chunk')
+      continue
+    const c = chunk as { name?: string, fileName?: string }
+    if (c.name === chunkName && c.fileName)
+      return c.fileName
+  }
+  for (const [, chunk] of Object.entries(bundle)) {
+    if (chunk?.type !== 'chunk')
+      continue
+    const c = chunk as { fileName?: string }
+    if (typeof c.fileName === 'string' && c.fileName.includes(chunkName))
+      return c.fileName
   }
   return null
+}
+
+/**
+ * @deprecated Use findRollupChunkFileName(bundle, OVERLAY_CHUNK_NAME)
+ */
+export function findOverlayBundle(bundle: Record<string, any>): string | null {
+  return findRollupChunkFileName(bundle, OVERLAY_CHUNK_NAME)
+}
+
+/**
+ * Find a built asset under outDir (e.g. Vite emits JS under assets/)
+ */
+export function findOutputFileRelativeTo(
+  outDirAbs: string,
+  predicate: (baseName: string) => boolean,
+): string | null {
+  if (!fs.existsSync(outDirAbs))
+    return null
+
+  function walk(dir: string): string | null {
+    for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, ent.name)
+      if (ent.isDirectory()) {
+        const found = walk(full)
+        if (found)
+          return found
+      }
+      else if (predicate(ent.name)) {
+        return path.relative(outDirAbs, full).split(path.sep).join('/')
+      }
+    }
+    return null
+  }
+
+  return walk(outDirAbs)
+}
+
+/**
+ * Replace Vite dev-only @id/ URLs in built HTML with real emitted asset paths
+ */
+export function patchBuiltHtmlDevtoolsAssets(
+  htmlPath: string,
+  replacements: { overlay?: string, globals?: string, scan?: string },
+  base: string,
+) {
+  if (!fs.existsSync(htmlPath))
+    return
+
+  let htmlContent = fs.readFileSync(htmlPath, 'utf-8')
+  const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+  if (replacements.overlay) {
+    const actualPath = `${base}${replacements.overlay}`
+    htmlContent = htmlContent.replace(
+      new RegExp(escapeRegex(`${base}assets/react-devtools-overlay.js`), 'g'),
+      actualPath,
+    )
+    htmlContent = htmlContent.replace(
+      new RegExp(escapeRegex(`${base}@id/${VIRTUAL_PATH_PREFIX}main.tsx`), 'g'),
+      actualPath,
+    )
+  }
+
+  if (replacements.globals) {
+    const actualPath = `${base}${replacements.globals}`
+    htmlContent = htmlContent.replace(
+      new RegExp(escapeRegex(`${base}@id/__react-devtools-globals__`), 'g'),
+      actualPath,
+    )
+  }
+
+  if (replacements.scan) {
+    const actualPath = `${base}${replacements.scan}`
+    htmlContent = htmlContent.replace(
+      new RegExp(escapeRegex(`import '${base}@id/__react-devtools-scan__'`), 'g'),
+      `import '${actualPath}'`,
+    )
+    htmlContent = htmlContent.replace(
+      new RegExp(escapeRegex(`import \"${base}@id/__react-devtools-scan__\"`), 'g'),
+      `import \"${actualPath}\"`,
+    )
+    htmlContent = htmlContent.replace(
+      new RegExp(escapeRegex(`${base}@id/__react-devtools-scan__`), 'g'),
+      actualPath,
+    )
+  }
+
+  fs.writeFileSync(htmlPath, htmlContent, 'utf-8')
 }
 
 /**
@@ -84,16 +203,7 @@ export function updateHtmlWithOverlayPath(
   overlayBundleName: string,
   base: string,
 ) {
-  let htmlContent = fs.readFileSync(htmlPath, 'utf-8')
-  const placeholderPath = `${base}assets/react-devtools-overlay.js`
-  const virtualPath = `${base}@id/virtual:react-devtools-path:main.tsx`
-  const actualPath = `${base}${overlayBundleName}`
-
-  const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  htmlContent = htmlContent.replace(new RegExp(escapeRegex(placeholderPath), 'g'), actualPath)
-  htmlContent = htmlContent.replace(new RegExp(escapeRegex(virtualPath), 'g'), actualPath)
-
-  fs.writeFileSync(htmlPath, htmlContent, 'utf-8')
+  patchBuiltHtmlDevtoolsAssets(htmlPath, { overlay: overlayBundleName }, base)
 }
 
 /**

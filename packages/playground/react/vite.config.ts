@@ -7,7 +7,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [
     reactDevToolsPlus({
-      // enabledEnvironments: ['development', 'test'],
+      enabledEnvironments: ['development', 'test', 'production'],
       plugins: [
         // ✨ 新 API：可调用格式（推荐）
         // 所有配置内置于插件中，用户只需调用即可

@@ -74,16 +74,28 @@ initScan(${JSON.stringify(normalizedOptions)});
 
 /**
  * Generate script tag for React Scan (Vite)
+ *
+ * In development, loads the virtual module via Vite. In production, the scan bootstrap
+ * must be a real emitted chunk URL (bundled by Rollup).
  */
 export function generateScanScriptTag(
   base: string,
-  options: ScanConfig,
+  _options: ScanConfig,
+  scanChunkFile?: string | null,
 ): {
   tag: 'script'
-  attrs: { type: string }
-  children: string
+  attrs: { type: string, src?: string }
+  children?: string
   injectTo: 'head-prepend'
 } {
+  if (scanChunkFile) {
+    return {
+      tag: 'script',
+      attrs: { type: 'module', src: `${base}${scanChunkFile}` },
+      injectTo: 'head-prepend',
+    }
+  }
+
   return {
     tag: 'script',
     attrs: { type: 'module' },

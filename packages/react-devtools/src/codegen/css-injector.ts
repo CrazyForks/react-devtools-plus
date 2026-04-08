@@ -31,9 +31,9 @@ export function generateCSSInjectionCode(cssContent: string): string {
 
   return `
   // Inject CSS styles for React DevTools overlay
-  if (!document.querySelector('style[date-react-devtools])) {
+  if (!document.querySelector('style[data-react-devtools]')) {
     var style = document.createElement('style');
-    style.setAttribute('date-react-devtools', 'true');
+    style.setAttribute('data-react-devtools', 'true');
     style.textContent = \`${cssContent}\`;
     document.head.appendChild(style);
   }
@@ -110,31 +110,23 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Generate script tags for CSS injection (Vite)
+ * Generate tags for overlay CSS (Vite).
+ *
+ * Always inlines `react-devtools-overlay.css` from the package overlay directory.
+ * A static `<link href="/assets/react-devtools-overlay.css">` is unreliable in production
+ * because Vite does not emit that filename (CSS from the overlay chunk uses hashed names
+ * or stays in JS), which breaks styling after `vite build` / preview.
  */
 export function generateCSSScriptTags(
   overlayDir: string,
-  base: string,
-  isProduction: boolean,
+  _base: string,
+  _isProduction: boolean,
 ): Array<{
   tag: string
   attrs?: Record<string, string | boolean>
   children?: string
   injectTo?: 'body' | 'head' | 'head-prepend' | 'body-prepend'
 }> {
-  if (isProduction) {
-    // Production: use link tag for bundled CSS
-    return [{
-      tag: 'link',
-      attrs: {
-        rel: 'stylesheet',
-        href: `${base}assets/react-devtools-overlay.css`,
-      },
-      injectTo: 'head',
-    }]
-  }
-
-  // Development: inject inline styles
   const cssPath = path.join(overlayDir, 'react-devtools-overlay.css')
   if (!fs.existsSync(cssPath)) {
     return []

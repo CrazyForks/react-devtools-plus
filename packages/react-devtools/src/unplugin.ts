@@ -41,11 +41,13 @@ import { DIR_DIST, DIR_OVERLAY } from './dir.js'
 import {
   createOutputConfig,
   createRollupInput,
+  findOutputFileRelativeTo,
   findOverlayBundle,
+  findRollupChunkFileName,
   getViteModeAndCommand,
+  patchBuiltHtmlDevtoolsAssets,
   setupDevServerMiddlewares,
   setupPreviewServerMiddlewares,
-  updateHtmlWithOverlayPath,
 } from './integrations/vite.js'
 import {
   getWebpackContext,
@@ -61,11 +63,15 @@ import {
   DEVTOOLS_OPTIONS_ID,
   getClientPath,
   getPluginPath,
+  GLOBALS_CHUNK_NAME,
   OVERLAY_CHUNK_NAME,
   OVERLAY_ENTRY_ID,
   RESOLVED_OPTIONS_ID,
   resolveOverlayPath,
+  SCAN_CHUNK_NAME,
   VIRTUAL_PATH_PREFIX,
+  VITE_GLOBALS_CACHE_FILE,
+  VITE_SCAN_CACHE_FILE,
 } from './utils/paths.js'
 
 // Use 'any' for Compiler to support both Webpack 4 and 5 types
@@ -266,10 +272,39 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
             ? createOutputConfig(existingOutput)
             : createOutputConfig({})
 
+        const projectRoot = config.root || process.cwd()
+        const cacheDir = path.join(projectRoot, 'node_modules', '.cache', 'react-devtools-plus')
+        fs.mkdirSync(cacheDir, { recursive: true })
+
+        const globalsBootstrapPath = path.join(cacheDir, VITE_GLOBALS_CACHE_FILE)
+        fs.writeFileSync(
+          globalsBootstrapPath,
+          `${generateReactGlobalsESMCode({
+            tryReactDOMClient: true,
+            dispatchReadyEvent: true,
+          })}\n`,
+          'utf-8',
+        )
+
+        const extraEntries: Record<string, string> = {
+          [GLOBALS_CHUNK_NAME]: globalsBootstrapPath,
+        }
+
+        if (tempConfig.scan) {
+          const scanBootstrapPath = path.join(cacheDir, VITE_SCAN_CACHE_FILE)
+          fs.writeFileSync(
+            scanBootstrapPath,
+            `${generateScanInitESMCode(tempConfig.scan)}\n`,
+            'utf-8',
+          )
+          extraEntries[SCAN_CHUNK_NAME] = scanBootstrapPath
+        }
+
         const input = createRollupInput(
           existingInput,
           OVERLAY_ENTRY_ID,
-          config.root || process.cwd(),
+          projectRoot,
+          extraEntries,
         )
 
         return {
@@ -352,7 +387,10 @@ const unpluginFactory: UnpluginFactory<ReactDevToolsPluginOptions> = (options = 
 
         // Handle react-dom/client import from our globals module
         // For React 16/17, this module doesn't exist, so provide a fallback
-        if (id === 'react-dom/client' && importer?.includes('__react-devtools-globals__')) {
+        if (
+          id === 'react-dom/client'
+          && (importer?.includes('__react-devtools-globals__') || importer?.includes(VITE_GLOBALS_CACHE_FILE))
+        ) {
           // Check if react-dom/client exists in the project
           try {
             const projectRoot = viteConfig?.root || process.cwd()
@@ -477,14 +515,21 @@ export const hydrateRoot = undefined;
 
         const base = normalizeBasePath(viteConfig?.base)
         const isProduction = !!ctx.bundle
+        const bundle = ctx.bundle
+
+        const overlayFile = bundle
+          ? (findRollupChunkFileName(bundle, OVERLAY_CHUNK_NAME) ?? findOverlayBundle(bundle))
+          : null
+        const globalsFile = bundle ? findRollupChunkFileName(bundle, GLOBALS_CHUNK_NAME) : null
+        const scanFile = bundle && pluginConfig.scan
+          ? findRollupChunkFileName(bundle, SCAN_CHUNK_NAME)
+          : null
+
         const scriptSrc = isProduction
           ? ((): string | null => {
-              const overlayBundleName = findOverlayBundle(ctx.bundle!)
-              if (!overlayBundleName) {
-                return `${base}@id/${VIRTUAL_PATH_PREFIX}main.tsx`
-              }
-              const assetPath = `${base}${overlayBundleName}`
-              return assetPath
+              if (overlayFile)
+                return `${base}${overlayFile}`
+              return `${base}@id/${VIRTUAL_PATH_PREFIX}main.tsx`
             })()
           : `${base}@id/${VIRTUAL_PATH_PREFIX}main.tsx`
 
@@ -520,18 +565,36 @@ export const hydrateRoot = undefined;
 
         // 4. React Scan (if configured)
         if (pluginConfig.scan) {
-          tags.push(generateScanScriptTag(base, pluginConfig.scan))
+          tags.push(
+            generateScanScriptTag(
+              base,
+              pluginConfig.scan,
+              isProduction ? scanFile : null,
+            ),
+          )
         }
 
-        // 5. React globals setup
-        tags.push({
-          tag: 'script',
-          attrs: {
-            type: 'module',
-            src: `${base}@id/__react-devtools-globals__`,
-          },
-          injectTo: 'head',
-        })
+        // 5. React globals setup (production: emitted chunk when known; else @id placeholder patched in writeBundle)
+        if (isProduction && globalsFile) {
+          tags.push({
+            tag: 'script',
+            attrs: {
+              type: 'module',
+              src: `${base}${globalsFile}`,
+            },
+            injectTo: 'head',
+          })
+        }
+        else {
+          tags.push({
+            tag: 'script',
+            attrs: {
+              type: 'module',
+              src: `${base}@id/__react-devtools-globals__`,
+            },
+            injectTo: 'head',
+          })
+        }
 
         // 6. Plugin host scripts (for network interception, etc.)
         if (pluginConfig.hostPlugins.length > 0) {
@@ -554,34 +617,58 @@ export const hydrateRoot = undefined;
         }
       },
 
-      async closeBundle() {
+      writeBundle(_options, bundle) {
         if (!viteConfig || !pluginConfig || viteConfig.command !== 'build')
           return
 
         const outputDir = viteConfig.build.outDir || 'dist'
-        const htmlPath = path.resolve(viteConfig.root, outputDir, 'index.html')
-
-        if (!fs.existsSync(htmlPath)) {
-          return
-        }
-
-        const overlayBundleName = await (async () => {
-          const assetsDir = path.resolve(viteConfig.root, outputDir)
-          const files = fs.readdirSync(assetsDir)
-          for (const file of files) {
-            if (file.includes(OVERLAY_CHUNK_NAME) && file.endsWith('.js')) {
-              return file
-            }
-          }
-          return null
-        })()
-
-        if (!overlayBundleName) {
-          return
-        }
-
+        const outAbs = path.resolve(viteConfig.root, outputDir)
         const base = normalizeBasePath(viteConfig.base)
-        updateHtmlWithOverlayPath(htmlPath, overlayBundleName, base)
+
+        const overlayRel
+          = findRollupChunkFileName(bundle, OVERLAY_CHUNK_NAME)
+            ?? findOutputFileRelativeTo(
+              outAbs,
+              n => n.includes(OVERLAY_CHUNK_NAME) && (n.endsWith('.js') || n.endsWith('.mjs')),
+            )
+
+        const globalsRel
+          = findRollupChunkFileName(bundle, GLOBALS_CHUNK_NAME)
+            ?? findOutputFileRelativeTo(
+              outAbs,
+              n => n.includes(GLOBALS_CHUNK_NAME) && n.endsWith('.js'),
+            )
+
+        let scanRel: string | null = null
+        if (pluginConfig.scan) {
+          scanRel
+            = findRollupChunkFileName(bundle, SCAN_CHUNK_NAME)
+              ?? findOutputFileRelativeTo(
+                outAbs,
+                n => n.includes(SCAN_CHUNK_NAME) && n.endsWith('.js'),
+              )
+        }
+
+        const htmlPaths = new Set<string>()
+        const indexPath = path.join(outAbs, 'index.html')
+        if (fs.existsSync(indexPath))
+          htmlPaths.add(indexPath)
+
+        for (const fileName of Object.keys(bundle)) {
+          if (fileName.endsWith('.html'))
+            htmlPaths.add(path.join(outAbs, fileName))
+        }
+
+        const replacements: { overlay?: string, globals?: string, scan?: string } = {}
+        if (overlayRel)
+          replacements.overlay = overlayRel
+        if (globalsRel)
+          replacements.globals = globalsRel
+        if (scanRel)
+          replacements.scan = scanRel
+
+        for (const htmlPath of htmlPaths)
+          patchBuiltHtmlDevtoolsAssets(htmlPath, replacements, base)
       },
     },
 

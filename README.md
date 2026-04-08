@@ -1,30 +1,14 @@
-<p align="center">
-  <img src="docs/public/screenshots/overview.png" alt="React DevTools Plus" width="800" />
-</p>
 
-<h1 align="center">React DevTools Plus</h1>
 
-<p align="center">
-  <strong>React debugging made simple.</strong>
-</p>
+# React DevTools Plus
 
-<p align="center">
-  An open-source overlay and build tool plugin that mirrors your React Fiber tree, profiles renders, and keeps production builds untouched.
-</p>
+**React debugging made simple.**
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/react-devtools-plus"><img src="https://img.shields.io/npm/v/react-devtools-plus?style=flat-square&color=00ADD8" alt="npm version" /></a>
-  <a href="https://github.com/wzc520pyfm/react-devtools-plus/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/react-devtools-plus?style=flat-square&color=blue" alt="license" /></a>
-  <a href="https://www.npmjs.com/package/react-devtools-plus"><img src="https://img.shields.io/npm/dm/react-devtools-plus?style=flat-square&color=green" alt="npm downloads" /></a>
-</p>
+An open-source overlay and build tool plugin that mirrors your React Fiber tree, profiles renders, and keeps production builds untouched.
 
-<p align="center">
-  <a href="#features">Features</a> •
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#configuration">Configuration</a> •
-  <a href="#documentation">Documentation</a> •
-  <a href="#contributing">Contributing</a>
-</p>
+
+
+[Features](#features) • [Quick Start](#quick-start) • [Configuration](#configuration) • [Documentation](#documentation) • [Contributing](#contributing)
 
 ---
 
@@ -113,6 +97,7 @@ For comprehensive documentation, visit our [documentation site](./docs).
 
 ### Core Features
 
+
 | Feature            | Description                                                |
 | ------------------ | ---------------------------------------------------------- |
 | **Component Tree** | Visualize your React component hierarchy in real-time      |
@@ -121,13 +106,16 @@ For comprehensive documentation, visit our [documentation site](./docs).
 | **Open in Editor** | Click any component to jump to its source code             |
 | **Settings**       | Customize DevTools behavior and appearance                 |
 
+
 ### Keyboard Shortcuts
+
 
 | Shortcut                 | Action                           |
 | ------------------------ | -------------------------------- |
 | `Option/Alt + Shift + D` | Toggle DevTools panel open/close |
 | `Option/Alt + Shift + R` | Toggle overlay visibility        |
 | `Escape`                 | Close overlay                    |
+
 
 ## 🏗️ Project Structure
 
@@ -196,6 +184,4 @@ MIT © [wzc520pyfm](https://github.com/wzc520pyfm)
 
 ---
 
-<p align="center">
-  <sub>Built with ❤️ for the React community</sub>
-</p>
+Built with ❤️ for the React community
