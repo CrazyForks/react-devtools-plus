@@ -1,9 +1,9 @@
 # Changelog
 
 
-## v0.10.1...main
+## v0.10.2...main
 
-[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.10.1...main)
+[compare changes](https://github.com/wzc520pyfm/react-devtools-plus/compare/v0.10.2...main)
 
 ### 🚀 Features
 
